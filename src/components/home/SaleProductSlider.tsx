@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Minus, Plus, Percent } from "lucide-react";
+import { ChevronLeft, ChevronRight, Percent } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 const COPIES = 5;
@@ -108,29 +109,6 @@ function useCenterCarousel<Item>(items: Item[], autoplayMs?: number) {
   return { trackRef, itemRefs, looped, step };
 }
 
-function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
-  return (
-    <div className="flex h-10 w-fit shrink-0 items-center self-center rounded-full border border-brand-accent/20">
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(1, quantity - 1))}
-        aria-label="הפחת כמות"
-        className="flex h-full w-7 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
-      >
-        <Minus className="h-3.5 w-3.5" />
-      </button>
-      <span className="w-5 text-center text-sm font-semibold tabular-nums">{quantity}</span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.min(99, quantity + 1))}
-        aria-label="הוסף כמות"
-        className="flex h-full w-7 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
-      >
-        <Plus className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el: HTMLDivElement | null) => void }) {
   const [quantity, setQuantity] = useState(1);
@@ -184,13 +162,16 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
           )}
         </div>
 
-        <div className="mt-auto flex items-center gap-1.5 pt-2">
+        <div className="mt-auto flex items-center justify-center gap-2 pt-2">
           {product.type === "simple" ? (
             <>
-              <QuantityStepper quantity={quantity} onChange={setQuantity} />
-              <div className="min-w-0 flex-1">
-                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} />
-              </div>
+              <QuantityStepper quantity={quantity} onChange={setQuantity} size="sm" />
+              <AddToCartButton
+                productId={product.databaseId}
+                inStock={product.inStock}
+                quantity={quantity}
+                size="sm"
+              />
             </>
           ) : (
             <Link

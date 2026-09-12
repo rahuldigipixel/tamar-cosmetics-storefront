@@ -3,35 +3,12 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Minus, Plus } from "lucide-react";
+import { Heart } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
-
-function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
-  return (
-    <div className="flex h-11 w-fit shrink-0 items-center self-center rounded-full border border-black/10">
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(1, quantity - 1))}
-        aria-label="הפחת כמות"
-        className="flex h-full w-9 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
-      >
-        <Minus className="h-3.5 w-3.5" />
-      </button>
-      <span className="w-6 text-center text-sm font-semibold tabular-nums">{quantity}</span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.min(99, quantity + 1))}
-        aria-label="הוסף כמות"
-        className="flex h-full w-9 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
-      >
-        <Plus className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 /**
  * The richer product card (image + name + price + quantity stepper + add to
@@ -118,13 +95,16 @@ export function ProductGridCard({
           )}
         </div>
 
-        <div className="mt-auto flex items-center gap-2 pt-2">
+        <div className="mt-auto flex items-center justify-center gap-2 pt-2">
           {product.type === "simple" ? (
             <>
-              <QuantityStepper quantity={quantity} onChange={setQuantity} />
-              <div className="min-w-0 flex-1">
-                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} />
-              </div>
+              <QuantityStepper quantity={quantity} onChange={setQuantity} size="sm" />
+              <AddToCartButton
+                productId={product.databaseId}
+                inStock={product.inStock}
+                quantity={quantity}
+                size="sm"
+              />
             </>
           ) : (
             <Link

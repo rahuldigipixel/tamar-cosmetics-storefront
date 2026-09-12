@@ -22,7 +22,16 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# claude code
+.claude/settings.local.json
 
 # debug
 npm-debug.log*

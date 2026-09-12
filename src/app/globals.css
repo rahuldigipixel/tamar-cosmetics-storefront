@@ -1,26 +1,80 @@
 @import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+
+  /* Brand tokens pulled from the live site (tamarcosmetics.co.il) */
+  --brand-primary: #000000;
+  --brand-accent: #d52027; /* red — CTAs, sale badges, prices */
+  --brand-soft: #fde7eb; /* pale pink — section backgrounds, hover states */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-soft: var(--brand-soft);
+  --font-sans: var(--font-heebo);
+  --font-heading: var(--font-rubik);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+   
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif; 
+}
+
+/* Site-wide: every clickable control shows a pointer cursor on hover,
+   including plain <button> elements (Tailwind's preflight resets buttons to
+   cursor: default, matching native form-control behavior, which reads as
+   "not clickable" for buttons that are actually just click targets). */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a,
+label,
+select,
+input[type="submit"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+/* Logical-property helpers for RTL layouts not yet covered by Tailwind's
+   built-in ms-/me-/ps-/pe- utilities (used for one-off borders/shadows that
+   need to flip with direction). */
+.border-start {
+  border-inline-start-width: 1px;
+}
+.border-end {
+  border-inline-end-width: 1px;
+}
+
+/* App-store badge attention animation — a brief bounce confined to the tail
+   end of a 20s cycle (repeated `infinite`), so it recurs every 20 seconds
+   instead of animating continuously the whole time in between. */
+@keyframes app-badge-attention {
+  0%,
+  90%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  93% {
+    transform: translateY(-4px) scale(1.03);
+  }
+  96% {
+    transform: translateY(0) scale(1);
+  }
+  98% {
+    transform: translateY(-2px) scale(1.015);
+  }
+}
+
+.animate-app-badge {
+  animation: app-badge-attention 20s ease-in-out infinite;
 }

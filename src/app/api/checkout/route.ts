@@ -25,6 +25,7 @@ export interface CheckoutRequestBody {
   billing_address: IsraeliAddress;
   shipping_address: IsraeliAddress;
   payment_method: "gocredit" | "paypal";
+  customer_note?: string;
 }
 
 function toCustomerAddressInput(address: IsraeliAddress) {
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
         billing: toCustomerAddressInput(payload.billing_address),
         shipping: toCustomerAddressInput(payload.shipping_address),
         paymentMethod: payload.payment_method,
+        customerNote: payload.customer_note,
       },
       { cache: "no-store", headers: sessionRequestHeader(sessionToken) }
     );

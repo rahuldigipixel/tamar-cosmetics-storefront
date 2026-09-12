@@ -1,24 +1,19 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 import { getProductBySlug, listProducts } from "@/lib/wpgraphql/products";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
+import { ProductShortDescription } from "@/components/product/ProductShortDescription";
 import { SocialShare } from "@/components/product/SocialShare";
 import { FeatureStrip } from "@/components/home/FeatureStrip";
 import { ProductSlider } from "@/components/home/ProductSlider";
+import { formatPrice } from "@/lib/utils/formatPrice";
 
 export const revalidate = 60;
-
-function formatPrice(value: string, currency: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
 
 export async function generateMetadata({
   params,
@@ -84,12 +79,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
-        <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-base text-black/50">
+        <nav className="mb-4 flex flex-wrap items-center gap-1 text-base text-black/50">
           <Link href="/" className="hover:text-brand-accent">
             בית
           </Link>
           {primaryCategory ? (
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1">
               <span>/</span>
               <Link href={`/product-category/${primaryCategory.slug}/`} className="hover:text-brand-accent">
                 {primaryCategory.name}
@@ -97,23 +92,44 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </span>
           ) : null}
           <span>/</span>
-          <span className="text-black/80">{product.name}</span>
+          <span className="text-black">{product.name}</span>
         </nav>
 
-        <div className="grid gap-10 md:grid-cols-2">
-          <ProductGallery images={product.images} name={product.name} productId={product.databaseId} />
+        <div className="grid gap-10 md:grid-cols-2 md:gap-10 lg:gap-14">
+          <div className="mx-auto w-full max-w-[550px]">
+            <ProductGallery images={product.images} name={product.name} productId={product.databaseId} />
+          </div>
 
           <div className="text-right">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{product.name}</h1>
-
-            {product.shortDescription ? (
-              <div
-                className="prose prose-sm mt-3 max-w-none text-right text-black/70"
-                dangerouslySetInnerHTML={{ __html: product.shortDescription }}
-              />
+            {product.brand ? (
+              <p className="text-base font-bold uppercase tracking-wide text-black/60">{product.brand}</p>
             ) : null}
 
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{product.name}</h1>
+
+            {product.reviewCount ? (
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex items-center gap-0.5" aria-label={`${product.averageRating} מתוך 5 כוכבים`}>
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${
+                        i < Math.round(product.averageRating ?? 0)
+                          ? "fill-brand-accent text-brand-accent"
+                          : "fill-black/10 text-black/10"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-base text-black/50">({product.reviewCount})</span>
+              </div>
+            ) : null}
+
+            {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
+
             {product.sku ? <p className="mt-3 text-base text-black/50">מק&quot;ט: {product.sku}</p> : null}
+            {product.brand ? <p className="mt-1 text-base text-black/50">מותג: {product.brand}</p> : null}
+            {product.weight ? <p className="mt-1 text-base text-black/50">כמות: {product.weight} גרם</p> : null}
 
             <div className="mt-4 flex items-baseline justify-start gap-2">
               {product.onSale && product.salePrice ? (
@@ -131,6 +147,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 </span>
               )}
             </div>
+
+            {product.weight && Number(product.weight) > 0 ? (
+              <p className="mt-1 text-base text-black/40">
+                מחיר ל-100 גרם:{" "}
+                {formatPrice(
+                  (Number(product.onSale && product.salePrice ? product.salePrice : product.price) /
+                    Number(product.weight)) *
+                    100,
+                  product.currency
+                )}
+              </p>
+            ) : null}
 
             <ProductPurchasePanel productId={product.databaseId} inStock={product.inStock} />
 

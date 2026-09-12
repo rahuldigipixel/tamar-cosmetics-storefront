@@ -21,7 +21,7 @@ export function FeatureStrip({ variant = "full" }: { variant?: "full" | "compact
     variant === "compact" ? FEATURES.filter((f) => COMPACT_FEATURE_TITLES.includes(f.title)) : FEATURES;
 
   return (
-    <section className="border-y border-black/5 bg-brand-soft/30">
+    <section className="my-[50px] border-y border-black/5 bg-brand-soft/30">
       <div
         className={`mx-auto grid max-w-[1400px] grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:px-6 ${
           variant === "compact" ? "md:grid-cols-4" : "md:grid-cols-4 lg:grid-cols-8"

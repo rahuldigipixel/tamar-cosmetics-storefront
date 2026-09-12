@@ -33,6 +33,8 @@ interface GraphQLResponse<T> {
  * Returns the raw Response too, since cart mutations need to read the
  * `woocommerce-session` response header.
  */
+const REQUEST_TIMEOUT_MS = 10_000;
+
 export async function fetchGraphQL<T>(
   query: string,
   variables?: Record<string, unknown>,
@@ -40,16 +42,33 @@ export async function fetchGraphQL<T>(
 ): Promise<{ data: T; response: Response }> {
   const { tags, revalidate, headers, cache } = options;
 
-  const response = await fetch(wpEnv.graphqlUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: JSON.stringify({ query, variables }),
-    cache: cache ?? (tags || revalidate !== undefined ? undefined : "force-cache"),
-    next: cache === "no-store" ? undefined : { tags, revalidate },
-  });
+  // Without a timeout, a stalled/unreachable backend (e.g. a LAN dev IP that
+  // isn't on the network right now) hangs the whole page on its loading
+  // skeleton for the OS's default TCP timeout (60s+) instead of failing fast.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(wpEnv.graphqlUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({ query, variables }),
+      cache: cache ?? (tags || revalidate !== undefined ? undefined : "force-cache"),
+      next: cache === "no-store" ? undefined : { tags, revalidate },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if ((error as Error).name === "AbortError") {
+      throw new Error(`GraphQL request to ${wpEnv.graphqlUrl} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 
   const text = await response.text();
   let json: GraphQLResponse<T>;

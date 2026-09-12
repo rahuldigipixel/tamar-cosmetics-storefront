@@ -77,7 +77,7 @@ export function CustomerReviews() {
   const average = (REVIEWS.reduce((sum, r) => sum + r.rating, 0) / REVIEWS.length).toFixed(1);
 
   return (
-    <section className="w-full bg-white py-10 sm:py-[60px]">
+    <section className=" w-full bg-white py-8 sm:py-[50px]  ">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
           <h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl">ביקורות לקוחות</h2>

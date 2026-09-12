@@ -15,15 +15,17 @@ interface FieldProps {
 
 function Field({ icon: Icon, type, placeholder, required, value, onChange }: FieldProps) {
   return (
-    <div className="flex h-12 items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 shadow-sm transition-colors focus-within:border-brand-accent focus-within:ring-4 focus-within:ring-brand-accent/10">
-      <Icon className="h-5 w-5 shrink-0 text-black/30" />
+    <div className="flex h-12 items-center gap-3 rounded-2xl border-1 border-black/40 bg-white px-4 shadow-sm transition-colors focus-within:border-brand-accent focus-within:ring-4 focus-within:ring-brand-accent/10">
+      <Icon className="h-5 w-5 shrink-0 text-black" />
       <input
         type={type}
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-black/40"
+        className={`h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-black/40 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 ${
+          type === "date" ? "cursor-pointer" : ""
+        }`}
       />
     </div>
   );

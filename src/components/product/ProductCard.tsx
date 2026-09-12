@@ -1,13 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
-
-function formatPrice(value: string, currency: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
+import { formatPrice } from "@/lib/utils/formatPrice";
 
 export function ProductCard({ product }: { product: Product }) {
   const image = product.images[0];

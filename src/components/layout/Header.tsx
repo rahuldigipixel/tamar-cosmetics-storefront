@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { formatPrice } from "@/lib/utils/formatPrice";
 import type { ProductCategory } from "@/types/product";
 
 const NAV_LINKS = [
@@ -48,13 +49,6 @@ const STATIC_LINKS_AFTER = [
 // scrollbar. Order here is the display order.
 const MAIN_CATEGORY_NAMES = ["לק ג'ל", "מוצרים לציפורניים", "ג'ל בנייה", "מוצרי איפור"];
 
-function formatPrice(value: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
-
 export function Header({ categories = [] }: { categories?: ProductCategory[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -62,10 +56,10 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
   const fetchCart = useCartStore((s) => s.fetchCart);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
   const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
+  const openCartDrawer = useCartStore((s) => s.openDrawer);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [scrolled, setScrolled] = useState(false);
 
   // Desktop mega-menu: `openCategorySlug` remembers the last-hovered/clicked
   // top-level category (it isn't cleared on close), while `menuVisible`
@@ -156,13 +150,6 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
     setMenuVisible(false);
@@ -182,11 +169,7 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
   }
 
   return (
-    <header
-      className={`sticky top-0 z-40 bg-white transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_4px_24px_-8px_rgba(0,0,0,0.12)]" : ""
-      }`}
-    >
+    <header className="sticky top-0 z-40 bg-white shadow-[0_4px_24px_-8px_rgba(0,0,0,0.12)]">
       {/* Utility bar */}
       <div className="bg-brand-accent text-white">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-2 text-xs sm:px-6 sm:text-[13px]">
@@ -256,19 +239,36 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
             <Search className="h-4.5 w-4.5" />
           </button>
 
-          <Link
-            href="/cart"
-            aria-label="עגלת קניות"
-            className="relative flex items-center gap-2 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] py-2.5 pe-4 ps-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
-          >
-            <ShoppingBag className="h-4.5 w-4.5" />
-            {cart.itemCount > 0 ? (
-              <span className="absolute -top-1.5 -end-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-brand-accent shadow ring-2 ring-white">
-                {cart.itemCount}
-              </span>
-            ) : null}
-            <span className="hidden sm:inline">{cart.itemCount > 0 ? formatPrice(cart.total) : "0.00 ₪"}</span>
-          </Link>
+          {pathname === "/cart" || pathname === "/checkout" ? (
+            <Link
+              href="/cart"
+              aria-label="עגלת קניות"
+              className="relative flex items-center gap-2 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] py-2.5 pe-4 ps-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
+            >
+              <ShoppingBag className="h-4.5 w-4.5" />
+              {cart.itemCount > 0 ? (
+                <span className="absolute -top-1.5 -end-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-brand-accent shadow ring-2 ring-white">
+                  {cart.itemCount}
+                </span>
+              ) : null}
+              <span className="hidden sm:inline">{formatPrice(cart.total)}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={openCartDrawer}
+              aria-label="עגלת קניות"
+              className="relative flex items-center gap-2 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] py-2.5 pe-4 ps-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
+            >
+              <ShoppingBag className="h-4.5 w-4.5" />
+              {cart.itemCount > 0 ? (
+                <span className="absolute -top-1.5 -end-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-brand-accent shadow ring-2 ring-white">
+                  {cart.itemCount}
+                </span>
+              ) : null}
+              <span className="hidden sm:inline">{formatPrice(cart.total)}</span>
+            </button>
+          )}
 
           <Link
             href="/wishlist"

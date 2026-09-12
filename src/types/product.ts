@@ -54,6 +54,12 @@ export interface Product {
   tabs: { title: string; content: string }[];
   /** Populated once ACF video field is mapped; empty until then. */
   videoUrl?: string;
+  /** First assigned product brand, if any — most products aren't tagged yet. */
+  brand?: string;
+  /** Raw WooCommerce weight, in the shop's configured unit (e.g. grams) — unset for most products. */
+  weight?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface ProductCategory {

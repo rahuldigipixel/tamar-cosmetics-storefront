@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Minus, Plus, Percent } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { formatPrice } from "@/lib/utils/formatPrice";
 
 const COPIES = 5;
 const RECENTER_DELAY_MS = 500;
@@ -83,6 +84,9 @@ function useCenterCarousel<Item>(items: Item[], autoplayMs?: number) {
         el.style.transform = `scale(${focused ? 1 : 0.82})`;
         el.style.opacity = focused ? "1" : "0.75";
         el.style.zIndex = focused ? "10" : "1";
+        el.style.borderColor = focused ? "rgba(213,32,39,0.35)" : "";
+        el.style.borderWidth = focused ? "2px" : "1px";
+        el.style.boxShadow = focused ? "0 20px 40px -20px rgba(213,32,39,0.25)" : "";
       });
     }
 
@@ -104,30 +108,23 @@ function useCenterCarousel<Item>(items: Item[], autoplayMs?: number) {
   return { trackRef, itemRefs, looped, step };
 }
 
-function formatPrice(value: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
-
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
   return (
-    <div className="flex h-11 w-fit shrink-0 items-center self-center rounded-full border border-brand-accent/20">
+    <div className="flex h-10 w-fit shrink-0 items-center self-center rounded-full border border-brand-accent/20">
       <button
         type="button"
         onClick={() => onChange(Math.max(1, quantity - 1))}
         aria-label="הפחת כמות"
-        className="flex h-full w-9 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
+        className="flex h-full w-7 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
       >
         <Minus className="h-3.5 w-3.5" />
       </button>
-      <span className="w-6 text-center text-sm font-semibold tabular-nums">{quantity}</span>
+      <span className="w-5 text-center text-sm font-semibold tabular-nums">{quantity}</span>
       <button
         type="button"
         onClick={() => onChange(Math.min(99, quantity + 1))}
         aria-label="הוסף כמות"
-        className="flex h-full w-9 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
+        className="flex h-full w-7 items-center justify-center text-black/60 transition-colors hover:text-brand-accent"
       >
         <Plus className="h-3.5 w-3.5" />
       </button>
@@ -146,7 +143,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
   return (
     <div
       ref={cardRef}
-      className="group flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow] duration-300 ease-out hover:border-brand-accent/40 sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
+      className="group flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
     >
       <Link href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-accent/5">
         {image ? (
@@ -187,11 +184,13 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
           )}
         </div>
 
-        <div className="mt-auto flex flex-col items-stretch gap-1.5 pt-2">
+        <div className="mt-auto flex items-center gap-1.5 pt-2">
           {product.type === "simple" ? (
             <>
               <QuantityStepper quantity={quantity} onChange={setQuantity} />
-              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} />
+              <div className="min-w-0 flex-1">
+                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} />
+              </div>
             </>
           ) : (
             <Link

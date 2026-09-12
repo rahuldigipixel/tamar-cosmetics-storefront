@@ -38,6 +38,10 @@ interface GqlProductNode {
   regularPrice?: string;
   salePrice?: string;
   stockStatus?: string;
+  weight?: string | null;
+  averageRating?: number;
+  reviewCount?: number;
+  productBrands?: { nodes: { name: string; slug: string }[] };
   image?: GqlImage | null;
   galleryImages?: { nodes: GqlImage[] };
   productCategories?: { nodes: { id: string; name: string; slug: string }[] };
@@ -106,6 +110,10 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     attributes,
     variations,
     tabs: [],
+    brand: node.productBrands?.nodes[0]?.name,
+    weight: node.weight || undefined,
+    averageRating: node.averageRating ?? 0,
+    reviewCount: node.reviewCount ?? 0,
   };
 }
 

@@ -5,13 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
-
-function formatPrice(value: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
+import { formatPrice } from "@/lib/utils/formatPrice";
 
 export function SaleShowcase({ products }: { products: Product[] }) {
   const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({

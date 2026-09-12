@@ -7,13 +7,7 @@ import { Heart, Minus, Plus } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
-
-function formatPrice(value: string) {
-  const numeric = Number(value);
-  return new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS" }).format(
-    Number.isNaN(numeric) ? 0 : numeric
-  );
-}
+import { formatPrice } from "@/lib/utils/formatPrice";
 
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
   return (

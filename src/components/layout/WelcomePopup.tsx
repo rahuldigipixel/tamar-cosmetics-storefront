@@ -5,6 +5,13 @@ import { X, Sparkles, Copy, Check } from "lucide-react";
 
 const OPEN_DELAY_MS = 3000;
 const COUPON = "GET15";
+const SHOWN_KEY = "welcomePopupShown";
+const HEARTBEAT_KEY = "welcomePopupHeartbeat";
+const HEARTBEAT_INTERVAL_MS = 2000;
+// If no tab has updated the heartbeat more recently than this, the browser
+// was actually closed (not just this tab refreshed or a new tab opened)
+// since the last time any tab was open — so the popup is due again.
+const HEARTBEAT_STALE_MS = 5000;
 
 export function WelcomePopup() {
   const [mounted, setMounted] = useState(false);
@@ -12,7 +19,45 @@ export function WelcomePopup() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    // sessionStorage is per-tab, not per-browser-session — a plain new tab
+    // (not a duplicated one) starts with empty storage, so it would re-show
+    // the popup even though the browser never actually closed. A shared
+    // localStorage heartbeat, updated by whichever tab is open, lets us tell
+    // "browser was actually closed" apart from "just refreshed/new tab."
+    let heartbeatInterval: number | undefined;
+    let timer: number | undefined;
+
+    try {
+      const lastHeartbeat = Number(window.localStorage.getItem(HEARTBEAT_KEY) ?? "0");
+      if (Date.now() - lastHeartbeat > HEARTBEAT_STALE_MS) {
+        window.localStorage.removeItem(SHOWN_KEY);
+      }
+
+      const beat = () => {
+        try {
+          window.localStorage.setItem(HEARTBEAT_KEY, String(Date.now()));
+        } catch {
+          // ignore
+        }
+      };
+      beat();
+      heartbeatInterval = window.setInterval(beat, HEARTBEAT_INTERVAL_MS);
+
+      if (window.localStorage.getItem(SHOWN_KEY)) {
+        return () => {
+          if (heartbeatInterval) window.clearInterval(heartbeatInterval);
+        };
+      }
+    } catch {
+      // localStorage unavailable — fall back to showing every time
+    }
+
+    timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(SHOWN_KEY, "1");
+      } catch {
+        // ignore — worst case the popup shows again next navigation
+      }
       setMounted(true);
       // Two nested rAFs: the first lets the browser paint the just-mounted
       // node in its opacity-0/scale-95 starting state, the second then
@@ -24,7 +69,10 @@ export function WelcomePopup() {
       });
     }, OPEN_DELAY_MS);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      if (heartbeatInterval) window.clearInterval(heartbeatInterval);
+    };
   }, []);
 
   function close() {

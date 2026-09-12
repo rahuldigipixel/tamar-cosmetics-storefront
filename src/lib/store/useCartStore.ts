@@ -19,15 +19,19 @@ interface CartState {
   addItem: (productId: number, quantity?: number, variationId?: number) => Promise<void>;
   updateItemQuantity: (key: string, quantity: number) => Promise<void>;
   removeItem: (key: string) => Promise<void>;
+  applyCoupon: (code: string) => Promise<void>;
+  removeCoupon: (code: string) => Promise<void>;
+  selectShippingMethod: (methodId: string) => Promise<void>;
 }
 
 async function cartFetchOnce(
   path: string,
   sessionToken: string | null,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
+  method?: "GET" | "POST" | "DELETE"
 ): Promise<CartApiResponse> {
   const res = await fetch(path, {
-    method: body ? "POST" : "GET",
+    method: method ?? (body ? "POST" : "GET"),
     headers: {
       "Content-Type": "application/json",
       ...(sessionToken ? { "X-Cart-Session": sessionToken } : {}),
@@ -47,17 +51,25 @@ async function cartFetchOnce(
 async function cartFetch(
   path: string,
   sessionToken: string | null,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
+  method?: "GET" | "POST" | "DELETE"
 ): Promise<CartApiResponse> {
   try {
-    return await cartFetchOnce(path, sessionToken, body);
+    return await cartFetchOnce(path, sessionToken, body, method);
   } catch (error) {
     if (sessionToken && (error as Error).message?.includes("invalid_token")) {
-      return cartFetchOnce(path, null, body);
+      return cartFetchOnce(path, null, body, method);
     }
     throw error;
   }
 }
+
+// Concurrency guards for optimistic quantity updates: rapid +/- clicks each
+// fire their own request, and responses can arrive out of order. Only the
+// response for the most recently issued request per item key is allowed to
+// overwrite state, so a slow earlier response can't clobber a newer click.
+let quantityRequestCounter = 0;
+const latestQuantityRequestByKey: Record<string, number> = {};
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -94,23 +106,109 @@ export const useCartStore = create<CartState>()(
       },
 
       updateItemQuantity: async (key, quantity) => {
-        set({ loading: true });
+        // Optimistic: reflect the new quantity (and its proportional
+        // subtotal/total) immediately instead of waiting on the round trip
+        // to the WooCommerce backend — rapid +/- clicks used to feel stuck
+        // because each click waited on the previous request's response
+        // before the UI would move again.
+        const previousCart = get().cart;
+        const item = previousCart.items.find((i) => i.key === key);
+        if (!item) return;
+
+        const unitSubtotal = item.quantity > 0 ? Number(item.subtotal) / item.quantity : 0;
+        const unitTotal = item.quantity > 0 ? Number(item.total) / item.quantity : 0;
+        const qtyDelta = quantity - item.quantity;
+
+        set({
+          cart: {
+            ...previousCart,
+            items: previousCart.items.map((i) =>
+              i.key === key
+                ? {
+                    ...i,
+                    quantity,
+                    subtotal: (unitSubtotal * quantity).toFixed(2),
+                    total: (unitTotal * quantity).toFixed(2),
+                  }
+                : i
+            ),
+            itemCount: Math.max(0, previousCart.itemCount + qtyDelta),
+          },
+        });
+
+        const requestId = ++quantityRequestCounter;
+        latestQuantityRequestByKey[key] = requestId;
+
         try {
           const { cart, sessionToken } = await cartFetch("/api/cart/update", get().sessionToken, {
             items: [{ key, quantity }],
           });
+          if (latestQuantityRequestByKey[key] === requestId) {
+            set({ cart, sessionToken });
+          }
+        } catch (error) {
+          if (latestQuantityRequestByKey[key] === requestId) {
+            set({ cart: previousCart });
+          }
+          throw error;
+        }
+      },
+
+      removeItem: async (key) => {
+        // Optimistic: drop the item from the visible list immediately
+        // instead of waiting on the round trip to the WooCommerce backend —
+        // the authoritative cart (correct totals/tax) still replaces this
+        // once the request resolves, or gets restored if it fails.
+        const previousCart = get().cart;
+        const removedItem = previousCart.items.find((i) => i.key === key);
+        set({
+          cart: {
+            ...previousCart,
+            items: previousCart.items.filter((i) => i.key !== key),
+            itemCount: Math.max(0, previousCart.itemCount - (removedItem?.quantity ?? 0)),
+          },
+        });
+
+        try {
+          const { cart, sessionToken } = await cartFetch("/api/cart/remove", get().sessionToken, {
+            itemKey: key,
+          });
+          set({ cart, sessionToken });
+        } catch (error) {
+          set({ cart: previousCart });
+          throw error;
+        }
+      },
+
+      applyCoupon: async (code) => {
+        set({ loading: true });
+        try {
+          const { cart, sessionToken } = await cartFetch("/api/cart/coupon", get().sessionToken, { code }, "POST");
           set({ cart, sessionToken });
         } finally {
           set({ loading: false });
         }
       },
 
-      removeItem: async (key) => {
+      removeCoupon: async (code) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/remove", get().sessionToken, {
-            itemKey: key,
-          });
+          const { cart, sessionToken } = await cartFetch(
+            "/api/cart/coupon",
+            get().sessionToken,
+            { code },
+            "DELETE"
+          );
+          set({ cart, sessionToken });
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      selectShippingMethod: async (methodId) => {
+        set({ loading: true });
+        try {
+          const { cart, sessionToken } = await cartFetch("/api/cart/shipping", get().sessionToken, { methodId });
           set({ cart, sessionToken });
         } finally {
           set({ loading: false });

@@ -15,14 +15,20 @@ const CART_FIELDS = /* GraphQL */ `
     nodes {
       key
       quantity
-      total
-      subtotal
+      total(format: RAW)
+      subtotal(format: RAW)
       product {
         node {
           id
           databaseId
           slug
           name
+          sku
+          productCategories {
+            nodes {
+              slug
+            }
+          }
           image {
             sourceUrl
             altText
@@ -42,11 +48,11 @@ const CART_FIELDS = /* GraphQL */ `
     code
     discountAmount
   }
-  subtotal
-  total
-  totalTax
-  shippingTotal
-  discountTotal
+  subtotal(format: RAW)
+  total(format: RAW)
+  totalTax(format: RAW)
+  shippingTotal(format: RAW)
+  discountTotal(format: RAW)
 `;
 
 export const GET_CART = /* GraphQL */ `
@@ -92,6 +98,16 @@ export const REMOVE_CART_ITEMS = /* GraphQL */ `
 export const APPLY_COUPON = /* GraphQL */ `
   mutation ApplyCoupon($code: String!) {
     applyCoupon(input: { code: $code }) {
+      cart {
+        ${CART_FIELDS}
+      }
+    }
+  }
+`;
+
+export const UPDATE_SHIPPING_METHOD = /* GraphQL */ `
+  mutation UpdateShippingMethod($shippingMethods: [String]) {
+    updateShippingMethod(input: { shippingMethods: $shippingMethods }) {
       cart {
         ${CART_FIELDS}
       }

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listProducts } from "@/lib/wpgraphql/products";
@@ -79,14 +78,9 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
         </div>
       </div>
 
-      {category?.image || category?.description ? (
+      {category?.description ? (
         <div className="border-b border-black/5">
           <div className="mx-auto max-w-[1400px] px-4 py-8 text-center sm:px-6">
-            {category.image ? (
-              <div className="relative mx-auto mb-5 h-16 w-40 sm:h-20 sm:w-52">
-                <Image src={category.image} alt={category.name} fill sizes="208px" className="object-contain" />
-              </div>
-            ) : null}
             {category.description ? (
               <div
                 className="prose prose-sm mx-auto max-w-3xl text-base leading-relaxed text-black/70 [&_p]:mb-2"

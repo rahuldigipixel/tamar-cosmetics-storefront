@@ -52,13 +52,13 @@ export function CategorySlider({ categories }: { categories: ProductCategory[] }
             href={`/shop/${category.slug}`}
             className="group flex w-[calc((100%-1rem)/2)] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg sm:w-[calc((100%-2rem)/3)] md:w-[calc((100%-3rem)/4)] lg:w-[calc((100%-4rem)/5)] xl:w-[calc((100%-5rem)/6)]"
           >
-            <div className="relative aspect-square w-full bg-brand-soft/40 p-4">
+            <div className="relative aspect-square w-full bg-brand-soft/40">
               <Image
                 src={category.image || "/brand/logo.png"}
                 alt={category.name}
                 fill
                 sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
-                className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
             </div>
             <span className="border-t border-black/5 px-3 py-3 text-center text-sm font-medium text-black/80 group-hover:text-brand-accent">

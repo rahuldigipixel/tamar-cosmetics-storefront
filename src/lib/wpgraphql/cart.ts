@@ -7,11 +7,14 @@ import {
   REMOVE_CART_ITEMS,
   APPLY_COUPON,
   REMOVE_COUPON,
+  UPDATE_SHIPPING_METHOD,
 } from "./mutations/cart";
 import type { Cart } from "@/types/cart";
 
 interface GqlCart {
   isEmpty: boolean;
+  chosenShippingMethods: string[] | null;
+  availableShippingMethods: { packageDetails: string; rates: { id: string; label: string; cost: string }[] }[] | null;
   contents: {
     itemCount: number;
     nodes: {
@@ -25,6 +28,8 @@ interface GqlCart {
           databaseId: number;
           slug: string;
           name: string;
+          sku?: string | null;
+          productCategories?: { nodes: { slug: string }[] };
           image?: { sourceUrl: string; altText: string } | null;
         };
       };
@@ -51,6 +56,8 @@ function normalizeCart(gqlCart: GqlCart | null): Cart {
       totalTax: "0",
       shippingTotal: "0",
       discountTotal: "0",
+      shippingRates: [],
+      chosenShippingMethod: null,
     };
   }
 
@@ -67,6 +74,8 @@ function normalizeCart(gqlCart: GqlCart | null): Cart {
         databaseId: n.product.node.databaseId,
         slug: n.product.node.slug,
         name: n.product.node.name,
+        sku: n.product.node.sku ?? undefined,
+        categories: n.product.node.productCategories?.nodes ?? [],
         image: n.product.node.image
           ? { src: n.product.node.image.sourceUrl, alt: n.product.node.image.altText }
           : undefined,
@@ -81,6 +90,8 @@ function normalizeCart(gqlCart: GqlCart | null): Cart {
     totalTax: gqlCart.totalTax,
     shippingTotal: gqlCart.shippingTotal,
     discountTotal: gqlCart.discountTotal,
+    shippingRates: gqlCart.availableShippingMethods?.[0]?.rates ?? [],
+    chosenShippingMethod: gqlCart.chosenShippingMethods?.[0] ?? null,
   };
 }
 
@@ -140,4 +151,8 @@ export function applyCoupon(code: string, sessionToken: string | null) {
 
 export function removeCoupon(codes: string[], sessionToken: string | null) {
   return runCartMutation(REMOVE_COUPON, { codes }, sessionToken);
+}
+
+export function updateShippingMethod(methodId: string, sessionToken: string | null) {
+  return runCartMutation(UPDATE_SHIPPING_METHOD, { shippingMethods: [methodId] }, sessionToken);
 }

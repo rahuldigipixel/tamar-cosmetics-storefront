@@ -8,6 +8,8 @@ export interface CartItem {
     databaseId: number;
     slug: string;
     name: string;
+    sku?: string;
+    categories: { slug: string }[];
     image?: { src: string; alt: string };
   };
   variation?: {
@@ -15,6 +17,12 @@ export interface CartItem {
     databaseId: number;
     name: string;
   };
+}
+
+export interface ShippingRate {
+  id: string;
+  label: string;
+  cost: string;
 }
 
 export interface Cart {
@@ -27,6 +35,8 @@ export interface Cart {
   totalTax: string;
   shippingTotal: string;
   discountTotal: string;
+  shippingRates: ShippingRate[];
+  chosenShippingMethod: string | null;
 }
 
 export const EMPTY_CART: Cart = {
@@ -39,4 +49,6 @@ export const EMPTY_CART: Cart = {
   totalTax: "0",
   shippingTotal: "0",
   discountTotal: "0",
+  shippingRates: [],
+  chosenShippingMethod: null,
 };

@@ -3,6 +3,14 @@ const PRODUCT_CORE_FIELDS = /* GraphQL */ `
   databaseId
   slug
   name
+  averageRating
+  reviewCount
+  productBrands {
+    nodes {
+      name
+      slug
+    }
+  }
   ... on SimpleProduct {
     sku
     shortDescription
@@ -12,6 +20,7 @@ const PRODUCT_CORE_FIELDS = /* GraphQL */ `
     regularPrice(format: RAW)
     salePrice(format: RAW)
     stockStatus
+    weight
     attributes {
       nodes {
         id
@@ -31,6 +40,7 @@ const PRODUCT_CORE_FIELDS = /* GraphQL */ `
     regularPrice(format: RAW)
     salePrice(format: RAW)
     stockStatus
+    weight
     attributes {
       nodes {
         id

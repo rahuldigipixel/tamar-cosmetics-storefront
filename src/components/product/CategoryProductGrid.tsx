@@ -5,6 +5,7 @@ import { Loader2, SlidersHorizontal } from "lucide-react";
 import type { Product } from "@/types/product";
 import { ProductGridCard } from "@/components/product/ProductGridCard";
 import { fetchCategoryProducts, type CategorySortOption } from "@/lib/wpgraphql/actions";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 
 const SORT_OPTIONS: { value: CategorySortOption | "DEFAULT"; label: string }[] = [
   { value: "DEFAULT", label: "מיון ברירת מחדל" },
@@ -165,17 +166,7 @@ export function CategoryProductGrid({
             <SlidersHorizontal className="h-4 w-4 text-brand-accent" />
             מיון
           </p>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as CategorySortOption | "DEFAULT")}
-            className="w-full rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2.5 text-base font-medium outline-none transition-colors focus:border-brand-accent focus:bg-white"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <CustomSelect value={sort} onChange={setSort} options={SORT_OPTIONS} />
         </div>
 
         <div className="border-t border-black/5 pt-5">

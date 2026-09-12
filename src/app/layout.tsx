@@ -4,6 +4,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WelcomePopup } from "@/components/layout/WelcomePopup";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { CartDrawer } from "@/components/cart/CartDrawer";
+import { FloatingActions } from "@/components/layout/FloatingActions";
+import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { listCategories } from "@/lib/wpgraphql/categories";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
@@ -54,6 +57,9 @@ export default async function RootLayout({
         <Footer />
         <WelcomePopup />
         <CookieConsent />
+        <CartDrawer />
+        <FloatingActions />
+        <AccessibilityWidget />
       </body>
     </html>
   );

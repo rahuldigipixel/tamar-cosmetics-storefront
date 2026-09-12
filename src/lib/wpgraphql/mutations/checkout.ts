@@ -10,9 +10,20 @@
  * values are sent through CustomerAddressInput's `state` field.
  */
 export const CHECKOUT = /* GraphQL */ `
-  mutation Checkout($billing: CustomerAddressInput!, $shipping: CustomerAddressInput!, $paymentMethod: String!) {
+  mutation Checkout(
+    $billing: CustomerAddressInput!
+    $shipping: CustomerAddressInput!
+    $paymentMethod: String!
+    $customerNote: String
+  ) {
     checkout(
-      input: { billing: $billing, shipping: $shipping, paymentMethod: $paymentMethod, isPaid: false }
+      input: {
+        billing: $billing
+        shipping: $shipping
+        paymentMethod: $paymentMethod
+        customerNote: $customerNote
+        isPaid: false
+      }
     ) {
       order {
         id

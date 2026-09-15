@@ -8,6 +8,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { listCategories } from "@/lib/wpgraphql/categories";
+import { getSiteSettings } from "@/lib/wpgraphql/tamarApi";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
 
@@ -47,14 +48,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const categories = await listCategories().catch(() => []);
+  const [categories, siteSettings] = await Promise.all([
+    listCategories().catch(() => []),
+    getSiteSettings(),
+  ]);
 
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${rubik.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <Header categories={categories} />
+        <Header categories={categories} logo={siteSettings?.headerLogo ?? null} />
         <main className="flex-1">{children}</main>
-        <Footer />
+        <Footer logo={siteSettings?.footerLogo ?? null} />
         <WelcomePopup />
         <CookieConsent />
         <CartDrawer />

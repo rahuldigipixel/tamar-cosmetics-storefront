@@ -17,6 +17,7 @@ function randomUUID(): string {
 interface WishlistState {
   wishlistId: string;
   productIds: number[];
+  hydrated: boolean;
   ensureId: () => string;
   fetchWishlist: () => Promise<void>;
   toggle: (productId: number) => Promise<void>;
@@ -28,6 +29,7 @@ export const useWishlistStore = create<WishlistState>()(
     (set, get) => ({
       wishlistId: "",
       productIds: [],
+      hydrated: false,
 
       ensureId: () => {
         let id = get().wishlistId;
@@ -39,10 +41,29 @@ export const useWishlistStore = create<WishlistState>()(
       },
 
       fetchWishlist: async () => {
+        // Only sync from the server once per session — the list already
+        // persists locally (localStorage), and this backend endpoint may
+        // not be implemented/reachable yet. Re-running this on every card's
+        // mount (a grid renders many at once) would both hammer the API
+        // and, on a failed/empty response, wipe out items the user just
+        // added locally before the server ever confirmed them.
+        if (get().hydrated) return;
         const id = get().ensureId();
-        const res = await fetch(`/api/wishlist?wishlist_id=${id}`, { cache: "no-store" });
-        const items = (await res.json()) as { productId: number }[];
-        set({ productIds: items.map((i) => i.productId) });
+        try {
+          const res = await fetch(`/api/wishlist?wishlist_id=${id}`, { cache: "no-store" });
+          if (res.ok) {
+            const items = (await res.json()) as { productId: number }[];
+            if (Array.isArray(items) && items.length > 0) {
+              set((state) => ({
+                productIds: Array.from(new Set([...state.productIds, ...items.map((i) => i.productId)])),
+              }));
+            }
+          }
+        } catch {
+          // backend unreachable — keep whatever is already persisted locally
+        } finally {
+          set({ hydrated: true });
+        }
       },
 
       toggle: async (productId) => {
@@ -54,11 +75,15 @@ export const useWishlistStore = create<WishlistState>()(
             ? get().productIds.filter((p) => p !== productId)
             : [...get().productIds, productId],
         });
-        await fetch("/api/wishlist", {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wishlistId: id, productId }),
-        });
+        try {
+          await fetch("/api/wishlist", {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ wishlistId: id, productId }),
+          });
+        } catch {
+          // backend unreachable — local state (persisted) already reflects the change
+        }
       },
 
       has: (productId) => get().productIds.includes(productId),
@@ -66,6 +91,7 @@ export const useWishlistStore = create<WishlistState>()(
     {
       name: "tamar-wishlist",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ wishlistId: state.wishlistId, productIds: state.productIds }),
     }
   )
 );

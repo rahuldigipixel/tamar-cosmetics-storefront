@@ -48,3 +48,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# caches / local tooling
+.cache/
+.turbo/
+.eslintcache
+*.local
+
+# OS
+desktop.ini

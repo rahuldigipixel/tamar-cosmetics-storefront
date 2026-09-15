@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Lock, Mail, MapPin, Phone, Send, Star, Youtube } from "lucide-react";
+import type { SiteLogo } from "@/lib/wpgraphql/tamarApi";
+
+const FALLBACK_LOGO_SRC = "/brand/logo.png";
 
 const SHOP_LINKS = [
   { href: "/shop", label: "כל המוצרים" },
@@ -38,7 +41,7 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-export function Footer() {
+export function Footer({ logo = null }: { logo?: SiteLogo | null }) {
   return (
     <footer className="relative mt-8 overflow-hidden bg-white text-black/70 sm:mt-15">
       {/* wave divider */}
@@ -95,7 +98,13 @@ export function Footer() {
 
         <div className="relative mx-auto mt-3 grid max-w-[1400px] gap-8 px-4 py-6 sm:mt-5 sm:gap-10 sm:px-6 sm:py-8 md:grid-cols-[1.1fr_0.8fr_0.8fr_1fr_1fr]">
         <div>
-          <Image src="/brand/logo.png" alt="תמר קוסמטיקס" width={120} height={66} className="h-auto w-28" />
+          <Image
+            src={logo?.url ?? FALLBACK_LOGO_SRC}
+            alt={logo?.alt || "תמר קוסמטיקס"}
+            width={logo?.width ?? 120}
+            height={logo?.height ?? 66}
+            className="h-auto w-28"
+          />
           <p className="mt-4 max-w-xs text-sm  ">
             חנות למוצרי ציפורניים, פדיקור וגבות — מותגים מובילים, איכות מקצועית ומשלוח מהיר לכל הארץ.
           </p>

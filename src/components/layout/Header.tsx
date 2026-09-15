@@ -23,6 +23,9 @@ import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import type { ProductCategory } from "@/types/product";
+import type { SiteLogo } from "@/lib/wpgraphql/tamarApi";
+
+const FALLBACK_LOGO_SRC = "/brand/logo.png";
 
 const NAV_LINKS = [
   { href: "/", label: "בית" },
@@ -49,7 +52,7 @@ const STATIC_LINKS_AFTER = [
 // scrollbar. Order here is the display order.
 const MAIN_CATEGORY_NAMES = ["לק ג'ל", "מוצרים לציפורניים", "ג'ל בנייה", "מוצרי איפור"];
 
-export function Header({ categories = [] }: { categories?: ProductCategory[] }) {
+export function Header({ categories = [], logo = null }: { categories?: ProductCategory[]; logo?: SiteLogo | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const cart = useCartStore((s) => s.cart);
@@ -200,10 +203,10 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
         <div className="flex shrink-0 items-center gap-3">
           <Link href="/" className="group">
             <Image
-              src="/brand/logo.png"
-              alt="תמר קוסמטיקס"
-              width={120}
-              height={66}
+              src={logo?.url ?? FALLBACK_LOGO_SRC}
+              alt={logo?.alt || "תמר קוסמטיקס"}
+              width={logo?.width ?? 120}
+              height={logo?.height ?? 66}
               priority
               className="h-auto w-[76px] transition-transform duration-300 group-hover:scale-105 sm:w-[92px]"
             />
@@ -497,7 +500,13 @@ export function Header({ categories = [] }: { categories?: ProductCategory[] }) 
         }`}
       >
         <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
-          <Image src="/brand/logo.png" alt="תמר קוסמטיקס" width={90} height={50} className="h-auto w-16" />
+          <Image
+            src={logo?.url ?? FALLBACK_LOGO_SRC}
+            alt={logo?.alt || "תמר קוסמטיקס"}
+            width={logo?.width ?? 90}
+            height={logo?.height ?? 50}
+            className="h-auto w-16"
+          />
           <button
             onClick={() => setMobileOpen(false)}
             aria-label="סגור תפריט"

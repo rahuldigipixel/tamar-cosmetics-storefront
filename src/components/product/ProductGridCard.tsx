@@ -82,39 +82,43 @@ export function ProductGridCard({
           {product.name}
         </Link>
 
-        <span className="text-xs text-black/60">{product.sku ? `מק"ט: ${product.sku}` : " "}</span>
+        {product.type === "simple" ? (
+          <div className="mt-auto flex flex-wrap items-end justify-between gap-x-1 gap-y-2 pt-2">
+            <div className="flex flex-col items-start gap-0.5 text-right">
+              <span className="w-full text-xs text-black/60">{product.sku ? `מק"ט: ${product.sku}` : " "}</span>
+              <div className="flex items-baseline gap-1 whitespace-nowrap">
+                {product.onSale && product.salePrice ? (
+                  <>
+                    <span className="text-lg font-bold text-brand-accent">{formatPrice(product.salePrice)}</span>
+                    <span className="text-sm text-black/40 line-through">{formatPrice(product.regularPrice)}</span>
+                  </>
+                ) : (
+                  <span className="text-lg font-bold text-brand-accent">{formatPrice(product.price)}</span>
+                )}
+              </div>
+            </div>
 
-        <div className="mt-1 flex items-baseline gap-2">
-          {product.onSale && product.salePrice ? (
-            <>
-              <span className="text-lg font-bold text-brand-accent">{formatPrice(product.salePrice)}</span>
-              <span className="text-sm text-black/40 line-through">{formatPrice(product.regularPrice)}</span>
-            </>
-          ) : (
-            <span className="text-lg font-bold text-brand-accent">{formatPrice(product.price)}</span>
-          )}
-        </div>
-
-        <div className="mt-auto flex items-center justify-center gap-2 pt-2">
-          {product.type === "simple" ? (
-            <>
-              <QuantityStepper quantity={quantity} onChange={setQuantity} size="sm" />
+            <div className="flex shrink-0 items-center gap-1">
+              <QuantityStepper quantity={quantity} onChange={setQuantity} size="xs" />
               <AddToCartButton
                 productId={product.databaseId}
                 inStock={product.inStock}
                 quantity={quantity}
-                size="sm"
+                size="xs"
               />
-            </>
-          ) : (
+            </div>
+          </div>
+        ) : (
+          <>
+            <span className="text-xs text-black/60">{product.sku ? `מק"ט: ${product.sku}` : " "}</span>
             <Link
               href={`/product/${product.slug}`}
-              className="block w-full rounded-full border border-black/10 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"
+              className="mt-auto block w-full rounded-full border border-black/10 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"
             >
               לצפייה במוצר
             </Link>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

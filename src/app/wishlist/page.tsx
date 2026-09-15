@@ -17,11 +17,11 @@ export default function WishlistPage() {
   // Gated on the persisted store rehydrating from localStorage first —
   // otherwise productIds briefly reads as [] on mount and this page treats
   // that as "nothing saved" before the real, persisted ids ever load.
-  const [storeReady, setStoreReady] = useState(() => useWishlistStore.persist.hasHydrated());
+  const [storeReady, setStoreReady] = useState(() => useWishlistStore.persist?.hasHydrated() ?? true);
 
   useEffect(() => {
     if (storeReady) return;
-    return useWishlistStore.persist.onFinishHydration(() => setStoreReady(true));
+    return useWishlistStore.persist?.onFinishHydration(() => setStoreReady(true));
   }, [storeReady]);
 
   useEffect(() => {

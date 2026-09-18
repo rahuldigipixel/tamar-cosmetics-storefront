@@ -71,3 +71,18 @@ export interface ProductCategory {
   count: number;
   parentId?: string;
 }
+
+export interface Brand {
+  id: string;
+  databaseId: number;
+  name: string;
+  slug: string;
+  count: number;
+  /** Rich-text term description (contains a legacy inline logo image on some brands) — not shown; use thumbnailUrl instead. */
+  description?: string;
+  thumbnailUrl?: string;
+  desktopBannerUrl?: string;
+  mobileBannerUrl?: string;
+  /** Shown after the product list on the brand's product-list page. */
+  extraDescription?: string;
+}

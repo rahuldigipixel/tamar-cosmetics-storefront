@@ -87,6 +87,8 @@ export interface SiteLogo {
 export interface SiteSettings {
   headerLogo: SiteLogo | null;
   footerLogo: SiteLogo | null;
+  /** Brand slugs curated in wp-admin → הגדרות תמר to show on the /מותג/ brand list page. Empty = show all. */
+  selectedBrandSlugs: string[];
 }
 
 /**

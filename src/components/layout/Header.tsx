@@ -29,6 +29,7 @@ const FALLBACK_LOGO_SRC = "/brand/logo.png";
 
 const NAV_LINKS = [
   { href: "/", label: "בית" },
+  { href: "/מותג/", label: "מותגים" },
   { href: "/shop", label: "חנות" },
   { href: "/about", label: "אודות" },
   { href: "/contact", label: "צור קשר" },
@@ -39,6 +40,7 @@ const NAV_LINKS = [
 // dropdown of its subcategories if it does) -> STATIC_LINKS_AFTER.
 const STATIC_LINKS_BEFORE = [
   { href: "/", label: "בית" },
+  { href: "/מותג/", label: "מותגים" },
   { href: "/shop", label: "כל המוצרים" },
 ];
 
@@ -101,6 +103,14 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
     decodedPathname = decodeURIComponent(pathname);
   } catch {
     // malformed sequence — fall back to the raw pathname
+  }
+
+  // Static nav hrefs like "/מותג/" carry a trailing slash for consistency
+  // with the category link convention, but `pathname` itself never does
+  // (except for "/") — trim both sides before comparing so the active state
+  // doesn't silently always read false for those entries.
+  function trimTrailingSlash(path: string) {
+    return path.length > 1 ? path.replace(/\/$/, "") : path;
   }
 
   // Hover-intent open/close: entering either the trigger button or the
@@ -319,7 +329,7 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
           </Link>
 
           {STATIC_LINKS_BEFORE.map((link) => {
-            const active = pathname === link.href;
+            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
             return (
               <Link
                 key={link.href}
@@ -372,7 +382,7 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
           })}
 
           {STATIC_LINKS_AFTER.map((link) => {
-            const active = pathname === link.href;
+            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
             return (
               <Link
                 key={link.href}
@@ -518,7 +528,7 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
 
         <nav className="flex flex-col overflow-y-auto px-5 py-2">
           {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
+            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
             return (
               <Link
                 key={link.href}

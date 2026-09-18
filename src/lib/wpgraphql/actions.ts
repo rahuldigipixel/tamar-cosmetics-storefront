@@ -20,12 +20,14 @@ function toOrderby(sort: CategorySortOption | undefined) {
 }
 
 /**
- * Powers the category/shop grid's infinite scroll and its sort/price
+ * Powers the category/brand/shop grid's infinite scroll and its sort/price
  * filters — a server action so the client can page through and re-query
- * results without a dedicated API route.
+ * results without a dedicated API route. Pass exactly one of
+ * `category`/`brand` (the grid only ever filters on one taxonomy at a time).
  */
 export async function fetchCategoryProducts(params: {
-  category: string;
+  category?: string;
+  brand?: string;
   after: string | null;
   sort?: CategorySortOption;
   minPrice?: number;
@@ -34,6 +36,7 @@ export async function fetchCategoryProducts(params: {
 }): Promise<ListProductsResult> {
   return listProducts({
     category: params.category,
+    brand: params.brand,
     after: params.after ?? undefined,
     first: params.first ?? 20,
     orderby: toOrderby(params.sort),

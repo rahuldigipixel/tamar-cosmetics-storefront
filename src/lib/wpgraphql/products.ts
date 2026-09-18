@@ -41,7 +41,6 @@ interface GqlProductNode {
   weight?: string | null;
   averageRating?: number;
   reviewCount?: number;
-  productBrands?: { nodes: { name: string; slug: string }[] };
   image?: GqlImage | null;
   galleryImages?: { nodes: GqlImage[] };
   productCategories?: { nodes: { id: string; name: string; slug: string }[] };
@@ -110,7 +109,6 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     attributes,
     variations,
     tabs: [],
-    brand: node.productBrands?.nodes[0]?.name,
     weight: node.weight || undefined,
     averageRating: node.averageRating ?? 0,
     reviewCount: node.reviewCount ?? 0,
@@ -147,6 +145,7 @@ async function withLabels(product: Product): Promise<Product> {
 
 export interface ListProductsParams {
   category?: string;
+  brand?: string;
   search?: string;
   first?: number;
   after?: string;
@@ -171,6 +170,7 @@ export async function listProducts(params: ListProductsParams = {}): Promise<Lis
       first: params.first ?? 24,
       after: params.after,
       category: params.category ? [params.category] : undefined,
+      brand: params.brand ? [params.brand] : undefined,
       search: params.search,
       orderby: params.orderby,
       minPrice: params.minPrice,

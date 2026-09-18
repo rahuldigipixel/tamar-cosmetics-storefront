@@ -90,11 +90,14 @@ function PriceRangeFilter({
 
 export function CategoryProductGrid({
   categorySlug,
+  brandSlug,
   initialProducts,
   initialHasNextPage,
   initialEndCursor,
 }: {
-  categorySlug: string;
+  /** Exactly one of categorySlug/brandSlug should be passed. */
+  categorySlug?: string;
+  brandSlug?: string;
   initialProducts: Product[];
   initialHasNextPage: boolean;
   initialEndCursor: string | null;
@@ -116,6 +119,7 @@ export function CategoryProductGrid({
     startTransition(async () => {
       const result = await fetchCategoryProducts({
         category: categorySlug,
+        brand: brandSlug,
         after,
         sort: sort === "DEFAULT" ? undefined : sort,
         minPrice: priceRange?.min,
@@ -183,7 +187,7 @@ export function CategoryProductGrid({
 
       <div>
         {products.length === 0 && !isPending ? (
-          <p className="text-black/60">לא נמצאו מוצרים בקטגוריה זו.</p>
+          <p className="text-black/60">{brandSlug ? "לא נמצאו מוצרים במותג זה." : "לא נמצאו מוצרים בקטגוריה זו."}</p>
         ) : (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {products.map((product) => (

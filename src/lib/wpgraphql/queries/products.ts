@@ -5,12 +5,6 @@ const PRODUCT_CORE_FIELDS = /* GraphQL */ `
   name
   averageRating
   reviewCount
-  productBrands {
-    nodes {
-      name
-      slug
-    }
-  }
   ... on SimpleProduct {
     sku
     shortDescription
@@ -92,6 +86,7 @@ export const GET_PRODUCTS = /* GraphQL */ `
     $first: Int = 24
     $after: String
     $category: [String]
+    $brand: [String]
     $search: String
     $orderby: [ProductsOrderbyInput]
     $minPrice: Float
@@ -103,6 +98,7 @@ export const GET_PRODUCTS = /* GraphQL */ `
       after: $after
       where: {
         categoryIn: $category
+        taxonomyFilter: { filters: [{ taxonomy: PA_BRAND, terms: $brand }] }
         search: $search
         status: "publish"
         orderby: $orderby

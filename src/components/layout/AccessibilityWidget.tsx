@@ -375,6 +375,11 @@ export function AccessibilityWidget() {
           /* slide the whole unit (FAB + bar) together */
           transform: translateY(${BAR_H}px);
           transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+          /* This box spans the full page width even though only the FAB (and,
+             when open, the bar) are visible — without this, its invisible
+             padding area sits on top of the WhatsApp/scroll-top buttons and
+             swallows their clicks. Only the actual visible pieces opt back in. */
+          pointer-events: none;
         }
         .a11y-wrap.a11y-wrap--open {
           transform: translateY(0);
@@ -383,12 +388,13 @@ export function AccessibilityWidget() {
           display: flex;
           direction: ltr;
           justify-content: flex-end;
-          /* stacked above the same-size WhatsApp FAB (bottom-5 right-5, 44px) so they never overlap */
-          padding: 0 20px 76px;
+          /* below the same-size WhatsApp FAB (right-5, elevated), flush with
+             the true bottom edge like the scroll-top button on the left */
+          padding: 0 20px 20px;
         }
         @media (min-width: 640px) {
           .a11y-fab-row {
-            padding: 0 24px 80px;
+            padding: 0 24px 24px;
           }
         }
         .a11y-fab {
@@ -404,6 +410,7 @@ export function AccessibilityWidget() {
           box-shadow: 0 3px 14px rgba(0,0,0,0.45);
           transition: background 0.22s, border-color 0.22s;
           padding: 0;
+          pointer-events: auto;
         }
         .a11y-fab:hover { background: #2a2a2a; }
         .a11y-fab--open {
@@ -420,6 +427,7 @@ export function AccessibilityWidget() {
           filter: grayscale(100%);
           padding: 14px 16px 14px;
           box-sizing: border-box;
+          pointer-events: auto;
         }
         .a11y-scroll {
           display: flex;

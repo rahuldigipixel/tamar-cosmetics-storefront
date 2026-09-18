@@ -34,7 +34,7 @@ export function FloatingActions() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="שוחחו איתנו בוואטסאפ"
-        className="group fixed bottom-5 right-5 z-[80] flex h-11 w-11 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_-6px_rgba(37,211,102,0.6)] transition-transform duration-300 hover:scale-110 sm:bottom-6 sm:right-6"
+        className="group fixed bottom-[76px] right-5 z-[80] flex h-11 w-11 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_-6px_rgba(37,211,102,0.6)] transition-transform duration-300 hover:scale-110 sm:bottom-20 sm:right-6"
       >
         <WhatsAppIcon className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
       </a>

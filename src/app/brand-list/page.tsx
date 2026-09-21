@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { listBrands, filterSlugsWithProducts } from "@/lib/wpgraphql/brands";
+import { listBrands } from "@/lib/wpgraphql/brands";
 import { getSiteSettings } from "@/lib/wpgraphql/tamarApi";
 
 export const revalidate = 300;
@@ -8,14 +8,11 @@ export const revalidate = 300;
 export default async function BrandListPage() {
   const [brands, siteSettings] = await Promise.all([listBrands(), getSiteSettings()]);
 
+  // Shows exactly what's picked in wp-admin → הגדרות תמר, regardless of
+  // whether a product happens to be assigned to that brand yet — empty
+  // selection falls back to every pa_brand term.
   const selectedSlugs = siteSettings?.selectedBrandSlugs ?? [];
-  const candidateBrands = selectedSlugs.length > 0 ? brands.filter((b) => selectedSlugs.includes(b.slug)) : brands;
-
-  // The taxonomy's own "count" is stale for most brands here, so a brand
-  // picked in wp-admin only actually shows once it's confirmed to have a
-  // real published product assigned.
-  const slugsWithProducts = await filterSlugsWithProducts(candidateBrands.map((b) => b.slug));
-  const visibleBrands = candidateBrands.filter((b) => slugsWithProducts.has(b.slug));
+  const visibleBrands = selectedSlugs.length > 0 ? brands.filter((b) => selectedSlugs.includes(b.slug)) : brands;
 
   return (
     <div>

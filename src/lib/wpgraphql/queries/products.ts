@@ -79,6 +79,20 @@ const PRODUCT_CORE_FIELDS = /* GraphQL */ `
       slug
     }
   }
+  allPaBrand {
+    nodes {
+      name
+      slug
+      thumbnailUrl
+    }
+  }
+  galleryFirstImage: galleryImages(first: 1) {
+    nodes {
+      id
+      sourceUrl
+      altText
+    }
+  }
 `;
 
 export const GET_PRODUCTS = /* GraphQL */ `

@@ -97,7 +97,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <div className="grid gap-10 md:grid-cols-2 md:gap-10 lg:gap-14">
           <div className="mx-auto w-full max-w-[550px]">
-            <ProductGallery images={product.images} name={product.name} productId={product.databaseId} />
+            <ProductGallery
+              images={product.images}
+              name={product.name}
+              productId={product.databaseId}
+              brandName={product.brand}
+              brandLogoUrl={product.brandLogoUrl}
+            />
           </div>
 
           <div className="text-right">

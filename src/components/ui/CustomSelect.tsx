@@ -85,13 +85,15 @@ export function CustomSelect<T extends string>({
         onClick={toggleOpen}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2.5 text-base font-medium outline-none transition-colors hover:border-black/20 focus:border-brand-accent focus:bg-white"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-black/10 bg-black/[0.02] px-3 py-3 text-base font-normal outline-none transition-colors hover:border-black/20 focus:border-brand-accent focus:bg-white"
       >
         <span className="flex min-w-0 items-center gap-2">
           {selected?.image ? (
             <Image src={selected.image} alt="" width={20} height={20} className="h-5 w-5 shrink-0 rounded object-contain" />
           ) : null}
-          <span className="truncate">{selected?.label ?? ""}</span>
+          {/* Deliberate, user-confirmed exception to the site's 18px font-size
+              floor (AGENTS.md) for this filter trigger's selected-value/placeholder text. */}
+          <span className="text-right text-[13px] leading-snug break-words">{selected?.label ?? ""}</span>
         </span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-black/50 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -102,7 +104,7 @@ export function CustomSelect<T extends string>({
               ref={panelRef}
               role="listbox"
               style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width }}
-              className={`z-[100] max-h-72 overflow-y-auto rounded-xl border border-black/10 bg-white p-1.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.25)] transition-all duration-150 ${
+              className={`z-[100] max-h-72 overflow-y-auto rounded-xl border border-black/10 bg-white p-1.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.25)] transition-all duration-150 [scrollbar-width:thin] [scrollbar-color:rgba(0,0,0,0.2)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 ${
                 open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0 pointer-events-none"
               }`}
             >
@@ -116,17 +118,15 @@ export function CustomSelect<T extends string>({
                       onChange(opt.value);
                       setOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-right text-base transition-colors ${
-                      opt.value === value
-                        ? "bg-brand-soft font-semibold text-brand-accent"
-                        : "text-black/75 hover:bg-black/5"
+                    className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-right text-base font-normal transition-colors ${
+                      opt.value === value ? "bg-brand-soft text-brand-accent" : "text-black/75 hover:bg-black/5"
                     }`}
                   >
                     <span className="flex min-w-0 items-center gap-2">
                       {opt.image ? (
                         <Image src={opt.image} alt="" width={20} height={20} className="h-5 w-5 shrink-0 rounded object-contain" />
                       ) : null}
-                      <span className="truncate">{opt.label}</span>
+                      <span className="leading-snug break-words">{opt.label}</span>
                     </span>
                     {opt.value === value ? <Check className="h-4 w-4 shrink-0" /> : null}
                   </button>

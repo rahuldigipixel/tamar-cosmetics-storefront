@@ -43,7 +43,10 @@ interface GqlProductNode {
   reviewCount?: number;
   image?: GqlImage | null;
   galleryImages?: { nodes: GqlImage[] };
+  /** Only requested on list queries (first gallery image only) — a lighter alternative to `galleryImages` for the hover-swap thumbnail. */
+  galleryFirstImage?: { nodes: GqlImage[] };
   productCategories?: { nodes: { id: string; name: string; slug: string }[] };
+  allPaBrand?: { nodes: { name: string; slug: string; thumbnailUrl?: string | null }[] };
   attributes?: { nodes: { id: string; name: string; label: string; options: string[]; variation: boolean }[] };
   variations?: {
     nodes: {
@@ -61,9 +64,10 @@ interface GqlProductNode {
 }
 
 function fromGraphqlProduct(node: GqlProductNode): Product {
+  const galleryNodes = node.galleryImages?.nodes ?? node.galleryFirstImage?.nodes ?? [];
   const images = [
     ...(node.image ? [{ id: node.image.id, src: node.image.sourceUrl, alt: node.image.altText }] : []),
-    ...(node.galleryImages?.nodes.map((n) => ({ id: n.id, src: n.sourceUrl, alt: n.altText })) ?? []),
+    ...galleryNodes.map((n) => ({ id: n.id, src: n.sourceUrl, alt: n.altText })),
   ];
 
   const attributes: ProductAttribute[] =
@@ -109,6 +113,8 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     attributes,
     variations,
     tabs: [],
+    brand: node.allPaBrand?.nodes[0]?.name,
+    brandLogoUrl: node.allPaBrand?.nodes[0]?.thumbnailUrl ?? undefined,
     weight: node.weight || undefined,
     averageRating: node.averageRating ?? 0,
     reviewCount: node.reviewCount ?? 0,

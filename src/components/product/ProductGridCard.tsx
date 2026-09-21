@@ -28,6 +28,7 @@ export function ProductGridCard({
 }) {
   const [quantity, setQuantity] = useState(1);
   const image = product.images[0];
+  const hoverImage = product.images[1];
 
   const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
   const toggleWishlist = useWishlistStore((s) => s.toggle);
@@ -43,7 +44,10 @@ export function ProductGridCard({
       ref={cardRef}
       className={`group flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
     >
-      <Link href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-soft/30">
+      <Link
+        href={`/product/${product.slug}`}
+        className="relative block aspect-square w-full overflow-hidden bg-brand-soft/30"
+      >
         {image ? (
           <Image
             src={image.src}
@@ -53,9 +57,30 @@ export function ProductGridCard({
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : null}
+        {hoverImage ? (
+          <Image
+            src={hoverImage.src}
+            alt={hoverImage.alt || product.name}
+            fill
+            loading="eager"
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
+            className="scale-110 object-cover opacity-0 transition-all duration-700 ease-out group-hover:scale-100 group-hover:opacity-100"
+          />
+        ) : null}
         {product.onSale ? (
           <span className="absolute top-3 end-3 rounded-full bg-brand-accent px-2.5 py-1 text-xs font-semibold text-white">
             מבצע
+          </span>
+        ) : null}
+        {product.brandLogoUrl ? (
+          <span className="absolute top-3 start-3 flex h-9 max-w-[4.5rem] items-center justify-center overflow-hidden rounded-md bg-white/90 p-1 shadow-sm backdrop-blur-sm">
+            <Image
+              src={product.brandLogoUrl}
+              alt={product.brand ?? ""}
+              width={72}
+              height={36}
+              className="h-full w-auto object-contain"
+            />
           </span>
         ) : null}
         <button
@@ -66,9 +91,9 @@ export function ProductGridCard({
           }}
           aria-label={inWishlist ? "הסרה מרשימת המשאלות" : "הוספה לרשימת המשאלות"}
           aria-pressed={inWishlist}
-          className={`absolute top-3 start-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white ${
-            inWishlist ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          }`}
+          className={`absolute start-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white ${
+            product.brandLogoUrl ? "top-14" : "top-3"
+          } ${inWishlist ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         >
           <Heart className={`h-4 w-4 ${inWishlist ? "fill-brand-accent text-brand-accent" : "text-black/60"}`} />
         </button>

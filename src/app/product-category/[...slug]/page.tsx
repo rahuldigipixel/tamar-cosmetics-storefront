@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listProducts } from "@/lib/wpgraphql/products";
 import { listCategories } from "@/lib/wpgraphql/categories";
-import { listBrands } from "@/lib/wpgraphql/brands";
+import { listBrands, listBrandSlugsInCategory } from "@/lib/wpgraphql/brands";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 
 export const revalidate = 60;
@@ -11,15 +11,21 @@ interface CategoryPageProps {
   params: Promise<{ slug: string[] }>;
 }
 
-// Hebrew URL segments can reach this page under different Unicode
-// normalization forms than the plain text WPGraphQL returns for `slug`
-// (visually identical, byte-different) — a bare `===` silently never
-// matches, which was breaking the category lookup below (title, image, and
-// description all fell back to "not found") even though the separate
-// product-list query still matched fine server-side. Normalizing both
-// sides before comparing fixes that.
+// Hebrew URL segments can reach this page still percent-encoded (observed
+// for nested /parent/child/ paths — Next.js doesn't reliably decode every
+// catch-all segment) and/or under a different Unicode normalization form
+// than the plain text WPGraphQL returns for `slug` (visually identical,
+// byte-different). A bare `===` silently never matches either way, which
+// was breaking the category lookup below (title, image, and description
+// all fell back to a crude decoded-slug guess) even though the separate
+// product-list query still matched fine server-side. decodeURIComponent()
+// is a no-op on already-decoded text, so it's safe to always apply.
 function normalizeSlug(slug: string) {
-  return slug.normalize("NFC");
+  try {
+    return decodeURIComponent(slug).normalize("NFC");
+  } catch {
+    return slug.normalize("NFC");
+  }
 }
 
 export default async function ProductCategoryPage({ params }: CategoryPageProps) {
@@ -48,6 +54,15 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
     : products.flatMap((p) => p.categories).find((c) => normalizeSlug(c.slug) === activeSlug) ?? null;
 
   if (!category && !categoryFromProducts && products.length === 0) notFound();
+
+  // The Brand filter should only offer brands that actually have a product
+  // in this category — depends on `activeSlug`/`brands`, so it runs after
+  // the initial fetch rather than inside the same Promise.all.
+  const brandsInCategorySlugs = await listBrandSlugsInCategory(
+    activeSlug,
+    brands.map((b) => b.slug)
+  ).catch(() => new Set<string>());
+  const brandsInCategory = brands.filter((b) => brandsInCategorySlugs.has(b.slug));
 
   const title = category?.name ?? categoryFromProducts?.name ?? decodeURIComponent(activeSlug).replace(/-/g, " ");
   const categoryBySlug = new Map(allCategories.map((c) => [normalizeSlug(c.slug), c.name]));
@@ -100,7 +115,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
           initialHasNextPage={hasNextPage}
           initialEndCursor={endCursor}
           categories={allCategories}
-          brands={brands}
+          brands={brandsInCategory}
         />
       </div>
     </div>

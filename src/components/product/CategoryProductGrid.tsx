@@ -11,6 +11,21 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 const ALL_CATEGORIES_VALUE = "__all__";
 const ALL_BRANDS_VALUE = "__all__";
 
+// `categorySlug` can arrive still percent-encoded (nested /parent/child/
+// category URLs — see the same normalization in
+// product-category/[...slug]/page.tsx) and/or under a different Unicode
+// normalization form than the plain text WPGraphQL returns for `c.slug`
+// (visually identical, byte-different). Without decoding+normalizing both
+// sides, the current category's option in the dropdown never matches and
+// the Categories filter silently shows nothing selected.
+function normalizeSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug).normalize("NFC");
+  } catch {
+    return slug.normalize("NFC");
+  }
+}
+
 const SORT_OPTIONS: { value: CategorySortOption | "DEFAULT"; label: string }[] = [
   { value: "DEFAULT", label: "מיון ברירת מחדל" },
   { value: "POPULARITY", label: "הכי פופולריים" },
@@ -84,7 +99,7 @@ function PriceRangeFilter({
         >
           חיפוש
         </button>
-        <span className="text-base font-medium text-black/70">
+        <span dir="ltr" className="text-base font-medium text-black/70">
           {localMax} ₪ - {localMin} ₪
         </span>
       </div>
@@ -129,6 +144,32 @@ export function CategoryProductGrid({
 
   const effectiveBrand = selectedBrand === ALL_BRANDS_VALUE ? brandSlug : selectedBrand;
   const hasActiveFilters = sort !== "DEFAULT" || priceRange !== null || selectedBrand !== ALL_BRANDS_VALUE;
+
+  // One removable chip per active filter (sort/price/brand — the category
+  // isn't a "filter" here, it's the page itself), so any single one can be
+  // cleared without resetting the others, plus a combined "clear all".
+  const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
+  if (sort !== "DEFAULT") {
+    activeChips.push({
+      key: "sort",
+      label: SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "",
+      onRemove: () => setSort("DEFAULT"),
+    });
+  }
+  if (priceRange) {
+    activeChips.push({
+      key: "price",
+      label: `${priceRange.max} ₪ - ${priceRange.min} ₪`,
+      onRemove: () => setPriceRange(null),
+    });
+  }
+  if (selectedBrand !== ALL_BRANDS_VALUE) {
+    activeChips.push({
+      key: "brand",
+      label: brands?.find((b) => b.slug === selectedBrand)?.name ?? selectedBrand,
+      onRemove: () => setSelectedBrand(ALL_BRANDS_VALUE),
+    });
+  }
 
   function runQuery(after: string | null, append: boolean) {
     startTransition(async () => {
@@ -185,8 +226,8 @@ export function CategoryProductGrid({
   }, [hasNextPage, isPending, endCursor]);
 
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-[260px_1fr]">
-      <aside className="z-10 flex h-fit max-h-[calc(100vh-11rem)] flex-col gap-6 overflow-y-auto rounded-2xl border border-black/5 bg-white p-5 shadow-sm md:sticky md:top-44">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
+      <aside className="z-10 flex h-fit max-h-[calc(100vh-11rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-black/5 bg-white p-5 shadow-sm md:sticky md:top-44">
         <div className="flex items-center justify-between gap-2">
           <p className="flex items-center gap-1.5 text-base font-bold text-black/80">
             <SlidersHorizontal className="h-4 w-4 text-brand-accent" />
@@ -205,37 +246,34 @@ export function CategoryProductGrid({
         </div>
 
         <div>
-          <p className="mb-2 text-base font-bold text-black/80">מיון</p>
+          <p className="mb-2 text-[13px] font-bold text-black/80">מיון</p>
           <CustomSelect value={sort} onChange={setSort} options={SORT_OPTIONS} />
         </div>
 
         {categories && categories.length > 0 ? (
           <div className="border-t border-black/5 pt-5">
-            <p className="mb-2 text-base font-bold text-black/80">קטגוריות</p>
+            <p className="mb-2 text-[13px] font-bold text-black/80">קטגוריות</p>
             <CustomSelect
-              value={categorySlug ?? ALL_CATEGORIES_VALUE}
+              value={categorySlug ? normalizeSlug(categorySlug) : ALL_CATEGORIES_VALUE}
               onChange={(slug) => {
-                if (slug !== categorySlug) router.push(`/product-category/${slug}/`);
+                if (slug === normalizeSlug(categorySlug ?? "")) return;
+                // Preserve the site's /product-category/{parent}/{child}/
+                // URL convention for child categories rather than flattening
+                // to a single segment, which would silently drop the
+                // breadcrumb trail on the destination page.
+                const target = categories.find((c) => normalizeSlug(c.slug) === slug);
+                const parent = target?.parentId ? categories.find((c) => c.id === target.parentId) : null;
+                const path = parent ? `${parent.slug}/${target!.slug}` : slug;
+                router.push(`/product-category/${path}/`);
               }}
-              options={categories.map((c) => ({ value: c.slug, label: c.name }))}
+              options={categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name }))}
             />
           </div>
         ) : null}
 
-        <div className="border-t border-black/5 pt-5">
-          <p className="mb-3 text-base font-bold text-black/80">טווח מחירים</p>
-          <PriceRangeFilter
-            min={priceRange?.min ?? priceBounds.min}
-            max={priceRange?.max ?? priceBounds.max}
-            boundMin={priceBounds.min}
-            boundMax={priceBounds.max}
-            onApply={(min, max) => setPriceRange({ min, max })}
-          />
-        </div>
-
         {brands && brands.length > 0 ? (
           <div className="border-t border-black/5 pt-5">
-            <p className="mb-2 text-base font-bold text-black/80">מותג</p>
+            <p className="mb-2 text-[13px] font-bold text-black/80">מותג</p>
             <CustomSelect
               value={selectedBrand}
               onChange={setSelectedBrand}
@@ -246,9 +284,43 @@ export function CategoryProductGrid({
             />
           </div>
         ) : null}
+
+        <div className="border-t border-black/5 pt-5">
+          <p className="mb-3 text-[13px] font-bold text-black/80">טווח מחירים</p>
+          <PriceRangeFilter
+            min={priceRange?.min ?? priceBounds.min}
+            max={priceRange?.max ?? priceBounds.max}
+            boundMin={priceBounds.min}
+            boundMax={priceBounds.max}
+            onApply={(min, max) => setPriceRange({ min, max })}
+          />
+        </div>
       </aside>
 
       <div>
+        {activeChips.length > 0 ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {activeChips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                onClick={chip.onRemove}
+                className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-base text-black/70 transition-colors hover:border-brand-accent hover:text-brand-accent"
+              >
+                <span dir={chip.key === "price" ? "ltr" : undefined}>{chip.label}</span>
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-full px-2 py-1.5 text-base font-semibold text-brand-accent hover:underline"
+            >
+              נקה הכל
+            </button>
+          </div>
+        ) : null}
+
         {products.length === 0 && !isPending ? (
           <p className="text-black/60">{brandSlug ? "לא נמצאו מוצרים במותג זה." : "לא נמצאו מוצרים בקטגוריה זו."}</p>
         ) : (

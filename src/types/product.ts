@@ -56,6 +56,8 @@ export interface Product {
   videoUrl?: string;
   /** First assigned product brand, if any — most products aren't tagged yet. */
   brand?: string;
+  /** Logo/thumbnail of the first assigned brand term, if set in the pa_brand taxonomy. */
+  brandLogoUrl?: string;
   /** Raw WooCommerce weight, in the shop's configured unit (e.g. grams) — unset for most products. */
   weight?: string;
   averageRating?: number;

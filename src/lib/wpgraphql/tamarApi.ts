@@ -108,6 +108,55 @@ export function getSiteSettings() {
   });
 }
 
+export interface HeaderMenuImage {
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+export interface HeaderMenuLinkChild {
+  id: string;
+  type: "link";
+  label: string;
+  url: string;
+}
+
+export interface HeaderMenuProductChild {
+  id: string;
+  type: "product";
+  productId: number;
+  label: string;
+  url: string;
+  price: number;
+  image: HeaderMenuImage | null;
+}
+
+export type HeaderMenuChild = HeaderMenuLinkChild | HeaderMenuProductChild;
+
+export interface HeaderMenuItem {
+  id: string;
+  label: string;
+  url: string;
+  /** "כותרת פנימית" from wp-admin — a heading for the mega panel itself (e.g. "המוצר המומלץ שלנו"), not a replacement for the featured product's own name. Only set on "category"-source items; empty string otherwise. */
+  featuredTitle?: string;
+  children: HeaderMenuChild[];
+}
+
+/**
+ * Admin-managed nav tree from wp-admin → כותרת (Header) → תפריט ראשי
+ * (includes/class-header-menu.php). A "category" item's children are always
+ * that category's live WooCommerce subcategories plus (optionally) one
+ * featured product — resolved server-side on every request, so this never
+ * needs re-deriving from the categories list on the React side.
+ */
+export function getHeaderMenu() {
+  return tamarFetch<HeaderMenuItem[]>(`/menu`, {
+    tags: ["header-menu"],
+    revalidate: 300,
+  });
+}
+
 export interface ClubSignupInput {
   name: string;
   email: string;

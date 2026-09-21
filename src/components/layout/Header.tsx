@@ -22,39 +22,19 @@ import {
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
-import type { ProductCategory } from "@/types/product";
-import type { SiteLogo } from "@/lib/wpgraphql/tamarApi";
+import type { HeaderMenuItem, HeaderMenuLinkChild, HeaderMenuProductChild, SiteLogo } from "@/lib/wpgraphql/tamarApi";
 
 const FALLBACK_LOGO_SRC = "/brand/logo.png";
 
-const NAV_LINKS = [
-  { href: "/", label: "בית" },
-  { href: "/מותג/", label: "מותגים" },
-  { href: "/shop", label: "חנות" },
-  { href: "/about", label: "אודות" },
-  { href: "/contact", label: "צור קשר" },
-];
+function isSaleItem(item: HeaderMenuItem) {
+  return item.label.trim().toUpperCase() === "SALE";
+}
 
-// Rendered in order: SALE badge -> STATIC_LINKS_BEFORE -> one entry per
-// top-level product category (a plain link if it has no children, a
-// dropdown of its subcategories if it does) -> STATIC_LINKS_AFTER.
-const STATIC_LINKS_BEFORE = [
-  { href: "/", label: "בית" },
-  { href: "/מותג/", label: "מותגים" },
-  { href: "/shop", label: "כל המוצרים" },
-];
+function trimTrailingSlash(path: string) {
+  return path.length > 1 ? path.replace(/\/$/, "") : path;
+}
 
-const STATIC_LINKS_AFTER = [
-  { href: "/about", label: "אודות" },
-  { href: "/contact", label: "צור קשר" },
-];
-
-// Only these top-level categories get a nav entry — the full category list
-// is long enough that showing all of them forces the row into a horizontal
-// scrollbar. Order here is the display order.
-const MAIN_CATEGORY_NAMES = ["לק ג'ל", "מוצרים לציפורניים", "ג'ל בנייה", "מוצרי איפור"];
-
-export function Header({ categories = [], logo = null }: { categories?: ProductCategory[]; logo?: SiteLogo | null }) {
+export function Header({ menu = [], logo = null }: { menu?: HeaderMenuItem[]; logo?: SiteLogo | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const cart = useCartStore((s) => s.cart);
@@ -66,37 +46,29 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  // Desktop mega-menu: `openCategorySlug` remembers the last-hovered/clicked
-  // top-level category (it isn't cleared on close), while `menuVisible`
-  // alone drives the open/closed CSS transition. Keeping the slug around
-  // lets the panel play its exit fade with the outgoing category's content
-  // still rendered, instead of blanking the instant it closes.
-  const [openCategorySlug, setOpenCategorySlug] = useState<string | null>(null);
+  // Desktop mega-menu: `openItemId` remembers the last-hovered/clicked
+  // top-level item (it isn't cleared on close), while `menuVisible` alone
+  // drives the open/closed CSS transition. Keeping the id around lets the
+  // panel play its exit fade with the outgoing item's content still
+  // rendered, instead of blanking the instant it closes.
+  const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuLeft, setMenuLeft] = useState(0);
-  const [mobileOpenSlug, setMobileOpenSlug] = useState<string | null>(null);
+  const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
   const categoryNavRef = useRef<HTMLElement>(null);
   const closeTimerRef = useRef<number | null>(null);
 
-  const topLevelCategories = MAIN_CATEGORY_NAMES.map((name) =>
-    categories.find((c) => !c.parentId && c.name === name)
-  ).filter((c): c is ProductCategory => Boolean(c));
-  function childrenOf(categoryId: string) {
-    return categories.filter((c) => c.parentId === categoryId);
-  }
-  const panelCategory = topLevelCategories.find((c) => c.slug === openCategorySlug) ?? null;
-  const panelChildren = panelCategory ? childrenOf(panelCategory.id) : [];
-
-  const saleCategory = categories.find(
-    (c) => c.slug.toLowerCase() === "sale" || c.name.trim().toUpperCase() === "SALE"
-  );
-  const saleHref = saleCategory ? `/product-category/${saleCategory.slug}/` : "/shop?sale=1";
+  const panelItem = menu.find((item) => item.id === openItemId) ?? null;
+  const panelLinkChildren: HeaderMenuLinkChild[] =
+    panelItem?.children.filter((c): c is HeaderMenuLinkChild => c.type === "link") ?? [];
+  const panelFeaturedProduct: HeaderMenuProductChild | null =
+    panelItem?.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
 
   // usePathname can hand back the raw (percent-encoded) segment for
   // non-ASCII slugs instead of the decoded text depending on how the route
-  // was entered, while our category slugs from WPGraphQL are always plain
-  // decoded Hebrew — comparing the two directly silently never matches, so
+  // was entered, while our menu urls from WordPress are always plain
+  // decoded text — comparing the two directly silently never matches, so
   // every active-state check below decodes first.
   let decodedPathname = pathname;
   try {
@@ -105,12 +77,8 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
     // malformed sequence — fall back to the raw pathname
   }
 
-  // Static nav hrefs like "/מותג/" carry a trailing slash for consistency
-  // with the category link convention, but `pathname` itself never does
-  // (except for "/") — trim both sides before comparing so the active state
-  // doesn't silently always read false for those entries.
-  function trimTrailingSlash(path: string) {
-    return path.length > 1 ? path.replace(/\/$/, "") : path;
+  function isActiveHref(href: string) {
+    return trimTrailingSlash(decodedPathname) === trimTrailingSlash(href);
   }
 
   // Hover-intent open/close: entering either the trigger button or the
@@ -118,7 +86,7 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
   // other (they aren't DOM-adjacent, so plain CSS :hover can't bridge them)
   // doesn't flicker the menu shut. Leaving either schedules a short-delayed
   // close instead of closing instantly, so hover isn't overly twitchy.
-  function openMenu(category: ProductCategory, e: React.MouseEvent<HTMLButtonElement>) {
+  function openMenu(item: HeaderMenuItem, e: React.MouseEvent<HTMLButtonElement>) {
     if (closeTimerRef.current) {
       window.clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -126,11 +94,11 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
     const btnRect = e.currentTarget.getBoundingClientRect();
     const navRect = categoryNavRef.current?.getBoundingClientRect();
     if (navRect) {
-      const panelWidth = Math.min(navRect.width * 0.94, 760);
+      const panelWidth = Math.min(navRect.width * 0.96, 920);
       const buttonCenter = btnRect.left - navRect.left + btnRect.width / 2;
       setMenuLeft(Math.max(0, Math.min(buttonCenter - panelWidth / 2, navRect.width - panelWidth)));
     }
-    setOpenCategorySlug(category.slug);
+    setOpenItemId(item.id);
     setMenuVisible(true);
   }
 
@@ -314,85 +282,61 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
         </div>
       </div>
 
-      {/* Category nav */}
+      {/* Category nav — driven entirely by the admin-managed tree from
+          GET /wp-json/tamar/v1/menu (see includes/class-header-menu.php on
+          the WP side). Each item with children renders as a mega-menu
+          trigger; an item with no children is a plain link. */}
       <nav ref={categoryNavRef} className="relative hidden border-t border-black/5 md:block">
         <div
           onScroll={() => setMenuVisible(false)}
           className="mx-auto flex max-w-[1400px] items-center gap-7 overflow-x-auto overflow-y-hidden px-4 py-2.5 sm:px-6"
         >
-          <Link
-            href={saleHref}
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-[18px] font-bold text-brand-accent transition-all hover:bg-gradient-to-l hover:from-brand-accent hover:to-[#ff6b72] hover:text-white hover:shadow-md"
-          >
-            <Flame className="h-3.5 w-3.5" fill="currentColor" />
-            SALE
-          </Link>
+          {menu.map((item) => {
+            const sale = isSaleItem(item);
 
-          {STATIC_LINKS_BEFORE.map((link) => {
-            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`shrink-0 text-[16px] font-medium transition-colors ${
-                  active ? "text-brand-accent" : "text-black/70 hover:text-brand-accent"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          {topLevelCategories.map((category) => {
-            const kids = childrenOf(category.id);
-            const categoryPath = `/product-category/${category.slug}`;
-
-            if (kids.length === 0) {
-              const active = decodedPathname.replace(/\/$/, "") === categoryPath;
+            if (item.children.length === 0) {
+              const active = isActiveHref(item.url);
+              if (sale) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.url}
+                    className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-[18px] font-bold text-brand-accent transition-all hover:bg-gradient-to-l hover:from-brand-accent hover:to-[#ff6b72] hover:text-white hover:shadow-md"
+                  >
+                    <Flame className="h-3.5 w-3.5" fill="currentColor" />
+                    {item.label}
+                  </Link>
+                );
+              }
               return (
                 <Link
-                  key={category.id}
-                  href={`${categoryPath}/`}
-                  className={`shrink-0 text-sm font-medium transition-colors ${
+                  key={item.id}
+                  href={item.url}
+                  className={`shrink-0 text-[16px] font-medium transition-colors ${
                     active ? "text-brand-accent" : "text-black/70 hover:text-brand-accent"
                   }`}
                 >
-                  {category.name}
+                  {item.label}
                 </Link>
               );
             }
 
-            const isOpen = menuVisible && openCategorySlug === category.slug;
-            const active = isOpen || decodedPathname.startsWith(categoryPath);
+            const isOpen = menuVisible && openItemId === item.id;
+            const active = isOpen || decodedPathname.startsWith(trimTrailingSlash(item.url));
             return (
               <button
-                key={category.id}
+                key={item.id}
                 type="button"
-                onClick={(e) => (isOpen ? setMenuVisible(false) : openMenu(category, e))}
-                onMouseEnter={(e) => openMenu(category, e)}
+                onClick={(e) => (isOpen ? setMenuVisible(false) : openMenu(item, e))}
+                onMouseEnter={(e) => openMenu(item, e)}
                 onMouseLeave={scheduleCloseMenu}
                 className={`flex shrink-0 items-center gap-1 text-[16px] font-medium transition-colors ${
                   active ? "text-brand-accent" : "text-black/70 hover:text-brand-accent"
                 }`}
               >
-                {category.name}
+                {item.label}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </button>
-            );
-          })}
-
-          {STATIC_LINKS_AFTER.map((link) => {
-            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`shrink-0 text-[16px] font-medium transition-colors ${
-                  active ? "text-brand-accent" : "text-black/70 hover:text-brand-accent"
-                }`}
-              >
-                {link.label}
-              </Link>
             );
           })}
         </div>
@@ -404,13 +348,13 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
             menuLeft comes from getBoundingClientRect, which is already a
             physical-pixel measurement — assigning that to a logical
             property would anchor it to the opposite edge in this RTL layout. */}
-        {panelCategory ? (
+        {panelItem ? (
           <div
             ref={menuPanelRef}
             onMouseEnter={cancelCloseMenu}
             onMouseLeave={scheduleCloseMenu}
             style={{ left: menuLeft }}
-            className={`absolute top-full z-50 mt-3 w-[min(94vw,760px)] overflow-hidden rounded-[1.75rem] border border-black/5 bg-white shadow-2xl transition-all duration-200 ${
+            className={`absolute top-full z-50 mt-3 w-[min(96vw,920px)] overflow-hidden rounded-[1.75rem] border border-black/5 bg-white shadow-2xl transition-all duration-200 ${
               menuVisible ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"
             }`}
           >
@@ -419,10 +363,10 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-accent/10 text-brand-accent">
                   <Sparkles className="h-4 w-4" />
                 </span>
-                <p className="text-sm font-semibold text-black/80">{panelCategory.name}</p>
+                <p className="text-sm font-semibold text-black/80">{panelItem.label}</p>
               </div>
               <Link
-                href={`/product-category/${panelCategory.slug}/`}
+                href={panelItem.url}
                 onClick={() => setMenuVisible(false)}
                 className="group flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-accent"
               >
@@ -431,37 +375,66 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
               </Link>
             </div>
 
-            <div className="grid max-h-[60vh] grid-cols-2 gap-2.5 overflow-y-auto p-5 sm:grid-cols-3">
-              {panelChildren.map((child) => {
-                const childActive =
-                  decodedPathname.replace(/\/$/, "") ===
-                  `/product-category/${panelCategory.slug}/${child.slug}`;
-                return (
-                  <Link
-                    key={child.id}
-                    href={`/product-category/${panelCategory.slug}/${child.slug}/`}
-                    onClick={() => setMenuVisible(false)}
-                    className={`group flex items-start gap-2 rounded-2xl border px-3.5 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-10px_rgba(213,32,39,0.35)] ${
-                      childActive
-                        ? "border-brand-accent/40 bg-brand-soft/60"
-                        : "border-black/5 hover:border-brand-accent/30 hover:bg-brand-soft/40"
-                    }`}
-                  >
-                    <span
-                      className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
-                        childActive ? "bg-brand-accent" : "bg-brand-accent/40 group-hover:bg-brand-accent"
-                      }`}
-                    />
-                    <span
-                      className={`text-sm leading-snug transition-colors group-hover:text-brand-accent ${
-                        childActive ? "font-bold text-brand-accent" : "font-medium text-black/75"
+            {panelItem.featuredTitle ? (
+              <p className="pt-4 text-center text-base font-bold text-black/80">{panelItem.featuredTitle}</p>
+            ) : null}
+
+            <div className="flex max-h-[65vh] gap-5 overflow-y-auto p-5">
+              <div className="grid flex-1 auto-rows-min grid-cols-2 content-start gap-2.5 sm:grid-cols-3">
+                {panelLinkChildren.map((child) => {
+                  const childActive = isActiveHref(child.url);
+                  return (
+                    <Link
+                      key={child.id}
+                      href={child.url}
+                      onClick={() => setMenuVisible(false)}
+                      className={`group flex items-start gap-2 rounded-2xl border px-3.5 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-10px_rgba(213,32,39,0.35)] ${
+                        childActive
+                          ? "border-brand-accent/40 bg-brand-soft/60"
+                          : "border-black/5 hover:border-brand-accent/30 hover:bg-brand-soft/40"
                       }`}
                     >
-                      {child.name}
-                    </span>
+                      <span
+                        className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full transition-colors ${
+                          childActive ? "bg-brand-accent" : "bg-brand-accent/40 group-hover:bg-brand-accent"
+                        }`}
+                      />
+                      <span
+                        className={`text-sm leading-snug transition-colors group-hover:text-brand-accent ${
+                          childActive ? "font-bold text-brand-accent" : "font-medium text-black/75"
+                        }`}
+                      >
+                        {child.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {panelFeaturedProduct ? (
+                <div className="flex w-44 shrink-0 flex-col items-center gap-3 rounded-2xl border border-black/5 bg-brand-soft/30 p-4 text-center sm:w-52">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-white">
+                    {panelFeaturedProduct.image ? (
+                      <Image
+                        src={panelFeaturedProduct.image.url}
+                        alt={panelFeaturedProduct.image.alt}
+                        fill
+                        sizes="208px"
+                        className="object-contain p-2"
+                      />
+                    ) : null}
+                  </div>
+                  <p className="line-clamp-2 text-sm font-semibold text-black/80">{panelFeaturedProduct.label}</p>
+                  <span className="text-sm font-bold text-brand-accent">{formatPrice(panelFeaturedProduct.price)}</span>
+                  <Link
+                    href={panelFeaturedProduct.url}
+                    onClick={() => setMenuVisible(false)}
+                    className="mt-1 w-full rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md"
+                  >
+                    לצפייה במוצר
                   </Link>
-                );
-              })}
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -527,51 +500,38 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
         </div>
 
         <nav className="flex flex-col overflow-y-auto px-5 py-2">
-          {NAV_LINKS.map((link) => {
-            const active = trimTrailingSlash(decodedPathname) === trimTrailingSlash(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`border-b border-black/5 py-4 text-[22px] font-semibold last:border-none ${
-                  active ? "text-brand-accent" : "text-black/85 hover:text-brand-accent"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          {menu.map((item) => {
+            const sale = isSaleItem(item);
 
-          {topLevelCategories.map((category) => {
-            const kids = childrenOf(category.id);
-            const categoryPath = `/product-category/${category.slug}`;
-
-            if (kids.length === 0) {
-              const active = decodedPathname.replace(/\/$/, "") === categoryPath;
+            if (item.children.length === 0) {
+              const active = isActiveHref(item.url);
               return (
                 <Link
-                  key={category.id}
-                  href={`${categoryPath}/`}
+                  key={item.id}
+                  href={item.url}
                   onClick={() => setMobileOpen(false)}
-                  className={`border-b border-black/5 py-4 text-[22px] font-semibold ${
+                  className={`flex items-center gap-2 border-b border-black/5 py-4 text-[22px] font-semibold last:border-none ${
                     active ? "text-brand-accent" : "text-black/85 hover:text-brand-accent"
                   }`}
                 >
-                  {category.name}
+                  {sale ? <Flame className="h-5 w-5" fill="currentColor" /> : null}
+                  {item.label}
                 </Link>
               );
             }
 
-            const isMobileOpen = mobileOpenSlug === category.slug;
+            const linkChildren = item.children.filter((c): c is HeaderMenuLinkChild => c.type === "link");
+            const featured = item.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
+            const isMobileOpen = mobileOpenId === item.id;
+
             return (
-              <div key={category.id} className="border-b border-black/5">
+              <div key={item.id} className="border-b border-black/5">
                 <button
                   type="button"
-                  onClick={() => setMobileOpenSlug((s) => (s === category.slug ? null : category.slug))}
+                  onClick={() => setMobileOpenId((id) => (id === item.id ? null : item.id))}
                   className="flex w-full items-center justify-between py-4 text-[22px] font-semibold text-black/85"
                 >
-                  {category.name}
+                  {item.label}
                   <ChevronDown className={`h-4 w-4 transition-transform ${isMobileOpen ? "rotate-180" : ""}`} />
                 </button>
                 <div
@@ -580,19 +540,46 @@ export function Header({ categories = [], logo = null }: { categories?: ProductC
                   }`}
                 >
                   <div className="flex min-h-0 flex-col gap-1 rounded-xl bg-brand-soft/20 p-2 pb-2">
-                    {kids.map((child) => (
+                    {item.featuredTitle ? (
+                      <p className="pt-1 pb-1 text-center text-base font-bold text-black/80">{item.featuredTitle}</p>
+                    ) : null}
+                    {featured ? (
+                      <Link
+                        href={featured.url}
+                        onClick={() => setMobileOpen(false)}
+                        className="mb-1 flex items-center gap-3 rounded-lg bg-white p-2.5 shadow-sm"
+                      >
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-brand-soft/40">
+                          {featured.image ? (
+                            <Image
+                              src={featured.image.url}
+                              alt={featured.image.alt}
+                              fill
+                              sizes="56px"
+                              className="object-contain p-1"
+                            />
+                          ) : null}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-semibold text-black/80">{featured.label}</p>
+                          <span className="text-sm font-bold text-brand-accent">{formatPrice(featured.price)}</span>
+                        </div>
+                        <ChevronLeft className="h-4 w-4 shrink-0 text-brand-accent" />
+                      </Link>
+                    ) : null}
+                    {linkChildren.map((child) => (
                       <Link
                         key={child.id}
-                        href={`/product-category/${category.slug}/${child.slug}/`}
+                        href={child.url}
                         onClick={() => setMobileOpen(false)}
                         className="group flex items-center justify-between gap-1.5 rounded-lg px-3 py-2.5 text-base text-black/70 transition-colors hover:bg-white hover:text-brand-accent"
                       >
-                        <span className="truncate">{child.name}</span>
+                        <span className="truncate">{child.label}</span>
                         <ChevronLeft className="h-3.5 w-3.5 shrink-0 text-black/30 transition-colors group-hover:text-brand-accent" />
                       </Link>
                     ))}
                     <Link
-                      href={`${categoryPath}/`}
+                      href={item.url}
                       onClick={() => setMobileOpen(false)}
                       className="mt-1 rounded-lg px-3 py-2.5 text-center text-base font-semibold text-brand-accent hover:bg-white"
                     >

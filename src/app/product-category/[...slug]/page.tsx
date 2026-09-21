@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listProducts } from "@/lib/wpgraphql/products";
 import { listCategories } from "@/lib/wpgraphql/categories";
+import { listBrands } from "@/lib/wpgraphql/brands";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 
 export const revalidate = 60;
@@ -25,9 +26,10 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
   const { slug: slugPath } = await params;
   const activeSlug = normalizeSlug(slugPath[slugPath.length - 1]);
 
-  const [{ products, hasNextPage, endCursor }, allCategories] = await Promise.all([
+  const [{ products, hasNextPage, endCursor }, allCategories, brands] = await Promise.all([
     listProducts({ category: activeSlug, first: 20 }),
     listCategories().catch(() => []),
+    listBrands().catch(() => []),
   ]);
 
   // Sourced from the same full category list that powers the header's
@@ -97,6 +99,8 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
           initialProducts={products}
           initialHasNextPage={hasNextPage}
           initialEndCursor={endCursor}
+          categories={allCategories}
+          brands={brands}
         />
       </div>
     </div>

@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { Check, ChevronDown } from "lucide-react";
 
 export interface CustomSelectOption<T extends string> {
   value: T;
   label: string;
+  /** Shown as a small thumb before the label (trigger + option row) — e.g. a brand logo. */
+  image?: string;
 }
 
 /**
@@ -84,7 +87,12 @@ export function CustomSelect<T extends string>({
         aria-expanded={open}
         className="flex w-full items-center justify-between gap-2 rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2.5 text-base font-medium outline-none transition-colors hover:border-black/20 focus:border-brand-accent focus:bg-white"
       >
-        <span className="truncate">{selected?.label ?? ""}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          {selected?.image ? (
+            <Image src={selected.image} alt="" width={20} height={20} className="h-5 w-5 shrink-0 rounded object-contain" />
+          ) : null}
+          <span className="truncate">{selected?.label ?? ""}</span>
+        </span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-black/50 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -114,7 +122,12 @@ export function CustomSelect<T extends string>({
                         : "text-black/75 hover:bg-black/5"
                     }`}
                   >
-                    {opt.label}
+                    <span className="flex min-w-0 items-center gap-2">
+                      {opt.image ? (
+                        <Image src={opt.image} alt="" width={20} height={20} className="h-5 w-5 shrink-0 rounded object-contain" />
+                      ) : null}
+                      <span className="truncate">{opt.label}</span>
+                    </span>
                     {opt.value === value ? <Check className="h-4 w-4 shrink-0" /> : null}
                   </button>
                 </li>

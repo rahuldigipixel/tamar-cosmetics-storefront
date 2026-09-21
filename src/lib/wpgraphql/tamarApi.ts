@@ -89,6 +89,9 @@ export interface SiteSettings {
   footerLogo: SiteLogo | null;
   /** Brand slugs curated in wp-admin → הגדרות תמר to show on the /מותג/ brand list page. Empty = show all. */
   selectedBrandSlugs: string[];
+  /** Title/description for the /מותג/ page, set in wp-admin → הגדרות מותגים. Empty string when unset. */
+  brandPageTitle: string;
+  brandPageDescription: string;
 }
 
 /**

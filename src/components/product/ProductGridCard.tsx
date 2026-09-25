@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
@@ -31,13 +31,8 @@ export function ProductGridCard({
   const hoverImage = product.images[1];
 
   const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
+  // Wishlist ids are synced once by the Header (root layout) — no per-card fetch.
   const toggleWishlist = useWishlistStore((s) => s.toggle);
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
-
-  useEffect(() => {
-    fetchWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div

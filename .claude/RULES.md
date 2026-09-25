@@ -15,6 +15,15 @@ Every task (old code touched, or new code added) must leave the site **as fast o
 - [ ] When editing an existing slow area, fix the perf issue in the same change rather than leaving a TODO.
 - [ ] Any client component with more than one async source feeding a single "loading" UI (e.g. a Zustand/persisted store hydrating from `localStorage` + a follow-up `fetch` for details) must derive `loading` from real completion state (e.g. compare a "loaded for these ids/keys" marker against the current ids/keys), not from a `boolean` flipped early by just one of the sources. Flipping it early renders a false empty/error state for a frame before the real data lands — seen on `/wishlist` (Sept 2026: page flashed "list is empty" between the store's `fetchWishlist()` resolving and the per-product `fetch` calls actually finishing). Check this on every new page/component that combines a persisted store with a follow-up data fetch.
 
+### API requests (backend = WP plugin `tamar-headless-api`)
+
+The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamarcosmetics_react\wp-content\plugins\tamar-headless-api`. When a lean response or batch endpoint is needed, change it there rather than working around it in React.
+
+- [ ] **No duplicate requests per page.** Check every page for the same data fetched twice (layout + page, `generateMetadata` + page, several components). Dedupe with React `cache()` / a shared loader / the Next fetch cache.
+- [ ] **Send only the fields you need, get back only the fields you need.** Trim GraphQL selections to what the UI renders. For WC/REST responses, strip `meta_data`, `_links`, and unused keys (use `_fields` or a lean serializer in the plugin). Never pass whole WC objects to the client.
+- [ ] **Keep API calls per page to a minimum.** Prefer one combined query/endpoint per page over several small ones wherever it stays easy to maintain.
+- [ ] For every task, list the requests the touched page makes (count, duplicates, payload size) and fix problems in the same change.
+
 ## 2. New sections must match the current theme/design
 
 - [ ] Reuse existing design tokens/colors (light theme, brand-soft/accent — see memory: avoid dark/black section backgrounds).

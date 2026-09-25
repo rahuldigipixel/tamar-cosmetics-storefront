@@ -24,6 +24,34 @@ interface WishlistState {
   has: (productId: number) => boolean;
 }
 
+// Header, every product card and the gallery all call fetchWishlist() on
+// mount in the same tick; `hydrated` only flips once the response lands, so
+// without sharing the in-flight promise a grid page fired one /api/wishlist
+// request per card.
+let wishlistRequest: Promise<void> | null = null;
+
+// The wishlist id is generated in this browser and every add/remove is
+// written to localStorage first, so the server copy can only differ if a
+// write was lost. Syncing once per browser session is enough — not on every
+// full page load (each sync is a WordPress round trip).
+const SESSION_SYNC_KEY = "tamar-wishlist-synced";
+
+function syncedThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(SESSION_SYNC_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSyncedThisSession() {
+  try {
+    sessionStorage.setItem(SESSION_SYNC_KEY, "1");
+  } catch {
+    // storage blocked — worst case we sync again next page load
+  }
+}
+
 export const useWishlistStore = create<WishlistState>()(
   persist(
     (set, get) => ({
@@ -41,29 +69,41 @@ export const useWishlistStore = create<WishlistState>()(
       },
 
       fetchWishlist: async () => {
-        // Only sync from the server once per session — the list already
+        // Only sync from the server once per browser session — the list already
         // persists locally (localStorage), and this backend endpoint may
         // not be implemented/reachable yet. Re-running this on every card's
         // mount (a grid renders many at once) would both hammer the API
         // and, on a failed/empty response, wipe out items the user just
         // added locally before the server ever confirmed them.
         if (get().hydrated) return;
+        if (wishlistRequest) return wishlistRequest;
+        // A brand-new id has nothing on the server yet — skip the round trip.
+        const isNewId = !get().wishlistId;
         const id = get().ensureId();
-        try {
-          const res = await fetch(`/api/wishlist?wishlist_id=${id}`, { cache: "no-store" });
-          if (res.ok) {
-            const items = (await res.json()) as { productId: number }[];
-            if (Array.isArray(items) && items.length > 0) {
-              set((state) => ({
-                productIds: Array.from(new Set([...state.productIds, ...items.map((i) => i.productId)])),
-              }));
-            }
-          }
-        } catch {
-          // backend unreachable — keep whatever is already persisted locally
-        } finally {
+        if (isNewId || syncedThisSession()) {
           set({ hydrated: true });
+          return;
         }
+        wishlistRequest = (async () => {
+          try {
+            const res = await fetch(`/api/wishlist?wishlist_id=${id}`, { cache: "no-store" });
+            if (res.ok) {
+              const items = (await res.json()) as { productId: number }[];
+              if (Array.isArray(items) && items.length > 0) {
+                set((state) => ({
+                  productIds: Array.from(new Set([...state.productIds, ...items.map((i) => i.productId)])),
+                }));
+              }
+              markSyncedThisSession();
+            }
+          } catch {
+            // backend unreachable — keep whatever is already persisted locally
+          } finally {
+            set({ hydrated: true });
+            wishlistRequest = null;
+          }
+        })();
+        return wishlistRequest;
       },
 
       toggle: async (productId) => {

@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { fetchGraphQLSafe } from "./client";
 import {
   GET_PRODUCTS,
   GET_PRODUCT_BY_SLUG,
-  GET_PRODUCT_BY_DATABASE_ID,
+  GET_PRODUCTS_BY_IDS,
   GET_PRODUCT_SLUGS,
 } from "./queries/products";
 import { getProductLabels, getProductTabs } from "./tamarApi";
@@ -26,6 +27,7 @@ interface GqlImage {
 }
 
 interface GqlProductNode {
+  __typename?: string;
   id: string;
   databaseId: number;
   slug: string;
@@ -98,7 +100,7 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     slug: node.slug,
     name: node.name,
     sku: node.sku,
-    type: variations.length > 0 ? "variable" : "simple",
+    type: node.__typename === "VariableProduct" || variations.length > 0 ? "variable" : "simple",
     shortDescription: node.shortDescription,
     description: node.description,
     price: node.price ?? "0",
@@ -192,7 +194,13 @@ export async function listProducts(params: ListProductsParams = {}): Promise<Lis
   return { products, hasNextPage: data.products.pageInfo.hasNextPage, endCursor: data.products.pageInfo.endCursor };
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+/**
+ * Wrapped in React `cache()` because both generateMetadata() and the page
+ * call it in the same render — GraphQL goes over POST, and Next only
+ * auto-dedupes GET fetches, so without this every product page hit the
+ * backend twice for the same product.
+ */
+export const getProductBySlug = cache(async (slug: string): Promise<Product | null> => {
   const data = await fetchGraphQLSafe<{ product: GqlProductNode | null }>(
     GET_PRODUCT_BY_SLUG,
     { slug },
@@ -200,16 +208,18 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   );
   if (!data?.product) return null;
   return withCustomFields(fromGraphqlProduct(data.product));
-}
+});
 
-export async function getProductByDatabaseId(id: number): Promise<Product | null> {
-  const data = await fetchGraphQLSafe<{ product: GqlProductNode | null }>(
-    GET_PRODUCT_BY_DATABASE_ID,
-    { id: String(id) },
-    { tags: [`product:${id}`], revalidate: 60 }
+/** Card-level data for many products in one request, returned in the order of `ids`. */
+export async function getProductsByIds(ids: number[]): Promise<Product[]> {
+  if (ids.length === 0) return [];
+  const data = await fetchGraphQLSafe<{ products: { nodes: GqlProductNode[] } }>(
+    GET_PRODUCTS_BY_IDS,
+    { ids, first: ids.length },
+    { tags: ["products"], revalidate: 60 }
   );
-  if (!data?.product) return null;
-  return withCustomFields(fromGraphqlProduct(data.product));
+  const byId = new Map((data?.products.nodes ?? []).map((n) => [n.databaseId, fromGraphqlProduct(n)]));
+  return ids.map((id) => byId.get(id)).filter((p): p is Product => Boolean(p));
 }
 
 export async function listProductSlugs(): Promise<string[]> {

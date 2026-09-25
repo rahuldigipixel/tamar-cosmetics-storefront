@@ -27,7 +27,13 @@ export default async function HomePage() {
     <div>
       <HeroCarousel />
 
-      <CategorySlider categories={categories.filter((c) => !c.parentId).slice(0, 10)} />
+      <CategorySlider
+        categories={categories
+          .filter((c) => !c.parentId)
+          .slice(0, 10)
+          // Client component — don't serialize each category's HTML description into the page.
+          .map((c) => ({ ...c, description: undefined }))}
+      />
 
       <ProductSlider
         badge="הכי נמכרים"

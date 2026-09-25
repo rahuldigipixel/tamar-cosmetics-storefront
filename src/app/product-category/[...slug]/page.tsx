@@ -32,10 +32,13 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
   const { slug: slugPath } = await params;
   const activeSlug = normalizeSlug(slugPath[slugPath.length - 1]);
 
-  const [{ products, hasNextPage, endCursor }, allCategories, brands] = await Promise.all([
+  const [{ products, hasNextPage, endCursor }, allCategories, brands, brandsInCategorySlugs] = await Promise.all([
     listProducts({ category: activeSlug, first: 20 }),
     listCategories().catch(() => []),
     listBrands().catch(() => []),
+    // The Brand filter should only offer brands that actually have a
+    // product in this category.
+    listBrandSlugsInCategory(activeSlug).catch(() => new Set<string>()),
   ]);
 
   // Sourced from the same full category list that powers the header's
@@ -55,14 +58,10 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
 
   if (!category && !categoryFromProducts && products.length === 0) notFound();
 
-  // The Brand filter should only offer brands that actually have a product
-  // in this category — depends on `activeSlug`/`brands`, so it runs after
-  // the initial fetch rather than inside the same Promise.all.
-  const brandsInCategorySlugs = await listBrandSlugsInCategory(
-    activeSlug,
-    brands.map((b) => b.slug)
-  ).catch(() => new Set<string>());
   const brandsInCategory = brands.filter((b) => brandsInCategorySlugs.has(b.slug));
+  // The client-side filter only needs id/name/slug/parent — drop the HTML
+  // descriptions of every category from the serialized props.
+  const categoryOptions = allCategories.map((c) => ({ ...c, description: undefined }));
 
   const title = category?.name ?? categoryFromProducts?.name ?? decodeURIComponent(activeSlug).replace(/-/g, " ");
   const categoryBySlug = new Map(allCategories.map((c) => [normalizeSlug(c.slug), c.name]));
@@ -114,7 +113,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
           initialProducts={products}
           initialHasNextPage={hasNextPage}
           initialEndCursor={endCursor}
-          categories={allCategories}
+          categories={categoryOptions}
           brands={brandsInCategory}
         />
       </div>

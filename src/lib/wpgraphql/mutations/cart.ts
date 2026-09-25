@@ -1,9 +1,7 @@
 const CART_FIELDS = /* GraphQL */ `
   chosenShippingMethods
   isEmpty
-  needsShippingAddress
   availableShippingMethods {
-    packageDetails
     rates {
       id
       label

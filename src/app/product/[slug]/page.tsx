@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -49,11 +50,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const primaryCategory = product.categories[0];
-  const { products: relatedRaw } = primaryCategory
-    ? await listProducts({ category: primaryCategory.slug, first: 13 })
-    : { products: [] };
-  const relatedProducts = relatedRaw.filter((p) => p.id !== product.id).slice(0, 12);
-
   const productUrl = `${wpEnv.siteUrl}/product/${product.slug}`;
 
   const jsonLd = {
@@ -183,15 +179,32 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <FeatureStrip variant="compact" />
 
-      {relatedProducts.length > 0 ? (
-        <ProductSlider
-          badge="מוצרים דומים"
-          badgeIcon={<Sparkles className="h-3.5 w-3.5" />}
-          title="אולי יעניין אותך גם"
-          products={relatedProducts}
-          headerVariant="modern"
-        />
+      {primaryCategory ? (
+        <Suspense fallback={null}>
+          <RelatedProducts categorySlug={primaryCategory.slug} excludeId={product.id} />
+        </Suspense>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Streamed separately: it depends on the product's category, so awaiting it
+ * inside the page made the whole page wait for two backend queries in a row.
+ * Now the product itself paints first and this slider fills in below.
+ */
+async function RelatedProducts({ categorySlug, excludeId }: { categorySlug: string; excludeId: string }) {
+  const { products } = await listProducts({ category: categorySlug, first: 13 });
+  const related = products.filter((p) => p.id !== excludeId).slice(0, 12);
+  if (related.length === 0) return null;
+
+  return (
+    <ProductSlider
+      badge="מוצרים דומים"
+      badgeIcon={<Sparkles className="h-3.5 w-3.5" />}
+      title="אולי יעניין אותך גם"
+      products={related}
+      headerVariant="modern"
+    />
   );
 }

@@ -26,13 +26,8 @@ export function ProductGallery({
   const current = images[active];
 
   const inWishlist = useWishlistStore((s) => s.has(productId));
+  // Wishlist ids are synced once by the Header (root layout).
   const toggleWishlist = useWishlistStore((s) => s.toggle);
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
-
-  useEffect(() => {
-    fetchWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   function step(direction: 1 | -1) {
     if (images.length === 0) return;

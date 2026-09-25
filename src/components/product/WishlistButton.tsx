@@ -1,18 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { Heart } from "lucide-react";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
 export function WishlistButton({ productId }: { productId: number }) {
   const has = useWishlistStore((s) => s.has(productId));
+  // Wishlist ids are synced once by the Header (root layout).
   const toggle = useWishlistStore((s) => s.toggle);
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
-
-  useEffect(() => {
-    fetchWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <button

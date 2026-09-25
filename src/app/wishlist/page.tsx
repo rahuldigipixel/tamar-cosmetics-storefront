@@ -34,21 +34,21 @@ export default function WishlistPage() {
   useEffect(() => {
     if (!storeReady) return;
     let cancelled = false;
-    Promise.all(
-      productIds.map((id) =>
-        fetch(`/api/products/${id}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null)
-      )
-    ).then((fetched) => {
+    // One batched request for the whole list — never one request per id.
+    const request: Promise<Product[]> = idsKey
+      ? fetch(`/api/products?ids=${idsKey}`)
+          .then((r) => (r.ok ? r.json() : { products: [] }))
+          .then((d: { products?: Product[] }) => d.products ?? [])
+          .catch(() => [])
+      : Promise.resolve([]);
+    request.then((fetched) => {
       if (cancelled) return;
-      setProducts(fetched.filter((p): p is Product => Boolean(p)));
+      setProducts(fetched);
       setLoadedKey(idsKey);
     });
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey, storeReady]);
 
   const loading = !storeReady || loadedKey !== idsKey;

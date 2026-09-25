@@ -14,7 +14,7 @@ import type { Cart } from "@/types/cart";
 interface GqlCart {
   isEmpty: boolean;
   chosenShippingMethods: string[] | null;
-  availableShippingMethods: { packageDetails: string; rates: { id: string; label: string; cost: string }[] }[] | null;
+  availableShippingMethods: { rates: { id: string; label: string; cost: string }[] }[] | null;
   contents: {
     itemCount: number;
     nodes: {

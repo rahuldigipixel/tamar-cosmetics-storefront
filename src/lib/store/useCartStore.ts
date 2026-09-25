@@ -68,6 +68,8 @@ async function cartFetch(
 // fire their own request, and responses can arrive out of order. Only the
 // response for the most recently issued request per item key is allowed to
 // overwrite state, so a slow earlier response can't clobber a newer click.
+let cartRequest: Promise<void> | null = null;
+
 let quantityRequestCounter = 0;
 const latestQuantityRequestByKey: Record<string, number> = {};
 
@@ -82,13 +84,24 @@ export const useCartStore = create<CartState>()(
       closeDrawer: () => set({ isDrawerOpen: false }),
 
       fetchCart: async () => {
+        // Header (root layout) and the /cart or /checkout page both call
+        // this on mount — share one in-flight request instead of two.
+        if (cartRequest) return cartRequest;
+        // No WooCommerce session yet (new visitor, nothing added) — the
+        // server can only answer "empty cart", so skip the ~1s round trip.
+        // The first addItem() creates the session and returns the cart.
+        if (!get().sessionToken) return;
         set({ loading: true });
-        try {
-          const { cart, sessionToken } = await cartFetch("/api/cart", get().sessionToken);
-          set({ cart, sessionToken });
-        } finally {
-          set({ loading: false });
-        }
+        cartRequest = (async () => {
+          try {
+            const { cart, sessionToken } = await cartFetch("/api/cart", get().sessionToken);
+            set({ cart, sessionToken });
+          } finally {
+            set({ loading: false });
+            cartRequest = null;
+          }
+        })();
+        return cartRequest;
       },
 
       addItem: async (productId, quantity = 1, variationId) => {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 text-right sm:px-6">
+    <div className="mx-auto max-w-3xl px-[15px] py-16 text-right ">
       <h1 className="mb-2 text-3xl font-bold">צור קשר</h1>
       <p className="mb-8 text-black/60">נשמח לעזור — פנו אלינו באחת מהדרכים הבאות.</p>
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-md px-[15px] py-16 ">
       <div className="mb-6 flex justify-center gap-4">
         <button
           onClick={() => setMode("login")}

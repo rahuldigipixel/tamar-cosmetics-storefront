@@ -7,7 +7,7 @@ import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
-import { getHeaderMenu, getSiteSettings } from "@/lib/wpgraphql/tamarApi";
+import { getHeaderBar, getHeaderMenu, getSiteSettings } from "@/lib/wpgraphql/tamarApi";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
 
@@ -47,15 +47,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [menu, siteSettings] = await Promise.all([
+  const [menu, siteSettings, bar] = await Promise.all([
     getHeaderMenu().then((m) => m ?? []),
     getSiteSettings(),
+    getHeaderBar(),
   ]);
 
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${rubik.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <Header menu={menu} logo={siteSettings?.headerLogo ?? null} />
+        <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
         <Footer logo={siteSettings?.footerLogo ?? null} />
         <WelcomePopup />

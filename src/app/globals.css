@@ -95,3 +95,18 @@ input[type="radio"] {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 9999px;
 }
+
+/* Compact sticky header slides in from the top once the full header has
+   scrolled out of view (Header.tsx — like the reference's WoodMart sticky). */
+@keyframes header-slide-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-header-slide-down {
+  animation: header-slide-down 0.3s ease-out;
+}

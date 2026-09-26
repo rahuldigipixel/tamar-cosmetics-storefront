@@ -71,7 +71,13 @@ function Stars({ rating }: { rating: number }) {
 
 const INITIAL_COUNT = 3;
 
-export function CustomerReviews() {
+/**
+ * `showHeading=false` lets the standalone /ביקורות-לקוחות page supply its
+ * own admin-managed heading/description above this section instead of the
+ * built-in "ביקורות לקוחות" title — the homepage usage is unaffected
+ * (defaults to true).
+ */
+export function CustomerReviews({ showHeading = true }: { showHeading?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? REVIEWS : REVIEWS.slice(0, INITIAL_COUNT);
   const average = (REVIEWS.reduce((sum, r) => sum + r.rating, 0) / REVIEWS.length).toFixed(1);
@@ -80,7 +86,9 @@ export function CustomerReviews() {
     <section className=" w-full bg-white py-8 sm:py-[50px]  ">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl">ביקורות לקוחות</h2>
+          {showHeading ? (
+            <h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl">ביקורות לקוחות</h2>
+          ) : null}
           <div className="flex items-center gap-2">
             <Stars rating={Math.round(Number(average))} />
             <span className="text-lg font-semibold">{average}</span>

@@ -5,7 +5,8 @@ import { ArrowUp } from "lucide-react";
 
 // Lucide has no brand icons — a plain speech-bubble glyph doesn't read as
 // "WhatsApp" the way the real logo mark does, so this is the actual outline.
-function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
+// Exported for reuse by Header.tsx's service icon strip.
+export function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 32 32" fill="currentColor" {...props}>
       <path d="M16.004 3C9.377 3 4 8.373 4 15c0 2.34.664 4.522 1.813 6.377L4 29l7.828-1.766A11.94 11.94 0 0 0 16.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3zm0 21.75a9.7 9.7 0 0 1-4.95-1.356l-.355-.21-4.64 1.047 1.02-4.532-.232-.372A9.7 9.7 0 0 1 5.25 15c0-5.93 4.824-10.75 10.754-10.75S26.758 9.07 26.758 15 21.934 24.75 16.004 24.75z" />

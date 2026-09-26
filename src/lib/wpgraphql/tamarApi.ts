@@ -86,6 +86,8 @@ export interface SiteLogo {
 
 export interface SiteSettings {
   headerLogo: SiteLogo | null;
+  /** Compact sticky-header logo (wp-admin → כותרת → "לוגו כותרת מוקטנת (בגלילה)"); null = reuse headerLogo. */
+  headerStickyLogo?: SiteLogo | null;
   footerLogo: SiteLogo | null;
   /** Brand slugs curated in wp-admin → הגדרות תמר to show on the /מותג/ brand list page. Empty = show all. */
   selectedBrandSlugs: string[];
@@ -120,6 +122,8 @@ export interface HeaderMenuLinkChild {
   type: "link";
   label: string;
   url: string;
+  /** Optional logo/thumbnail (e.g. brand logo). When any child in a panel has one, the mega menu renders cards instead of a bullet list. */
+  image?: HeaderMenuImage | null;
 }
 
 export interface HeaderMenuProductChild {
@@ -140,7 +144,15 @@ export interface HeaderMenuItem {
   url: string;
   /** "כותרת פנימית" from wp-admin — a heading for the mega panel itself (e.g. "המוצר המומלץ שלנו"), not a replacement for the featured product's own name. Only set on "category"-source items; empty string otherwise. */
   featuredTitle?: string;
+  /** Promoted category shown beside the sub-links (wp-admin "קטגוריה מקודמת בתפריט"): its image (custom or the category's own thumbnail), name and link. Only on "category"-source items; null when none is picked. */
+  featuredCategory?: HeaderMenuFeaturedCategory | null;
   children: HeaderMenuChild[];
+}
+
+export interface HeaderMenuFeaturedCategory {
+  label: string;
+  url: string;
+  image: HeaderMenuImage | null;
 }
 
 /**
@@ -154,6 +166,138 @@ export function getHeaderMenu() {
   return tamarFetch<HeaderMenuItem[]>(`/menu`, {
     tags: ["header-menu"],
     revalidate: 300,
+  });
+}
+
+export interface CategoryBanner {
+  desktop: HeaderMenuImage | null;
+  mobile: HeaderMenuImage | null;
+}
+
+export interface CategoryInfo {
+  /** null = no such category (the only case the page 404s on). */
+  name: string | null;
+  description: string;
+  banner: CategoryBanner;
+}
+
+/**
+ * One product category by slug — name/description plus its desktop/mobile
+ * banner (wp-admin → Products → Categories → Desktop/Mobile Banner; term meta
+ * product_taxonomy_banner / product_taxonomy_mobile_banner — see the plugin's
+ * includes/class-wc-product-module.php). Resolves any category, including
+ * empty ones the GraphQL category list (hideEmpty) skips. One lean request,
+ * run in parallel with the page's other data.
+ */
+export function getCategoryInfo(slug: string) {
+  return tamarFetch<CategoryInfo>(`/category-info?slug=${encodeURIComponent(slug)}`, {
+    tags: ["categories", `category-info:${slug}`],
+    revalidate: 300,
+  });
+}
+
+export interface HeaderBarLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export interface HeaderServiceIcon {
+  id: string;
+  /** One of Tamar_Header_Bar::ICON_CHOICES on the WP side — see SERVICE_ICON_MAP in Header.tsx. */
+  icon: string;
+  title: string;
+  subtitle: string;
+}
+
+export interface HeaderBar {
+  announcements: string[];
+  linksRight: HeaderBarLink[];
+  linksLeft: HeaderBarLink[];
+  serviceIcons: HeaderServiceIcon[];
+}
+
+/**
+ * Top-bar content managed from wp-admin → כותרת (Header) → פס עליון
+ * (includes/class-header-bar.php): the rotating announcement messages, the
+ * left/right link groups, and the service icon strip in the main header row.
+ */
+export function getHeaderBar() {
+  return tamarFetch<HeaderBar>(`/header-bar`, {
+    tags: ["header-bar"],
+    revalidate: 300,
+  });
+}
+
+export interface WholesaleImage {
+  id: number;
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+export interface WholesalePage {
+  heading: string;
+  contentHtml: string;
+  ctaHeading: string;
+  /** Single image shown beside the CTA form — distinct from sliderImages, the bottom photo strip. */
+  heroImage: WholesaleImage | null;
+  ctaButtonLabel: string;
+  sliderImages: WholesaleImage[];
+}
+
+/** Managed from wp-admin → הגדרות תמר → מכירה סיטונאית (includes/class-content-pages.php). */
+export function getWholesalePage() {
+  return tamarFetch<WholesalePage>(`/wholesale-page`, {
+    tags: ["wholesale-page"],
+    revalidate: 300,
+  });
+}
+
+export interface WholesaleLeadInput {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export function submitWholesaleLead(input: WholesaleLeadInput) {
+  return tamarFetch<{ success: boolean }>(`/wholesale-lead`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export interface ReviewsPage {
+  heading: string;
+  descriptionHtml: string;
+}
+
+/** Managed from wp-admin → עמודי תוכן → ביקורות לקוחות (includes/class-content-pages.php). */
+export function getReviewsPage() {
+  return tamarFetch<ReviewsPage>(`/reviews-page`, {
+    tags: ["reviews-page"],
+    revalidate: 300,
+  });
+}
+
+export interface BlogCommentInput {
+  postId: number;
+  authorName: string;
+  authorEmail: string;
+  content: string;
+}
+
+/**
+ * WP core's own REST API refuses anonymous comment creation outright — this
+ * goes through includes/class-blog.php instead, which calls wp_new_comment()
+ * server-side. Reading comments doesn't need this: GET /wp/v2/comments is
+ * already public (see getPostComments() in lib/wpgraphql/posts.ts).
+ */
+export function submitBlogComment(input: BlogCommentInput) {
+  return tamarFetch<{ success: boolean; approved: boolean }>(`/blog-comment`, {
+    method: "POST",
+    body: JSON.stringify(input),
   });
 }
 

@@ -212,7 +212,7 @@ export function SaleProductSlider({
   if (products.length === 0) return null;
 
   return (
-    <section className="w-full py-8 sm:py-[50px]">
+    <section className="w-full py-[50px]">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 px-4 text-center sm:px-6">
         <span className="flex w-fit items-center gap-1.5 rounded-full bg-brand-accent px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm">
           {badgeIcon}

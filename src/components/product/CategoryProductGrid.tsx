@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Loader2, X } from "lucide-react";
 import type { Brand, Product, ProductCategory } from "@/types/product";
-import { ProductGridCard } from "@/components/product/ProductGridCard";
+import { CategoryProductCard } from "@/components/product/CategoryProductCard";
 import { fetchCategoryProducts, type CategorySortOption } from "@/lib/wpgraphql/actions";
-import { CustomSelect } from "@/components/ui/CustomSelect";
 
 const ALL_CATEGORIES_VALUE = "__all__";
 const ALL_BRANDS_VALUE = "__all__";
@@ -91,19 +90,128 @@ function PriceRangeFilter({
         />
       </div>
 
+      {/* RTL, as on the reference: range text on the right, button on the left. */}
       <div className="flex items-center justify-between gap-2">
+        {/* Explicit left-to-right pieces so the visual order is always
+            "₪max - ₪min", as on the reference, regardless of bidi rules. */}
+        <span dir="ltr" className="flex items-center gap-[6px] text-[15px] font-semibold text-[#333]">
+          <bdi>₪{localMax}</bdi>
+          <span>-</span>
+          <bdi>₪{localMin}</bdi>
+        </span>
         <button
           type="button"
           onClick={() => onApply(localMin, localMax)}
-          className="shrink-0 rounded-full bg-brand-soft px-4 py-1.5 text-base font-semibold text-brand-accent transition-colors hover:bg-gradient-to-l hover:from-brand-accent hover:to-[#ff6b72] hover:text-white"
+          className="h-[34px] shrink-0 rounded-[35px] bg-[#f3c3cc] px-[18px] text-[13px] font-semibold text-[#333] transition-colors hover:bg-[#d52027] hover:text-white"
         >
           חיפוש
         </button>
-        <span dir="ltr" className="text-base font-medium text-black/70">
-          {localMax} ₪ - {localMin} ₪
-        </span>
       </div>
     </div>
+  );
+}
+
+/**
+ * One cell of the horizontal filter bar. Reference (WoodMart product
+ * filters): 42px row, 16px title on the right, current value as a small grey
+ * chip, chevron on the left, 2px rgba(0,0,0,.1) bottom border; the options
+ * open in a panel directly underneath. Closes on outside click / Escape.
+ */
+function FilterDropdown({
+  title,
+  value,
+  children,
+}: {
+  title: string;
+  value?: string;
+  children: (close: () => void) => React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Opens on hover like the reference (mouse only — on touch, the tap's
+  // synthetic hover would immediately re-toggle it), and on click/keyboard.
+  const closeTimer = useRef<number | null>(null);
+  function onPointerEnter(e: React.PointerEvent) {
+    if (e.pointerType !== "mouse") return;
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setOpen(true);
+  }
+  function onPointerLeave(e: React.PointerEvent) {
+    if (e.pointerType !== "mouse") return;
+    closeTimer.current = window.setTimeout(() => setOpen(false), 150);
+  }
+
+  return (
+    <div ref={ref} className="relative" onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={`flex h-[42px] w-full items-center gap-[8px] border-b-2 text-start text-[16px] text-[#0c0c0c] transition-colors ${
+          open ? "border-[#d52027]" : "border-black/10 hover:border-black/25"
+        }`}
+      >
+        <span className="shrink-0">{title}</span>
+        {value ? (
+          <span className="min-w-0 truncate rounded-[3px] bg-[#f1f1f1] px-[8px] py-[2px] text-[13px] text-[#333]">{value}</span>
+        ) : null}
+        <ChevronDown className={`ms-auto h-4 w-4 shrink-0 text-black/40 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open ? (
+        <div className="absolute inset-x-0 top-full z-30 mt-[6px] max-h-[320px] min-w-[240px] overflow-y-auto bg-white shadow-[0_0_9px_rgba(0,0,0,.12)]">
+          {children(() => setOpen(false))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function OptionList<T extends string>({
+  options,
+  selected,
+  onSelect,
+}: {
+  options: { value: T; label: string }[];
+  selected: T | string;
+  onSelect: (value: T) => void;
+}) {
+  return (
+    <ul className="py-[6px]">
+      {options.map((o) => {
+        const active = o.value === selected;
+        return (
+          <li key={o.value}>
+            <button
+              type="button"
+              onClick={() => onSelect(o.value)}
+              className={`flex w-full items-center px-[15px] py-[8px] text-start text-[16px] transition-colors ${
+                active ? "bg-[#f3c3cc] text-[#333]" : "text-[#777] hover:text-[#333]"
+              }`}
+            >
+              {o.label}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -143,7 +251,6 @@ export function CategoryProductGrid({
   const [priceBounds] = useState(() => computePriceBounds(initialProducts));
 
   const effectiveBrand = selectedBrand === ALL_BRANDS_VALUE ? brandSlug : selectedBrand;
-  const hasActiveFilters = sort !== "DEFAULT" || priceRange !== null || selectedBrand !== ALL_BRANDS_VALUE;
 
   // One removable chip per active filter (sort/price/brand — the category
   // isn't a "filter" here, it's the page itself), so any single one can be
@@ -225,79 +332,90 @@ export function CategoryProductGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNextPage, isPending, endCursor]);
 
-  return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
-      <aside className="z-10 flex h-fit max-h-[calc(100vh-11rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-black/5 bg-white p-5 shadow-sm md:sticky md:top-44">
-        <div className="flex items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-base font-bold text-black/80">
-            <SlidersHorizontal className="h-4 w-4 text-brand-accent" />
-            סינון
-          </p>
-          {hasActiveFilters ? (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="flex items-center gap-1 text-base font-medium text-black/50 transition-colors hover:text-brand-accent"
-            >
-              <X className="h-3.5 w-3.5" />
-              נקה סינון
-            </button>
-          ) : null}
-        </div>
+  const currentCategorySlug = categorySlug ? normalizeSlug(categorySlug) : null;
+  const currentCategoryName = categories?.find((c) => normalizeSlug(c.slug) === currentCategorySlug)?.name;
 
-        <div>
-          <p className="mb-2 text-[13px] font-bold text-black/80">מיון</p>
-          <CustomSelect value={sort} onChange={setSort} options={SORT_OPTIONS} />
-        </div>
+  function goToCategory(slug: string) {
+    if (!categories || slug === currentCategorySlug) return;
+    // Preserve the site's /product-category/{parent}/{child}/ URL convention
+    // for child categories rather than flattening to a single segment, which
+    // would silently drop the breadcrumb trail on the destination page.
+    const target = categories.find((c) => normalizeSlug(c.slug) === slug);
+    const parent = target?.parentId ? categories.find((c) => c.id === target.parentId) : null;
+    const path = parent ? `${parent.slug}/${target!.slug}` : slug;
+    router.push(`/product-category/${path}/`);
+  }
+
+  return (
+    <div>
+      {/* Horizontal filter bar (reference: WoodMart product filters) —
+          one dropdown per filter across the full width, above the grid. */}
+      <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] md:grid-cols-4">
+        <FilterDropdown title="מיין לפי" value={sort !== "DEFAULT" ? SORT_OPTIONS.find((o) => o.value === sort)?.label : undefined}>
+          {(close) => (
+            <OptionList
+              options={SORT_OPTIONS}
+              selected={sort}
+              onSelect={(v) => {
+                setSort(v);
+                close();
+              }}
+            />
+          )}
+        </FilterDropdown>
 
         {categories && categories.length > 0 ? (
-          <div className="border-t border-black/5 pt-5">
-            <p className="mb-2 text-[13px] font-bold text-black/80">קטגוריות</p>
-            <CustomSelect
-              value={categorySlug ? normalizeSlug(categorySlug) : ALL_CATEGORIES_VALUE}
-              onChange={(slug) => {
-                if (slug === normalizeSlug(categorySlug ?? "")) return;
-                // Preserve the site's /product-category/{parent}/{child}/
-                // URL convention for child categories rather than flattening
-                // to a single segment, which would silently drop the
-                // breadcrumb trail on the destination page.
-                const target = categories.find((c) => normalizeSlug(c.slug) === slug);
-                const parent = target?.parentId ? categories.find((c) => c.id === target.parentId) : null;
-                const path = parent ? `${parent.slug}/${target!.slug}` : slug;
-                router.push(`/product-category/${path}/`);
-              }}
-              options={categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name }))}
-            />
-          </div>
+          <FilterDropdown title="קטגוריות" value={currentCategoryName}>
+            {(close) => (
+              <OptionList
+                options={categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name }))}
+                selected={currentCategorySlug ?? ALL_CATEGORIES_VALUE}
+                onSelect={(slug) => {
+                  close();
+                  goToCategory(slug);
+                }}
+              />
+            )}
+          </FilterDropdown>
         ) : null}
+
+        <FilterDropdown title="מחיר" value={priceRange ? `${priceRange.min}–${priceRange.max} ₪` : undefined}>
+          {(close) => (
+            <div className="p-[15px]">
+              <PriceRangeFilter
+                min={priceRange?.min ?? priceBounds.min}
+                max={priceRange?.max ?? priceBounds.max}
+                boundMin={priceBounds.min}
+                boundMax={priceBounds.max}
+                onApply={(min, max) => {
+                  setPriceRange({ min, max });
+                  close();
+                }}
+              />
+            </div>
+          )}
+        </FilterDropdown>
 
         {brands && brands.length > 0 ? (
-          <div className="border-t border-black/5 pt-5">
-            <p className="mb-2 text-[13px] font-bold text-black/80">מותג</p>
-            <CustomSelect
-              value={selectedBrand}
-              onChange={setSelectedBrand}
-              options={[
-                { value: ALL_BRANDS_VALUE, label: "כל המותגים" },
-                ...brands.map((b) => ({ value: b.slug, label: b.name, image: b.thumbnailUrl })),
-              ]}
-            />
-          </div>
+          <FilterDropdown
+            title="מותג"
+            value={selectedBrand !== ALL_BRANDS_VALUE ? brands.find((b) => b.slug === selectedBrand)?.name : undefined}
+          >
+            {(close) => (
+              <OptionList
+                options={[{ value: ALL_BRANDS_VALUE, label: "כל המותגים" }, ...brands.map((b) => ({ value: b.slug, label: b.name }))]}
+                selected={selectedBrand}
+                onSelect={(v) => {
+                  setSelectedBrand(v);
+                  close();
+                }}
+              />
+            )}
+          </FilterDropdown>
         ) : null}
+      </div>
 
-        <div className="border-t border-black/5 pt-5">
-          <p className="mb-3 text-[13px] font-bold text-black/80">טווח מחירים</p>
-          <PriceRangeFilter
-            min={priceRange?.min ?? priceBounds.min}
-            max={priceRange?.max ?? priceBounds.max}
-            boundMin={priceBounds.min}
-            boundMax={priceBounds.max}
-            onApply={(min, max) => setPriceRange({ min, max })}
-          />
-        </div>
-      </aside>
-
-      <div>
+      <div className="mt-[35px]">
         {activeChips.length > 0 ? (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             {activeChips.map((chip) => (
@@ -322,17 +440,28 @@ export function CategoryProductGrid({
         ) : null}
 
         {products.length === 0 && !isPending ? (
-          <p className="text-black/60">{brandSlug ? "לא נמצאו מוצרים במותג זה." : "לא נמצאו מוצרים בקטגוריה זו."}</p>
+          <p className="py-10 text-center text-lg text-black/60">
+            {brandSlug ? "אין מוצרים זמינים במותג זה כרגע." : "אין מוצרים זמינים בקטגוריה זו כרגע."}
+          </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          // Shared 1px grid lines like the reference: each card draws a full
+          // border and overlaps its neighbour by 1px (-mt-px/-ml-px), so the
+          // container adds the outer top/left edge back.
+          <div className="grid grid-cols-2 pt-px pl-px md:grid-cols-3 lg:grid-cols-5">
             {products.map((product) => (
-              <ProductGridCard key={product.id} product={product} />
+              <CategoryProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
 
-        <div ref={sentinelRef} className="flex justify-center py-8">
-          {isPending ? <Loader2 className="h-6 w-6 animate-spin text-brand-accent" /> : null}
+        {/* Infinite-scroll sentinel + the reference's loading pill. */}
+        <div ref={sentinelRef} className="flex justify-center py-[30px]">
+          {isPending && products.length > 0 ? (
+            <span className="flex h-[44px] items-center gap-[8px] rounded-[35px] border-2 border-black/[.106] px-[25px] text-[13px] font-semibold text-[#333]">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              בטעינה...
+            </span>
+          ) : null}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { ProductGridCard } from "@/components/product/ProductGridCard";
@@ -54,7 +54,7 @@ export default function WishlistPage() {
   const loading = !storeReady || loadedKey !== idsKey;
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-[1600px] px-[15px] py-8 ">
       <h1 className="mb-6 text-2xl font-bold">רשימת המשאלות</h1>
 
       {loading ? (

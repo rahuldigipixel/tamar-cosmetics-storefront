@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -105,7 +105,7 @@ export default function CheckoutPage() {
 
   if (cart.items.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
+      <div className="mx-auto max-w-2xl px-[15px] py-20 text-center ">
         <h1 className="text-2xl font-bold">אין מוצרים לתשלום</h1>
         <p className="mt-2 text-base text-black/50">העגלה שלך ריקה.</p>
         <Link
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-[1600px] px-[15px] py-8 ">
       <h1 className="mb-6 text-2xl font-bold sm:text-3xl">תשלום</h1>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_460px]">

@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
     return [
       { source: "/%D7%9E%D7%95%D7%AA%D7%92", destination: "/brand-list" },
       { source: "/%D7%9E%D7%95%D7%AA%D7%92/", destination: "/brand-list" },
+      // "/מכירה-סיטונאית" (wholesale page) — same non-ASCII-directory
+      // limitation as the brand list rewrite above.
+      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA", destination: "/wholesale" },
+      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA/", destination: "/wholesale" },
+      // "/ביקורות-לקוחות" (customer reviews page)
+      { source: "/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%95%D7%AA-%D7%9C%D7%A7%D7%95%D7%97%D7%95%D7%AA", destination: "/reviews" },
+      { source: "/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%95%D7%AA-%D7%9C%D7%A7%D7%95%D7%97%D7%95%D7%AA/", destination: "/reviews" },
     ];
   },
   images: {

@@ -509,7 +509,7 @@ export function Header({
             // at 1025–1115px), 18px-tall rgba(255,255,255,.25) separators,
             // hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[11px] font-bold uppercase leading-[1.2] transition-colors min-[1116px]:px-[10px] min-[1216px]:text-[12px] min-[1426px]:text-[13px] min-[1508px]:text-[14px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[1.2] transition-colors min-[1116px]:px-[10px] min-[1216px]:text-[15px] min-[1426px]:text-[16px] min-[1508px]:text-[16px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 

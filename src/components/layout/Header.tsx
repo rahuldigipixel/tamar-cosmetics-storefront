@@ -587,50 +587,48 @@ export function Header({
                   {decodeHtml(panelItem.featuredTitle || panelItem.label)}
                 </p>
 
-                {panelLinkChildren.some((c) => c.image) ? (
-                  // Brand/sub-category cards (children with an image).
-                  <div className="grid grid-cols-5 gap-x-[16px] gap-y-[20px] min-[1300px]:grid-cols-7">
-                    {panelLinkChildren.map((child) => (
+                {/* Sub-category list — 5 columns when there's no promoted
+                    category beside it, 3 when there is (see panelFeature
+                    below), max 5 rows (20 items). When the admin's "show
+                    images instead of names" toggle is on for this category
+                    (wp-admin), each item carries its own category thumbnail
+                    as `child.image` and that renders instead of the bullet +
+                    label — falling back to the label for any sub-category
+                    that has no thumbnail of its own. */}
+                <ul
+                  className={`grid gap-x-[40px] gap-y-[44px] ${
+                    panelFeature ? "grid-cols-3" : "grid-cols-5"
+                  }`}
+                >
+                  {panelLinkChildren.slice(0, 20).map((child) => (
+                    <li key={child.id}>
                       <Link
-                        key={child.id}
                         href={child.url}
                         onClick={() => setMenuVisible(false)}
-                        className="flex h-[125px] flex-col items-center justify-between bg-white px-[10px] pt-[20px] pb-[18px] text-center shadow-[0_0_15px_rgba(0,0,0,.07)] transition-shadow hover:shadow-[0_0_18px_rgba(0,0,0,.14)]"
+                        className={`flex items-center gap-[8px] text-[16px] font-light leading-[25px] transition-colors hover:text-[#d52027] ${
+                          isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
+                        }`}
                       >
-                        <span className="relative h-[45px] w-full">
-                          {child.image ? (
+                        {child.image ? (
+                          <span className="relative h-[60px] w-full">
                             <Image
                               src={child.image.url}
                               alt={child.image.alt || child.label}
                               fill
-                              sizes="130px"
+                              sizes="150px"
                               className="object-contain"
                             />
-                          ) : null}
-                        </span>
-                        <span className="line-clamp-1 text-[16px] leading-[1.2] text-[#333]">{decodeHtml(child.label)}</span>
+                          </span>
+                        ) : (
+                          <>
+                            <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-[#777]" />
+                            <span>{decodeHtml(child.label)}</span>
+                          </>
+                        )}
                       </Link>
-                    ))}
-                  </div>
-                ) : (
-                  // Plain sub-category list — 4 columns, max 5 rows (20 items).
-                  <ul className="grid grid-cols-4 gap-x-[40px] gap-y-[44px]">
-                    {panelLinkChildren.slice(0, 20).map((child) => (
-                      <li key={child.id}>
-                        <Link
-                          href={child.url}
-                          onClick={() => setMenuVisible(false)}
-                          className={`flex items-center gap-[8px] text-[16px] font-light leading-[25px] transition-colors hover:text-[#d52027] ${
-                            isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
-                          }`}
-                        >
-                          <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-[#777]" />
-                          <span>{decodeHtml(child.label)}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                    </li>
+                  ))}
+                </ul>
 
                 <div className="mt-[50px] flex justify-center">
                   <Link

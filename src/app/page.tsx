@@ -9,7 +9,7 @@ import { ProductSlider } from "@/components/home/ProductSlider";
 import { SaleProductSlider } from "@/components/home/SaleProductSlider";
 import { ClubSignup } from "@/components/home/ClubSignup";
 import { SaleShowcase } from "@/components/home/SaleShowcase";
-import { CustomerReviews } from "@/components/home/CustomerReviews";
+import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 import { RichContent } from "@/components/ui/RichContent";
 import type { Product, ProductCategory, Brand } from "@/types/product";
 
@@ -132,7 +132,11 @@ export default async function HomePage() {
         <RichContent html={aboutHtml} className="mx-auto max-w-3xl text-center" />
       </section>
 
-      <CustomerReviews />
+      <section className="w-full bg-white py-8 sm:py-[50px]">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+          <FlashyReviewsWidget />
+        </div>
+      </section>
     </div>
   );
 }

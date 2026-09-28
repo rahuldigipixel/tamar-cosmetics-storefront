@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Heebo, Rubik } from "next/font/google";
+import { FLASHY_ACCOUNT_ID } from "@/lib/flashy";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WelcomePopup } from "@/components/layout/WelcomePopup";
@@ -63,6 +65,17 @@ export default async function RootLayout({
         <CartDrawer />
         <FloatingActions />
         <AccessibilityWidget />
+        <Script id="flashy-init" strategy="lazyOnload">
+          {`(function (a, b, c) {
+            if (!a.flashy) {
+              a.flashy = function () { a.flashy.event && a.flashy.event(arguments), a.flashy.queue.push(arguments) };
+              a.flashy.queue = [];
+              var d = document.getElementsByTagName(b)[0], e = document.createElement(b);
+              e.src = c; e.async = true; d.parentNode.insertBefore(e, d);
+            }
+          })(window, "script", "https://js.flashyapp.com/thunder.js");
+          flashy("init", ${FLASHY_ACCOUNT_ID});`}
+        </Script>
       </body>
     </html>
   );

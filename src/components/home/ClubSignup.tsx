@@ -3,7 +3,23 @@
 import { useState } from "react";
 import Image from "next/image";
 
-export function ClubSignup() {
+const DEFAULT_HEADING = "את הנבחרת הסודית שלנו את הכרת?";
+const DEFAULT_DESCRIPTION =
+  "עולם שלם של הטבות ומבצעים סודיים, רק בשבילך. לקוחות הנבחרת הסודית מקבלות יותר, הרבה יותר.";
+const DEFAULT_BG_IMAGE = "/את-הנבחרת-הסודית-שלנו-את-הכרת.webp";
+
+export function ClubSignup({
+  heading,
+  description,
+  bgImageUrl,
+}: {
+  heading?: string;
+  description?: string;
+  bgImageUrl?: string;
+}) {
+  const resolvedHeading = heading || DEFAULT_HEADING;
+  const resolvedDescription = description || DEFAULT_DESCRIPTION;
+  const resolvedBgImage = bgImageUrl || DEFAULT_BG_IMAGE;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,7 +52,7 @@ export function ClubSignup() {
         {/* Visual Right: Delivery Boxes Image */}
         <div className="relative min-h-[380px] w-full sm:min-h-[480px] lg:min-h-[640px]">
           <Image
-            src="/את-הנבחרת-הסודית-שלנו-את-הכרת.webp"
+            src={resolvedBgImage}
             alt="תמר קוסמטיקס - Let the magic of beauty begin"
             fill
             priority
@@ -51,12 +67,12 @@ export function ClubSignup() {
             
             {/* Title - Single line on desktop matching Image 1 */}
             <h2 className="mb-2 text-right text-[22px] sm:text-[25px] lg:text-[27px] font-bold leading-tight tracking-tight text-white">
-              את הנבחרת הסודית שלנו את הכרת?
+              {resolvedHeading}
             </h2>
 
             {/* Subtitle */}
             <p className="mb-6 text-right text-[13.5px] sm:text-[14.5px] leading-relaxed text-white/90">
-              עולם שלם של הטבות ומבצעים סודיים, רק בשבילך. לקוחות הנבחרת הסודית מקבלות יותר, הרבה יותר.
+              {resolvedDescription}
             </p>
 
             {status === "done" ? (

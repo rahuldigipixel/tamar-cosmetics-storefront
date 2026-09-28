@@ -289,6 +289,73 @@ export function submitBlogComment(input: BlogCommentInput) {
   });
 }
 
+export interface HomePageSlide {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+  /** Optional destination link for the slide (e.g. /shop) — empty string when unset. */
+  link: string;
+}
+
+/** `bestsellers` | `new` | `sale` — which pre-fetched product list (see getHomeData()) feeds a home-page rail. */
+export type HomeProductSource = "bestsellers" | "new" | "sale";
+
+export interface HomePageRailSettings {
+  title: string;
+  description: string;
+  source: HomeProductSource;
+}
+
+export type HomePageSaleSettings = HomePageRailSettings;
+
+export interface HomePageFeature {
+  /** "lucide" (use `icon` below) or "image" (use `iconImage`, an admin-uploaded SVG/image). */
+  iconType: "lucide" | "image";
+  /** One of Tamar_Home_Page_Settings::FEATURE_ICON_CHOICES on the WP side — see FEATURE_ICON_MAP in featureIconMap.ts. */
+  icon: string;
+  iconImage: SiteLogo | null;
+  title: string;
+  subtitle: string;
+  /** Optional destination link (e.g. /shop) — empty string when unset. */
+  link: string;
+}
+
+export interface HomePageSettings {
+  heroDesktop: HomePageSlide[];
+  heroMobile: HomePageSlide[];
+  categoryHeading: string;
+  categorySlugs: string[];
+  brandHeading: string;
+  brandSlugs: string[];
+  hot: HomePageRailSettings;
+  club: {
+    heading: string;
+    description: string;
+    bgImage: SiteLogo | null;
+  };
+  new: HomePageRailSettings;
+  sale: HomePageSaleSettings;
+  features: HomePageFeature[];
+  aboutTitle: string;
+  aboutContentHtml: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → ניהול דף הבית (includes/class-home-page-settings.php).
+ * Only carries *which* categories/brands/products to show and what text to
+ * display — the Next.js home page already has the full category/brand/
+ * product objects from getHomeData() (WPGraphQL), so this stays a lean 3rd
+ * call rather than duplicating that data (same budget as /wholesale-page).
+ */
+export const getHomePageSettings = cache(function getHomePageSettings() {
+  return tamarFetch<HomePageSettings>(`/home-page`, {
+    tags: ["home-page"],
+    revalidate: 300,
+  });
+});
+
 export interface ClubSignupInput {
   name: string;
   email: string;

@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductCategory } from "@/types/product";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
 
-export function CategorySlider({ categories }: { categories: ProductCategory[] }) {
+export function CategorySlider({ categories, heading }: { categories: ProductCategory[]; heading?: string }) {
   const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<ProductCategory, HTMLAnchorElement>({
     items: categories,
     stepSize: 3,
@@ -29,7 +29,10 @@ export function CategorySlider({ categories }: { categories: ProductCategory[] }
 
   return (
     <section className="mx-auto max-w-[1550px] px-[15px] py-[70px]">
-      <div 
+      {heading ? (
+        <h2 className="mb-8 text-center text-[28px] font-bold text-[#242424] sm:text-[36px]">{heading}</h2>
+      ) : null}
+      <div
         className="relative"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}

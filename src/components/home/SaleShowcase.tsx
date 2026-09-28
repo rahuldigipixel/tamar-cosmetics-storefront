@@ -5,7 +5,17 @@ import type { Product } from "@/types/product";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
 
-export function SaleShowcase({ products }: { products: Product[] }) {
+export function SaleShowcase({
+  products,
+  badge,
+  title,
+  description,
+}: {
+  products: Product[];
+  badge?: string;
+  title?: string;
+  description?: string;
+}) {
   const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({
     items: products,
     autoplayMs: 6000,
@@ -16,8 +26,9 @@ export function SaleShowcase({ products }: { products: Product[] }) {
   return (
     <section className="mx-auto max-w-[1600px] px-[15px] py-[70px]">
       <div className="mb-7 text-center">
-        <h2 className="text-[72px] font-black leading-none tracking-tight text-[#000]">SALE</h2>
-        <p className="mt-3 text-[23px] text-black/100">המבצעים שלנו:</p>
+        <h2 className="text-[72px] font-black leading-none tracking-tight text-[#000]">{badge || "SALE"}</h2>
+        <p className="mt-3 text-[23px] text-black/100">{title || "המבצעים שלנו"}</p>
+        {description ? <p className="mt-1 text-base text-black/60">{description}</p> : null}
       </div>
 
       <div className="relative">

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Brand } from "@/types/product";
 
-export function BrandSlider({ brands }: { brands: Brand[] }) {
+export function BrandSlider({ brands, heading }: { brands: Brand[]; heading?: string }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll: move 1px every 20ms — smooth continuous drift, no snapping
@@ -50,6 +50,9 @@ export function BrandSlider({ brands }: { brands: Brand[] }) {
 
   return (
     <section className="mx-auto max-w-[1500px] px-[15px] py-[70px]">
+      {heading ? (
+        <h2 className="mb-8 text-center text-[28px] font-bold text-[#242424] sm:text-[36px]">{heading}</h2>
+      ) : null}
       <div className="overflow-clip [overflow-clip-margin:2px]">
         <div
           ref={trackRef}

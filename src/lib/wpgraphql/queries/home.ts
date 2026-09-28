@@ -24,7 +24,7 @@ export const GET_HOME_DATA = /* GraphQL */ `
         ${PRODUCT_LIST_FIELDS}
       }
     }
-    productCategories(first: 150, where: { hideEmpty: true }) {
+    productCategories(first: 400, where: { hideEmpty: false }) {
       nodes {
         id
         databaseId
@@ -43,7 +43,7 @@ export const GET_HOME_DATA = /* GraphQL */ `
         }
       }
     }
-    allPaBrand(first: 200, where: { hideEmpty: false }) {
+    allPaBrand(first: 300, where: { hideEmpty: false }) {
       nodes {
         id
         databaseId

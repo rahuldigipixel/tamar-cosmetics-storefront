@@ -49,11 +49,11 @@ export function BrandSlider({ brands }: { brands: Brand[] }) {
   const doubled = [...brands, ...brands];
 
   return (
-    <section className="mx-auto max-w-[1450px] py-6 sm:py-10">
-      <div className="overflow-hidden">
+    <section className="mx-auto max-w-[1500px] px-[15px] py-[70px]">
+      <div className="overflow-clip [overflow-clip-margin:2px]">
         <div
           ref={trackRef}
-          className="flex gap-12 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-20 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{ direction: "ltr" }} // keep scroll math predictable regardless of page RTL
         >
           {doubled.map((brand, i) => (

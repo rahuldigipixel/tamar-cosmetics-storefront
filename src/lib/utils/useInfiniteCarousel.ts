@@ -37,6 +37,7 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
 
   const looped = count > 0 ? Array.from({ length: COPIES }, () => items).flat() : [];
   const [position, setPosition] = useState(middleStart);
+  const pausedRef = useRef(false);
 
   function scrollTo(target: number, smooth: boolean) {
     const container = trackRef.current;
@@ -75,9 +76,28 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Pause autoplay while the pointer is over the track so the user can
+  // read product details and adjust quantity without the row sliding away.
   useEffect(() => {
     if (!autoplayMs) return;
-    const timer = setInterval(() => step(1), autoplayMs);
+    const container = trackRef.current;
+    if (!container) return;
+    const onEnter = () => { pausedRef.current = true; };
+    const onLeave = () => { pausedRef.current = false; };
+    container.addEventListener("mouseenter", onEnter);
+    container.addEventListener("mouseleave", onLeave);
+    return () => {
+      container.removeEventListener("mouseenter", onEnter);
+      container.removeEventListener("mouseleave", onLeave);
+    };
+  }, [autoplayMs]);
+
+  useEffect(() => {
+    if (!autoplayMs) return;
+    const timer = setInterval(() => {
+      if (pausedRef.current) return;
+      step(1);
+    }, autoplayMs);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position, autoplayMs]);

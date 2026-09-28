@@ -26,6 +26,7 @@ function useCenterCarousel<Item>(items: Item[], autoplayMs?: number) {
   const middleStart = count * Math.floor(COPIES / 2);
   const looped = count > 0 ? Array.from({ length: COPIES }, () => items).flat() : [];
   const position = useRef(middleStart);
+  const pausedRef = useRef(false);
 
   function centerItem(target: number, smooth: boolean) {
     const container = trackRef.current;
@@ -58,9 +59,28 @@ function useCenterCarousel<Item>(items: Item[], autoplayMs?: number) {
     // Only on mount — jumps the track to the middle copy before first paint settles.
   }, []);
 
+  // Pause autoplay while the pointer is over the track so the user can
+  // read product details and adjust quantity without the row sliding away.
   useEffect(() => {
     if (!autoplayMs) return;
-    const timer = setInterval(() => step(1), autoplayMs);
+    const container = trackRef.current;
+    if (!container) return;
+    const onEnter = () => { pausedRef.current = true; };
+    const onLeave = () => { pausedRef.current = false; };
+    container.addEventListener("mouseenter", onEnter);
+    container.addEventListener("mouseleave", onLeave);
+    return () => {
+      container.removeEventListener("mouseenter", onEnter);
+      container.removeEventListener("mouseleave", onLeave);
+    };
+  }, [autoplayMs]);
+
+  useEffect(() => {
+    if (!autoplayMs) return;
+    const timer = setInterval(() => {
+      if (pausedRef.current) return;
+      step(1);
+    }, autoplayMs);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplayMs]);
@@ -141,7 +161,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
         ) : null}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-4 text-right">
+      <div className="flex flex-1 flex-col gap-1 p-4 text-right">
         <Link
           href={`/product/${product.slug}`}
           className="line-clamp-2 min-h-[2.8em] text-sm font-medium text-black/80 group-hover:text-brand-accent"
@@ -212,8 +232,8 @@ export function SaleProductSlider({
   if (products.length === 0) return null;
 
   return (
-    <section className="w-full py-[50px]">
-      <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 px-4 text-center sm:px-6">
+    <section className="mx-auto max-w-[1600px] px-[15px] py-[50px]">
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-10 px-4 text-center sm:px-6">
         <span className="flex w-fit items-center gap-1.5 rounded-full bg-brand-accent px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm">
           {badgeIcon}
           {badge}
@@ -222,20 +242,20 @@ export function SaleProductSlider({
         {description ? <p className="max-w-xl text-sm text-black/60 sm:text-lg">{description}</p> : null}
       </div>
 
-      {/* Nav buttons sit back inside the carousel's own box — pinned to
-          its inner edges — instead of out in the page's side margins. */}
-      <div className="relative mx-auto mt-8 px-4 sm:mt-10 sm:max-w-[81rem] sm:px-0 lg:max-w-[91rem]">
+      {/* Nav buttons float outside the carousel's own box, in the page's
+          side margins — matching the other home sliders. */}
+      <div className="relative mx-auto mt-8 px-4 sm:mt-10  sm:px-0  ">
         <button
           onClick={() => step(-1)}
           aria-label="הקודם"
-          className="absolute inset-y-0 start-2 z-20 hidden h-12 w-12 items-center justify-center self-center rounded-full border border-black/10 bg-white text-black/70 shadow-md transition-all hover:-translate-y-0.5 hover:text-brand-accent sm:flex"
+          className="absolute -start-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
         <button
           onClick={() => step(1)}
           aria-label="הבא"
-          className="absolute inset-y-0 end-2 z-20 hidden h-12 w-12 items-center justify-center self-center rounded-full border border-black/10 bg-white text-black/70 shadow-md transition-all hover:-translate-y-0.5 hover:text-brand-accent sm:flex"
+          className="absolute -end-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>

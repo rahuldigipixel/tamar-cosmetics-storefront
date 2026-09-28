@@ -17,7 +17,7 @@ export const revalidate = 60;
 const EMPTY_LIST = { products: [], hasNextPage: false, endCursor: null };
 
 export default async function HomePage() {
-  const [{ products: saleProducts }, { products: bestSellers }, { products: newProducts }, categories, brands] =
+  const [{ products: saleProductsRaw }, { products: bestSellersRaw }, { products: newProductsRaw }, categories, brands] =
     await Promise.all([
       listProducts({ onSale: true, first: 20 }).catch(() => EMPTY_LIST),
       listProducts({ first: 20, orderby: [{ field: "POPULARITY", order: "DESC" }] }).catch(() => EMPTY_LIST),
@@ -25,6 +25,11 @@ export default async function HomePage() {
       listCategories().catch(() => []),
       listBrands().catch(() => []),
     ]);
+
+  // Out-of-stock items shouldn't take up slots in these promotional home-page sliders.
+  const saleProducts = saleProductsRaw.filter((p) => p.inStock);
+  const bestSellers = bestSellersRaw.filter((p) => p.inStock);
+  const newProducts = newProductsRaw.filter((p) => p.inStock);
 
   return (
     <div>
@@ -57,6 +62,7 @@ export default async function HomePage() {
          description="המוצרים החדשים שעלו לאתר:"
         products={newProducts}
         headerVariant="modern"
+        autoplayMs={6000}
       />
 
 

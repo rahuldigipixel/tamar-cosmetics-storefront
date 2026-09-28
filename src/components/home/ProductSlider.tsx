@@ -9,6 +9,7 @@ export function ProductSlider({
   title,
   description,
   products,
+  autoplayMs,
 }: {
   badge?: string;
   badgeIcon?: React.ReactNode;
@@ -16,13 +17,14 @@ export function ProductSlider({
   description?: string;
   products: Product[];
   headerVariant?: "classic" | "modern";
+  autoplayMs?: number;
 }) {
-  const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({ items: products });
+  const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({ items: products, autoplayMs });
 
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1600px] px-[15px] py-[50px]">
+    <section className="mx-auto max-w-[1600px] px-[15px] py-[70px]">
       {/* Centered heading */}
       <div className="mb-7 text-center">
         <h2 className="text-[72px] font-black leading-none tracking-tight text-[#000] sm:text-[72px]">{title}</h2>
@@ -34,12 +36,12 @@ export function ProductSlider({
         <button
           onClick={() => step(-1)}
           aria-label="הקודם"
-          className="absolute start-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -start-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        <div className="overflow-hidden px-12">
+        <div className="overflow-clip [overflow-clip-margin:2px]">
           <div
             ref={trackRef}
             className="flex snap-x snap-mandatory gap-[15px] overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -48,7 +50,7 @@ export function ProductSlider({
               <div
                 key={`${product.id}-${i}`}
                 ref={(el) => { itemRefs.current[i] = el; }}
-                className="w-[calc((100%-15px)/2)] shrink-0 snap-start self-stretch sm:w-[calc((100%-30px)/3)] lg:w-[calc((100%-45px)/4)]"
+                className="w-[calc((100%-15px)/2)] shrink-0 snap-start self-stretch sm:w-[calc((100%-30px)/3)] lg:w-[calc((100%-60px)/5)]"
               >
                 <CategoryProductCard product={product} standalone />
               </div>
@@ -59,7 +61,7 @@ export function ProductSlider({
         <button
           onClick={() => step(1)}
           aria-label="הבא"
-          className="absolute end-0 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -end-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>

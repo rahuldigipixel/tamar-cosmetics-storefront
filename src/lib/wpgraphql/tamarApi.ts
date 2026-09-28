@@ -144,6 +144,8 @@ export interface HeaderMenuItem {
   url: string;
   /** "כותרת פנימית" from wp-admin — a heading for the mega panel itself (e.g. "המוצר המומלץ שלנו"), not a replacement for the featured product's own name. Only set on "category"-source items; empty string otherwise. */
   featuredTitle?: string;
+  /** Custom label shown next to the "view category" button in the mega panel. Falls back to the promoted category's own name when empty. Only on "category"-source items. */
+  featuredBtnLabel?: string;
   /** Promoted category shown beside the sub-links (wp-admin "קטגוריה מקודמת בתפריט"): its image (custom or the category's own thumbnail), name and link. Only on "category"-source items; null when none is picked. */
   featuredCategory?: HeaderMenuFeaturedCategory | null;
   children: HeaderMenuChild[];

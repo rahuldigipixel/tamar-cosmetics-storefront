@@ -28,16 +28,16 @@ export function CategorySlider({ categories }: { categories: ProductCategory[] }
   if (categories.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1600px] px-[15px] py-[50px]">
+    <section className="mx-auto max-w-[1550px] px-[15px] py-[70px]">
       <div 
         className="relative"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="overflow-hidden px-12">
+        <div className="overflow-clip [overflow-clip-margin:2px]">
           <div
             ref={trackRef}
-            className="flex snap-x snap-mandatory gap-15 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-20 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {looped.map((category, i) => (
               <Link
@@ -50,10 +50,10 @@ export function CategorySlider({ categories }: { categories: ProductCategory[] }
               >
                 {/* Oval container locked to 160x235 with inner padding */}
                 <div
-                  className="relative flex items-center justify-center overflow-hidden bg-[#fde8ec] p-5"
+                  className="relative flex items-center justify-center overflow-hidden bg-[#fde8ec] p-10"
                   style={{
-                    width: 155,
-                    height: 235,
+                    width: 180,
+                    height: 250,
                     borderRadius: "9999px",
                   }}
                 >

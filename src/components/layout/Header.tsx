@@ -202,9 +202,14 @@ export function Header({
   const panelProductChild: HeaderMenuProductChild | null =
     panelItem?.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
   const panelFeature = panelItem?.featuredCategory
-    ? { ...panelItem.featuredCategory, cta: "לצפייה בקטגוריה" }
+    ? {
+        ...panelItem.featuredCategory,
+        // Use the admin-set btn label if provided, otherwise fall back to the promoted category's own name.
+        displayLabel: panelItem.featuredBtnLabel || panelItem.featuredCategory.label,
+        cta: "לצפייה במוצר",
+      }
     : panelProductChild
-      ? { label: panelProductChild.label, url: panelProductChild.url, image: panelProductChild.image, cta: "לצפייה במוצר" }
+      ? { ...panelProductChild, displayLabel: panelProductChild.label, cta: "לצפייה במוצר" }
       : null;
 
   // usePathname can hand back the raw (percent-encoded) segment for
@@ -509,7 +514,7 @@ export function Header({
             // at 1025–1115px), 18px-tall rgba(255,255,255,.25) separators,
             // hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[1.2] transition-colors min-[1116px]:px-[10px] min-[1216px]:text-[15px] min-[1426px]:text-[16px] min-[1508px]:text-[16px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[1.2] transition-colors min-[1116px]:px-[10px] min-[1216px]:text-[14px] min-[1426px]:text-[15px] min-[1508px]:text-[15px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 
@@ -639,7 +644,7 @@ export function Header({
               </div>
 
               {panelFeature ? (
-                <div className="flex w-[302px] shrink-0 flex-col pt-[15px]">
+                <div className="flex w-[360px] shrink-0 flex-col pt-[15px]">
                   <Link
                     href={panelFeature.url}
                     onClick={() => setMenuVisible(false)}
@@ -650,30 +655,27 @@ export function Header({
                         src={panelFeature.image.url}
                         alt={panelFeature.image.alt}
                         fill
-                        sizes="302px"
+                        sizes="360px"
                         className="object-cover"
                       />
                     ) : null}
                   </Link>
-                  {/* Short name: name + button on one row, as on the
-                      reference. Long name: it takes the full width (never
-                      squeezed into a narrow column) and the button wraps
-                      below, pushed to the left edge. */}
-                  <div className="mt-[30px] flex items-center gap-x-[20px]">
-                    <Link
+                  <div className="mt-[20px] flex items-center justify-between gap-x-[12px]">
+                     <Link
                       href={panelFeature.url}
                       onClick={() => setMenuVisible(false)}
-                      className="min-w-0 flex-1 truncate text-[18px] font-bold leading-[26px] text-black transition-colors hover:text-[#d52027]"
+                      className="text-[16px] font-bold leading-[22px] text-black transition-colors hover:text-[#d52027]"
                     >
-                      {decodeHtml(panelFeature.label)}
+                      {decodeHtml(panelFeature.displayLabel)}
                     </Link>
                     <Link
                       href={panelFeature.url}
                       onClick={() => setMenuVisible(false)}
-                      className="flex h-[42px] shrink-0 items-center rounded-[35px] border-2 border-[#d52027] px-[21px] text-[17px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
+                      className="shrink-0 rounded-[35px] border-2 border-[#d52027] px-[14px] py-[5px] text-[16px] font-bold leading-[18px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
                     >
                       {panelFeature.cta}
                     </Link>
+                   
                   </div>
                 </div>
               ) : null}

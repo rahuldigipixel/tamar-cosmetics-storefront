@@ -1,9 +1,8 @@
-﻿import { Suspense } from "react";
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, Star } from "lucide-react";
-import { getProductBySlug, listProducts } from "@/lib/wpgraphql/products";
+import { getProductBySlug } from "@/lib/wpgraphql/products";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
@@ -16,14 +15,31 @@ import { formatPrice } from "@/lib/utils/formatPrice";
 
 export const revalidate = 60;
 
+// Next.js has been observed delivering this dynamic segment in different
+// forms to generateMetadata() vs. the page body for a non-ASCII slug (one
+// still percent-encoded, the other already decoded) — same root cause as
+// the fix in lib/wpgraphql/posts.ts's getPostBySlug. Since getProductBySlug
+// is only React `cache()`-deduped for identical string arguments, normalizing
+// here (not inside getProductBySlug) is what actually makes both call sites
+// share one request instead of firing two GraphQL queries with different
+// slug encodings.
+function normalizeSlug(slug: string) {
+ try {
+ return decodeURIComponent(slug);
+ } catch {
+ return slug;
+ }
+}
+
 export async function generateMetadata({
  params,
 }: {
  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
  const { slug } = await params;
- const product = await getProductBySlug(slug);
- if (!product) return {};
+ const result = await getProductBySlug(normalizeSlug(slug));
+ if (!result) return {};
+ const { product } = result;
 
  const url = `${wpEnv.siteUrl}/product/${product.slug}`;
  const image = product.images[0]?.src;
@@ -45,9 +61,10 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
  const { slug } = await params;
- const product = await getProductBySlug(slug);
+ const result = await getProductBySlug(normalizeSlug(slug));
 
- if (!product) notFound();
+ if (!result) notFound();
+ const { product, related } = result;
 
  const primaryCategory = product.categories[0];
  const productUrl = `${wpEnv.siteUrl}/product/${product.slug}`;
@@ -179,26 +196,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  <FeatureStrip variant="compact" />
 
- {primaryCategory ? (
- <Suspense fallback={null}>
- <RelatedProducts categorySlug={primaryCategory.slug} excludeId={product.id} />
- </Suspense>
- ) : null}
- </div>
- );
-}
-
-/**
- * Streamed separately: it depends on the product's category, so awaiting it
- * inside the page made the whole page wait for two backend queries in a row.
- * Now the product itself paints first and this slider fills in below.
- */
-async function RelatedProducts({ categorySlug, excludeId }: { categorySlug: string; excludeId: string }) {
- const { products } = await listProducts({ category: categorySlug, first: 13 });
- const related = products.filter((p) => p.id !== excludeId).slice(0, 12);
- if (related.length === 0) return null;
-
- return (
+ {related.length > 0 ? (
  <ProductSlider
  badge="מוצרים דומים"
  badgeIcon={<Sparkles className="h-3.5 w-3.5" />}
@@ -206,5 +204,7 @@ async function RelatedProducts({ categorySlug, excludeId }: { categorySlug: stri
  products={related}
  headerVariant="modern"
  />
+ ) : null}
+ </div>
  );
 }

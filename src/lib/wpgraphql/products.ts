@@ -26,7 +26,7 @@ interface GqlImage {
   altText: string;
 }
 
-interface GqlProductNode {
+export interface GqlProductNode {
   __typename?: string;
   id: string;
   databaseId: number;
@@ -169,6 +169,11 @@ export interface ListProductsResult {
   endCursor: string | null;
 }
 
+/** Shared by listProducts() and getHomeData() (home.ts) so a multi-alias query's per-section nodes map the same way as a plain products() query. */
+export function mapProductListNodes(nodes: GqlProductNode[]): Promise<Product[]> {
+  return Promise.all(nodes.map((n) => withLabels(fromGraphqlProduct(n))));
+}
+
 export async function listProducts(params: ListProductsParams = {}): Promise<ListProductsResult> {
   const data = await fetchGraphQLSafe<{
     products: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
@@ -190,24 +195,36 @@ export async function listProducts(params: ListProductsParams = {}): Promise<Lis
 
   if (!data) return { products: [], hasNextPage: false, endCursor: null };
 
-  const products = await Promise.all(data.products.nodes.map((n) => withLabels(fromGraphqlProduct(n))));
+  const products = await mapProductListNodes(data.products.nodes);
   return { products, hasNextPage: data.products.pageInfo.hasNextPage, endCursor: data.products.pageInfo.endCursor };
+}
+
+export interface ProductWithRelated {
+  product: Product;
+  /** WooCommerce's own related-products algorithm (tags + categories + cross-sells) via the `related` field on Product — fetched in the same request as the product itself instead of a second query. */
+  related: Product[];
 }
 
 /**
  * Wrapped in React `cache()` because both generateMetadata() and the page
  * call it in the same render — GraphQL goes over POST, and Next only
  * auto-dedupes GET fetches, so without this every product page hit the
- * backend twice for the same product.
+ * backend twice for the same product. Also carries the related-products rail
+ * (WooCommerce's native `related` field) so the product page needs only ONE
+ * GraphQL call instead of a second query for the "similar products" slider.
  */
-export const getProductBySlug = cache(async (slug: string): Promise<Product | null> => {
-  const data = await fetchGraphQLSafe<{ product: GqlProductNode | null }>(
-    GET_PRODUCT_BY_SLUG,
-    { slug },
-    { tags: [`product:${slug}`], revalidate: 60 }
-  );
+export const getProductBySlug = cache(async (slug: string): Promise<ProductWithRelated | null> => {
+  const data = await fetchGraphQLSafe<{
+    product: (GqlProductNode & { related?: { nodes: GqlProductNode[] } }) | null;
+  }>(GET_PRODUCT_BY_SLUG, { slug, relatedFirst: 13 }, { tags: [`product:${slug}`], revalidate: 60 });
   if (!data?.product) return null;
-  return withCustomFields(fromGraphqlProduct(data.product));
+
+  const [product, related] = await Promise.all([
+    withCustomFields(fromGraphqlProduct(data.product)),
+    mapProductListNodes(data.product.related?.nodes ?? []),
+  ]);
+
+  return { product, related };
 });
 
 /** Card-level data for many products in one request, returned in the order of `ids`. */

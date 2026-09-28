@@ -1,11 +1,8 @@
 ﻿import Link from "next/link";
 import { notFound } from "next/navigation";
-import { listProducts } from "@/lib/wpgraphql/products";
-import { listCategories } from "@/lib/wpgraphql/categories";
-import { listBrands, listBrandSlugsInCategory } from "@/lib/wpgraphql/brands";
+import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
-import { getCategoryInfo } from "@/lib/wpgraphql/tamarApi";
 
 export const revalidate = 60;
 
@@ -34,18 +31,19 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  const { slug: slugPath } = await params;
  const activeSlug = normalizeSlug(slugPath[slugPath.length - 1]);
 
- const [{ products, hasNextPage, endCursor }, allCategories, brands, brandsInCategorySlugs, info] = await Promise.all([
- listProducts({ category: activeSlug, first: 20 }),
- listCategories().catch(() => []),
- listBrands().catch(() => []),
- // The Brand filter should only offer brands that actually have a
- // product in this category.
- listBrandSlugsInCategory(activeSlug).catch(() => new Set<string>()),
- // Name/description/banners for this one category, resolved server-side
- // by WordPress — works for every category, including empty ones the
- // GraphQL list above (hideEmpty) never contains.
- getCategoryInfo(activeSlug),
- ]);
+ // Products + full category list + full brand list + which brand slugs
+ // appear in this category + this category's own name/description/banner
+ // (via the plugin's tamarCategoryInfo GraphQL field), all in ONE combined
+ // GraphQL request — see getCategoryPageData().
+ const {
+ products,
+ hasNextPage,
+ endCursor,
+ categories: allCategories,
+ brands,
+ brandSlugsInCategory: brandsInCategorySlugs,
+ info,
+ } = await getCategoryPageData(activeSlug, 20);
  const banner = info?.banner ?? null;
 
  // Sourced from the same full category list that powers the header's

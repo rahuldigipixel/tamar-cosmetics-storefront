@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { wpEnv } from "./env";
 import { fetchGraphQLSafe } from "./client";
 import { GET_POSTS, GET_POST_BY_SLUG, GET_POST_NAV_LIST } from "./queries/posts";
@@ -66,7 +67,14 @@ export async function listPosts(params: { first?: number; after?: string | null 
   };
 }
 
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+/**
+ * Wrapped in React `cache()` because both generateMetadata() and the page
+ * call it in the same render — GraphQL goes over POST, and Next only
+ * auto-dedupes GET fetches, so without this every blog post hit the backend
+ * twice for the same post (same fix already applied to getProductBySlug in
+ * products.ts).
+ */
+export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => {
   // This WP install's non-ASCII post slugs are stored in post_name as
   // lowercase percent-encoded UTF-8 (WordPress's own utf8_uri_encode(),
   // which — unlike encodeURIComponent — always lowercases the hex pairs).
@@ -90,7 +98,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     contentHtml: data.post.content,
     authorName: data.post.author?.node.name ?? null,
   };
-}
+});
 
 export interface AdjacentPostLink {
   slug: string;

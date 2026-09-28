@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { wpEnv } from "./env";
+import { logApiCall } from "./apiAuditLog";
 import type { ProductLabel } from "@/types/product";
 
 const TAMAR_API_BASE = `${wpEnv.wordpressUrl}/wp-json/tamar/v1`;
@@ -12,6 +14,7 @@ interface TamarFetchOptions extends RequestInit {
 }
 
 async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Promise<T | null> {
+  logApiCall("REST", path);
   const { tags, revalidate, cache, ...rest } = options;
 
   // Same fail-fast contract as fetchGraphQL: a stalled/unreachable backend
@@ -96,20 +99,6 @@ export interface SiteSettings {
   brandPageDescription: string;
 }
 
-/**
- * Header/footer logo (and any other future site-wide setting) is managed
- * from wp-admin → "הגדרות תמר" (includes/class-settings.php) instead of
- * being a static file in this repo. Cached for an hour as a fallback; the
- * plugin also pings /api/revalidate with the "site-settings" tag on save,
- * so an edit normally shows up immediately rather than after the full hour.
- */
-export function getSiteSettings() {
-  return tamarFetch<SiteSettings>(`/settings`, {
-    tags: ["site-settings"],
-    revalidate: 3600,
-  });
-}
-
 export interface HeaderMenuImage {
   url: string;
   width: number;
@@ -157,20 +146,6 @@ export interface HeaderMenuFeaturedCategory {
   image: HeaderMenuImage | null;
 }
 
-/**
- * Admin-managed nav tree from wp-admin → כותרת (Header) → תפריט ראשי
- * (includes/class-header-menu.php). A "category" item's children are always
- * that category's live WooCommerce subcategories plus (optionally) one
- * featured product — resolved server-side on every request, so this never
- * needs re-deriving from the categories list on the React side.
- */
-export function getHeaderMenu() {
-  return tamarFetch<HeaderMenuItem[]>(`/menu`, {
-    tags: ["header-menu"],
-    revalidate: 300,
-  });
-}
-
 export interface CategoryBanner {
   desktop: HeaderMenuImage | null;
   mobile: HeaderMenuImage | null;
@@ -183,20 +158,11 @@ export interface CategoryInfo {
   banner: CategoryBanner;
 }
 
-/**
- * One product category by slug — name/description plus its desktop/mobile
- * banner (wp-admin → Products → Categories → Desktop/Mobile Banner; term meta
- * product_taxonomy_banner / product_taxonomy_mobile_banner — see the plugin's
- * includes/class-wc-product-module.php). Resolves any category, including
- * empty ones the GraphQL category list (hideEmpty) skips. One lean request,
- * run in parallel with the page's other data.
- */
-export function getCategoryInfo(slug: string) {
-  return tamarFetch<CategoryInfo>(`/category-info?slug=${encodeURIComponent(slug)}`, {
-    tags: ["categories", `category-info:${slug}`],
-    revalidate: 300,
-  });
-}
+// The REST route (GET /category-info) behind this data still exists on the
+// plugin for any other consumer, but the Next.js app now reads it via the
+// `tamarCategoryInfo` GraphQL field folded into GET_CATEGORY_PAGE_DATA (see
+// lib/wpgraphql/categoryPage.ts) instead of a standalone request — both
+// share the plugin's resolve_category_info() so behavior is identical.
 
 export interface HeaderBarLink {
   id: string;
@@ -219,17 +185,27 @@ export interface HeaderBar {
   serviceIcons: HeaderServiceIcon[];
 }
 
+export interface GlobalData {
+  menu: HeaderMenuItem[];
+  settings: SiteSettings | null;
+  headerBar: HeaderBar | null;
+}
+
 /**
- * Top-bar content managed from wp-admin → כותרת (Header) → פס עליון
- * (includes/class-header-bar.php): the rotating announcement messages, the
- * left/right link groups, and the service icon strip in the main header row.
+ * Menu + site settings (logo) + header bar in ONE request instead of three
+ * separate round trips — see the plugin's /global-data endpoint
+ * (includes/class-settings.php get_global_data(), which folds together the
+ * same data get_menu()/get_settings()/get_header_bar() each used to return
+ * on their own). Wrapped in React `cache()` so the root layout and any page
+ * that also needs a piece of this (e.g. /brand-list needs settings) share
+ * one network call per request instead of issuing it twice.
  */
-export function getHeaderBar() {
-  return tamarFetch<HeaderBar>(`/header-bar`, {
-    tags: ["header-bar"],
+export const getGlobalData = cache(function getGlobalData() {
+  return tamarFetch<GlobalData>(`/global-data`, {
+    tags: ["header-menu", "site-settings", "header-bar"],
     revalidate: 300,
   });
-}
+});
 
 export interface WholesaleImage {
   id: number;
@@ -249,13 +225,18 @@ export interface WholesalePage {
   sliderImages: WholesaleImage[];
 }
 
-/** Managed from wp-admin → הגדרות תמר → מכירה סיטונאית (includes/class-content-pages.php). */
-export function getWholesalePage() {
+/**
+ * Managed from wp-admin → הגדרות תמר → מכירה סיטונאית (includes/class-content-pages.php).
+ * Wrapped in `cache()` — called from both generateMetadata() and the page
+ * body — so the two share one request instead of relying on Next's fetch
+ * memoization to collapse them implicitly.
+ */
+export const getWholesalePage = cache(function getWholesalePage() {
   return tamarFetch<WholesalePage>(`/wholesale-page`, {
     tags: ["wholesale-page"],
     revalidate: 300,
   });
-}
+});
 
 export interface WholesaleLeadInput {
   name: string;
@@ -275,13 +256,18 @@ export interface ReviewsPage {
   descriptionHtml: string;
 }
 
-/** Managed from wp-admin → עמודי תוכן → ביקורות לקוחות (includes/class-content-pages.php). */
-export function getReviewsPage() {
+/**
+ * Managed from wp-admin → עמודי תוכן → ביקורות לקוחות (includes/class-content-pages.php).
+ * Wrapped in `cache()` — called from both generateMetadata() and the page
+ * body — so the two share one request instead of relying on Next's fetch
+ * memoization to collapse them implicitly.
+ */
+export const getReviewsPage = cache(function getReviewsPage() {
   return tamarFetch<ReviewsPage>(`/reviews-page`, {
     tags: ["reviews-page"],
     revalidate: 300,
   });
-}
+});
 
 export interface BlogCommentInput {
   postId: number;

@@ -197,6 +197,9 @@ export function Header({
   const panelItem = menu.find((item) => item.id === openItemId) ?? null;
   const panelLinkChildren: HeaderMenuLinkChild[] =
     panelItem?.children.filter((c): c is HeaderMenuLinkChild => c.type === "link") ?? [];
+  // Admin's "show images instead of names" toggle for this category
+  // (wp-admin) — true when at least one sub-category resolved a thumbnail.
+  const imagesMode = panelLinkChildren.some((c) => c.image);
   // The panel's side feature: the promoted category on "category" items
   // (wp-admin "קטגוריה מקודמת בתפריט"), else a product child on custom items.
   const panelProductChild: HeaderMenuProductChild | null =
@@ -563,14 +566,17 @@ export function Header({
           }`}
         />
 
-        {/* Mega panel — full container width, 10px below the hovered
-            item's row; the ::before strip bridges that gap for hover. */}
+        {/* Mega panel — fixed 1590×570 (the live reference's own measured
+            size, via devtools), 10px below the hovered item's row; the
+            ::before strip bridges that gap for hover. Fixed size + hidden
+            overflow, not a scroll area: the reference never scrolls this
+            panel. */}
         {panelItem ? (
           <div
             onMouseEnter={cancelCloseMenu}
             onMouseLeave={scheduleCloseMenu}
-            style={{ top: menuTop, maxHeight: `calc(100vh - ${overlayTop}px - 20px)` }}
-            className={`absolute inset-x-0 z-50 mx-auto w-full max-w-[1590px] overflow-y-auto bg-white shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
+            style={{ top: menuTop, width: 1590, height: 570 }}
+            className={`absolute inset-x-0 z-50 mx-auto overflow-hidden bg-white shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
               menuVisible ? "visible opacity-100" : "invisible opacity-0"
             }`}
           >
@@ -583,54 +589,77 @@ export function Header({
                 size exactly (182×42 / 140×42 pills). */}
             <div className="flex gap-[75px] px-[40px] pt-[20px] pb-[40px]">
               <div className="min-w-0 flex-1">
-                <p className="mb-[60px] text-center text-[28px] font-light leading-[30px] text-black">
+                <p className="mb-[10px] text-center text-[28px] font-light leading-[30px] text-black">
                   {decodeHtml(panelItem.featuredTitle || panelItem.label)}
                 </p>
 
-                {/* Sub-category list — 5 columns when there's no promoted
-                    category beside it, 3 when there is (see panelFeature
-                    below), max 5 rows (20 items). When the admin's "show
-                    images instead of names" toggle is on for this category
+                {/* Sub-category list. Text mode (bullet + label): 5 columns,
+                    3 when there's a promoted category beside it (see
+                    panelFeature below). When the admin's "show images
+                    instead of names" toggle is on for this category
                     (wp-admin), each item carries its own category thumbnail
-                    as `child.image` and that renders instead of the bullet +
-                    label — falling back to the label for any sub-category
-                    that has no thumbnail of its own. */}
+                    as `child.image` (falling back to the plain label for
+                    any sub-category that has no thumbnail of its own) and
+                    the whole list switches to the reference site's card
+                    grid instead — always 7 columns, even beside a promoted
+                    category, matching the live site's fixed
+                    `--e-con-grid-template-columns: repeat(7, 1fr)`. Card
+                    values (box-shadow, padding, min-height, image
+                    aspect-ratio, caption size) are the live site's own
+                    `.header_menu_brand_box` CSS, not a guess. */}
                 <ul
-                  className={`grid gap-x-[40px] gap-y-[44px] ${
-                    panelFeature ? "grid-cols-3" : "grid-cols-5"
+                  className={`grid ${
+                    imagesMode
+                      ? "grid-cols-7 gap-x-[15px] gap-y-[20px] pt-[20px]"
+                      : `gap-x-[40px] gap-y-[44px] ${panelFeature ? "grid-cols-3" : "grid-cols-5"}`
                   }`}
                 >
-                  {panelLinkChildren.slice(0, 20).map((child) => (
-                    <li key={child.id}>
-                      <Link
-                        href={child.url}
-                        onClick={() => setMenuVisible(false)}
-                        className={`flex items-center gap-[8px] text-[16px] font-light leading-[25px] transition-colors hover:text-[#d52027] ${
-                          isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
-                        }`}
-                      >
-                        {child.image ? (
-                          <span className="relative h-[60px] w-full">
-                            <Image
-                              src={child.image.url}
-                              alt={child.image.alt || child.label}
-                              fill
-                              sizes="150px"
-                              className="object-contain"
-                            />
+                  {panelLinkChildren.slice(0, 20).map((child) =>
+                    imagesMode ? (
+                      <li key={child.id}>
+                        <Link
+                          href={child.url}
+                          onClick={() => setMenuVisible(false)}
+                          className="flex min-h-[125px] flex-col items-center justify-center bg-white px-[10px] py-[20px] text-center shadow-[0_0_27px_0_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_0_27px_0_rgba(0,0,0,0.12)]"
+                        >
+                          <span className="relative aspect-[3.5] w-full">
+                            {child.image ? (
+                              <Image
+                                src={child.image.url}
+                                alt={child.image.alt || child.label}
+                                fill
+                                sizes="150px"
+                                className="object-contain"
+                              />
+                            ) : null}
                           </span>
-                        ) : (
-                          <>
-                            <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-[#777]" />
-                            <span>{decodeHtml(child.label)}</span>
-                          </>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
+                          <span
+                            className={`mt-[20px] text-[14px] leading-[18px] transition-colors ${
+                              isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
+                            }`}
+                          >
+                            {decodeHtml(child.label)}
+                          </span>
+                        </Link>
+                      </li>
+                    ) : (
+                      <li key={child.id}>
+                        <Link
+                          href={child.url}
+                          onClick={() => setMenuVisible(false)}
+                          className={`flex items-center gap-[8px] text-[16px] font-light leading-[25px] transition-colors hover:text-[#d52027] ${
+                            isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
+                          }`}
+                        >
+                          <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-[#777]" />
+                          <span>{decodeHtml(child.label)}</span>
+                        </Link>
+                      </li>
+                    )
+                  )}
                 </ul>
 
-                <div className="mt-[50px] flex justify-center">
+                <div className="mt-[30px] flex justify-center">
                   <Link
                     href={panelItem.url}
                     onClick={() => setMenuVisible(false)}
@@ -642,18 +671,18 @@ export function Header({
               </div>
 
               {panelFeature ? (
-                <div className="flex w-[360px] shrink-0 flex-col pt-[15px]">
+                <div className="flex h-[500px] w-[300px] shrink-0 flex-col">
                   <Link
                     href={panelFeature.url}
                     onClick={() => setMenuVisible(false)}
-                    className="relative block h-[438px] w-full bg-[#f7f7f7]"
+                    className="relative block min-h-0 flex-1 w-full bg-[#f7f7f7]"
                   >
                     {panelFeature.image ? (
                       <Image
                         src={panelFeature.image.url}
                         alt={panelFeature.image.alt}
                         fill
-                        sizes="360px"
+                        sizes="300px"
                         className="object-cover"
                       />
                     ) : null}

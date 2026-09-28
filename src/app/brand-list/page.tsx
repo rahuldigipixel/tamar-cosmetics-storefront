@@ -1,11 +1,15 @@
 import { listBrands } from "@/lib/wpgraphql/brands";
-import { getSiteSettings } from "@/lib/wpgraphql/tamarApi";
+import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { BrandGrid } from "./BrandGrid";
 
 export const revalidate = 300;
 
 export default async function BrandListPage() {
-  const [brands, siteSettings] = await Promise.all([listBrands(), getSiteSettings()]);
+  // getGlobalData() is React `cache()`-wrapped and already called once by
+  // the root layout for the header — this reuses that same request instead
+  // of firing a second /global-data call just for settings.
+  const [brands, global] = await Promise.all([listBrands(), getGlobalData()]);
+  const siteSettings = global?.settings ?? null;
 
   const selectedSlugs = siteSettings?.selectedBrandSlugs ?? [];
   const visibleBrands =

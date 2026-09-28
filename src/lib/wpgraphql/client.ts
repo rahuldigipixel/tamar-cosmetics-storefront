@@ -1,4 +1,5 @@
 import { wpEnv } from "./env";
+import { graphqlOperationName, logApiCall } from "./apiAuditLog";
 
 export class GraphQLError extends Error {
   constructor(
@@ -41,6 +42,7 @@ export async function fetchGraphQL<T>(
   options: FetchGraphQLOptions = {}
 ): Promise<{ data: T; response: Response }> {
   const { tags, revalidate, headers, cache } = options;
+  logApiCall("GraphQL", graphqlOperationName(query));
 
   // Without a timeout, a stalled/unreachable backend (e.g. a LAN dev IP that
   // isn't on the network right now) hangs the whole page on its loading

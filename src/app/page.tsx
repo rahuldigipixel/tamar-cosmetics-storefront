@@ -1,7 +1,5 @@
 import { Percent, Sparkles, Flame } from "lucide-react";
-import { listProducts } from "@/lib/wpgraphql/products";
-import { listCategories } from "@/lib/wpgraphql/categories";
-import { listBrands } from "@/lib/wpgraphql/brands";
+import { getHomeData } from "@/lib/wpgraphql/home";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CategorySlider } from "@/components/home/CategorySlider";
 import { BrandSlider } from "@/components/home/BrandSlider";
@@ -14,17 +12,14 @@ import { CustomerReviews } from "@/components/home/CustomerReviews";
 
 export const revalidate = 60;
 
-const EMPTY_LIST = { products: [], hasNextPage: false, endCursor: null };
-
 export default async function HomePage() {
-  const [{ products: saleProductsRaw }, { products: bestSellersRaw }, { products: newProductsRaw }, categories, brands] =
-    await Promise.all([
-      listProducts({ onSale: true, first: 20 }).catch(() => EMPTY_LIST),
-      listProducts({ first: 20, orderby: [{ field: "POPULARITY", order: "DESC" }] }).catch(() => EMPTY_LIST),
-      listProducts({ first: 20, orderby: [{ field: "DATE", order: "DESC" }] }).catch(() => EMPTY_LIST),
-      listCategories().catch(() => []),
-      listBrands().catch(() => []),
-    ]);
+  const {
+    saleProducts: saleProductsRaw,
+    bestSellers: bestSellersRaw,
+    newProducts: newProductsRaw,
+    categories,
+    brands,
+  } = await getHomeData(20);
 
   // Out-of-stock items shouldn't take up slots in these promotional home-page sliders.
   const saleProducts = saleProductsRaw.filter((p) => p.inStock);

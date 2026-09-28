@@ -7,7 +7,7 @@ import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
-import { getHeaderBar, getHeaderMenu, getSiteSettings } from "@/lib/wpgraphql/tamarApi";
+import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
 
@@ -47,11 +47,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [menu, siteSettings, bar] = await Promise.all([
-    getHeaderMenu().then((m) => m ?? []),
-    getSiteSettings(),
-    getHeaderBar(),
-  ]);
+  const global = await getGlobalData();
+  const menu = global?.menu ?? [];
+  const siteSettings = global?.settings ?? null;
+  const bar = global?.headerBar ?? null;
 
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${rubik.variable} h-full antialiased`}>

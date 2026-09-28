@@ -7,28 +7,14 @@
  * pulling the variations list. Anything the single-product page needs goes
  * in PRODUCT_DETAIL_FIELDS instead.
  */
-const PRODUCT_LIST_FIELDS = /* GraphQL */ `
-  __typename
-  id
-  databaseId
-  slug
-  name
-  ... on SimpleProduct {
-    sku
-    onSale
-    price(format: RAW)
-    regularPrice(format: RAW)
-    salePrice(format: RAW)
-    stockStatus
-  }
-  ... on VariableProduct {
-    sku
-    onSale
-    price(format: RAW)
-    regularPrice(format: RAW)
-    salePrice(format: RAW)
-    stockStatus
-  }
+// Repeated verbatim inside both type fragments below (rather than once at
+// the top level) because this fragment is also spread under the `related`
+// field (see GET_PRODUCT_BY_SLUG), which resolves to ProductUnion — a plain
+// union with no shared fields beyond __typename/id/databaseId/slug/name.
+// `products.nodes` resolves to the Product interface instead, where these
+// would work unconditionally, but duplicating them into each `... on`
+// fragment keeps one query shape that's valid in both places.
+const PRODUCT_CARD_SHARED_FIELDS = /* GraphQL */ `
   image {
     id
     sourceUrl
@@ -53,6 +39,32 @@ const PRODUCT_LIST_FIELDS = /* GraphQL */ `
       sourceUrl
       altText
     }
+  }
+`;
+
+export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
+  __typename
+  id
+  databaseId
+  slug
+  name
+  ... on SimpleProduct {
+    sku
+    onSale
+    price(format: RAW)
+    regularPrice(format: RAW)
+    salePrice(format: RAW)
+    stockStatus
+    ${PRODUCT_CARD_SHARED_FIELDS}
+  }
+  ... on VariableProduct {
+    sku
+    onSale
+    price(format: RAW)
+    regularPrice(format: RAW)
+    salePrice(format: RAW)
+    stockStatus
+    ${PRODUCT_CARD_SHARED_FIELDS}
   }
 `;
 
@@ -173,9 +185,14 @@ export const GET_PRODUCTS = /* GraphQL */ `
 `;
 
 export const GET_PRODUCT_BY_SLUG = /* GraphQL */ `
-  query GetProductBySlug($slug: ID!) {
+  query GetProductBySlug($slug: ID!, $relatedFirst: Int = 13) {
     product(id: $slug, idType: SLUG) {
       ${PRODUCT_DETAIL_FIELDS}
+      related(first: $relatedFirst) {
+        nodes {
+          ${PRODUCT_LIST_FIELDS}
+        }
+      }
     }
   }
 `;

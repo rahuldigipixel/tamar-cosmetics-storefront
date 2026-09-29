@@ -2,11 +2,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
 import { getAdjacentPosts, getPostBySlug, getPostComments } from "@/lib/wpgraphql/posts";
-import { formatDate } from "@/lib/utils/formatDate";
 import { RichContent } from "@/components/ui/RichContent";
-import { SocialShare } from "@/components/product/SocialShare";
+import { BlogShare } from "@/components/blog/BlogShare";
 import { BlogComments } from "@/components/blog/BlogComments";
 import { wpEnv } from "@/lib/wpgraphql/env";
 
@@ -37,43 +36,36 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
  const shareUrl = `${wpEnv.siteUrl}/${post.slug}/`;
 
  return (
- <article className="mx-auto max-w-[1600px] px-[15px] py-8 sm:py-10">
- <Link href="/blog/" className="group inline-flex items-center gap-1 text-base font-semibold text-brand-accent">
- <ChevronLeft className="h-4 w-4 rotate-180 transition-transform group-hover:translate-x-0.5" />
- חזרה למגזין
+ <article dir="rtl" className="mx-auto max-w-[1600px] px-[15px] py-8 sm:py-10">
+ {post.category ? (
+ <div className="flex justify-center">
+ <Link
+ href={post.categorySlug ? `/category/${post.categorySlug}/` : "/blog/"}
+ className="rounded-full bg-brand-accent px-5 py-2 text-base font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+ >
+ {post.category}
  </Link>
-
- <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{post.title}</h1>
-
- <div className="mt-3 flex items-center gap-2 text-base text-black/50">
- <span>{formatDate(post.date)}</span>
- {post.authorName ? (
- <>
- <span aria-hidden>&middot;</span>
- <span>{post.authorName}</span>
- </>
- ) : null}
  </div>
+ ) : null}
+
+ <h1 className="mt-4 text-center text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{post.title}</h1>
 
  {post.image ? (
- <div className="relative mt-6 aspect-[21/9] w-full overflow-hidden rounded-2xl bg-brand-soft/30">
- <Image src={post.image.url} alt={post.image.alt} fill sizes="(min-width: 1400px) 1400px, 100vw" className="object-cover" priority />
+ <div className="relative mx-auto mt-6 aspect-[4/3] w-full max-w-xl overflow-hidden rounded-2xl bg-brand-soft/30">
+ <Image src={post.image.url} alt={post.image.alt} fill sizes="(min-width: 768px) 576px, 100vw" className="object-cover" priority />
  </div>
  ) : null}
 
  <RichContent html={post.contentHtml} className="mt-8" />
 
  <div className="mt-10 flex justify-center border-t border-black/10 pt-8">
- <SocialShare url={shareUrl} title={post.title} />
+ <BlogShare url={shareUrl} title={post.title} />
  </div>
 
  {newer || older ? (
- <div className="mt-8 grid grid-cols-1 gap-3 border-t border-black/10 pt-8 sm:grid-cols-2">
+ <div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-black/10 pt-8">
  {older ? (
- <Link
- href={`/${older.slug}/`}
- className="group flex flex-col gap-1 rounded-2xl border border-black/5 bg-white p-4 text-right shadow-sm transition-shadow hover:shadow-md"
- >
+ <Link href={`/${older.slug}/`} className="group flex flex-col gap-1 text-right">
  <span className="flex items-center gap-1 text-sm font-semibold text-black/40">
  <ChevronRight className="h-3.5 w-3.5" />
  ישן יותר
@@ -83,18 +75,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
  ) : (
  <div />
  )}
- {newer ? (
+
  <Link
- href={`/${newer.slug}/`}
- className="group flex flex-col items-end gap-1 rounded-2xl border border-black/5 bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md sm:text-right"
+ href="/blog/"
+ aria-label="כל המאמרים"
+ className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-black/60 transition-colors hover:border-brand-accent hover:text-brand-accent"
  >
+ <LayoutGrid className="h-5 w-5" />
+ </Link>
+
+ {newer ? (
+ <Link href={`/${newer.slug}/`} className="group flex flex-col items-end gap-1 text-left">
  <span className="flex items-center gap-1 text-sm font-semibold text-black/40">
  חדש יותר
  <ChevronLeft className="h-3.5 w-3.5" />
  </span>
  <span className="line-clamp-2 font-semibold text-black/85 group-hover:text-brand-accent">{newer.title}</span>
  </Link>
- ) : null}
+ ) : (
+ <div />
+ )}
  </div>
  ) : null}
 

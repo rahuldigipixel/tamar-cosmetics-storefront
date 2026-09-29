@@ -221,6 +221,7 @@ export interface WholesalePage {
   ctaHeading: string;
   /** Single image shown beside the CTA form — distinct from sliderImages, the bottom photo strip. */
   heroImage: WholesaleImage | null;
+  ctaCheckboxLabel: string;
   ctaButtonLabel: string;
   sliderImages: WholesaleImage[];
 }
@@ -361,10 +362,40 @@ export interface ClubSignupInput {
   birthday?: string;
 }
 
-/** Stub route on the backend today — returns null until tamar-headless-api implements it. */
 export function subscribeClub(input: ClubSignupInput) {
   return tamarFetch<{ success: boolean }>(`/club-signup`, {
     method: "POST",
     body: JSON.stringify({ name: input.name, email: input.email, phone: input.phone, birthday: input.birthday }),
   });
 }
+
+export interface SecretClubColumn {
+  title: string;
+  text: string;
+}
+
+export interface SecretClubPage {
+  heading: string;
+  contentHtml: string;
+  /** Always 4 entries (columns 1-4), even when left blank in wp-admin. */
+  columns: SecretClubColumn[];
+  ctaHeading: string;
+  ctaDescription: string;
+  /** Image shown beside the signup form — same shape as WholesaleImage. */
+  ctaImage: WholesaleImage | null;
+  ctaCheckboxLabel: string;
+  ctaButtonLabel: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → הנבחרת הסודית (includes/class-content-pages.php).
+ * Wrapped in `cache()` — called from both generateMetadata() and the page
+ * body — so the two share one request instead of relying on Next's fetch
+ * memoization to collapse them implicitly.
+ */
+export const getSecretClubPage = cache(function getSecretClubPage() {
+  return tamarFetch<SecretClubPage>(`/secret-club-page`, {
+    tags: ["secret-club-page"],
+    revalidate: 300,
+  });
+});

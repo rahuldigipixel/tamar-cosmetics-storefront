@@ -9,7 +9,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
  const page = await getWholesalePage();
- return { title: page?.heading || "מכירה סיטונאית" };
+ return { title: page?.heading };
 }
 
 // Public path is the Hebrew "/מכירה-סיטונאית" (see the rewrite in
@@ -18,46 +18,51 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function WholesalePage() {
  const page = await getWholesalePage();
 
- const heading = page?.heading || "מכירה סיטונאית";
- const contentHtml = page?.contentHtml || "";
- const ctaHeading = page?.ctaHeading || "";
+ // Every field below is rendered exactly as saved in wp-admin — no
+ // fallback/placeholder copy injected on this side.
+ const heading = page?.heading ?? "";
+ const contentHtml = page?.contentHtml ?? "";
+ const ctaHeading = page?.ctaHeading ?? "";
  const heroImage = page?.heroImage ?? null;
- const ctaButtonLabel = page?.ctaButtonLabel || "שליחה";
+ const ctaCheckboxLabel = page?.ctaCheckboxLabel ?? "";
+ const ctaButtonLabel = page?.ctaButtonLabel ?? "";
  const sliderImages = page?.sliderImages ?? [];
 
  return (
  <div>
  <div className="border-b border-black/5 bg-gradient-to-br from-brand-soft/60 via-brand-soft/20 to-white">
- <div className="mx-auto max-w-[1600px] px-[15px] py-8 text-center sm:py-10">
- <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
+ <div className="mx-auto max-w-[1600px] px-[15px] py-6 text-center sm:py-6">
+ <h1 className="text-3xl font-extrabold tracking-tight text-brand-accent sm:text-5xl lg:text-[50px] lg:leading-[50px]">{heading}</h1>
  </div>
  </div>
 
- <div className="mx-auto max-w-[1600px] px-[15px] py-10 ">
- <RichContent html={contentHtml} className="mx-auto max-w-3xl text-center" />
+ <div className="mx-auto max-w-[1600px] px-[15px] py-10">
+ <RichContent html={contentHtml} className="max-w-none" />
  </div>
 
- {/* CTA: form + a single hero image — the form is first in document
- order and the image second, which (RTL page) already renders the
- form on the visual start side and the image on the end side,
- matching the reference site's form-left / image-right layout. */}
- <div className="bg-brand-soft/20 py-10 sm:py-14">
- <div className="mx-auto grid max-w-[1600px] items-center gap-10 px-[15px] lg:grid-cols-2 lg:gap-14">
- <div className="mx-auto flex w-full max-w-lg justify-center lg:justify-start">
- <WholesaleLeadForm heading={ctaHeading} buttonLabel={ctaButtonLabel} />
+ {/* CTA: full-bleed two-color split — solid brand-accent panel holding
+ the form on the left (34% width), soft-pink panel holding the hero
+ image on the right (66% width) — edge to edge, no page gutter,
+ matching the reference site's layout exactly. The reference keeps the
+ form physically on the left even though the page is RTL, so this
+ wrapper is forced dir="ltr" (grid auto-flow starts left-to-right)
+ while each panel is dir="rtl" again internally so the Hebrew content
+ inside still reads correctly. */}
+ <div dir="ltr" className="grid w-full lg:grid-cols-[45%_55%]">
+ <div dir="rtl" className="flex items-center justify-center bg-brand-accent px-6 py-14 sm:px-10 sm:py-16 lg:px-12 lg:py-20 xl:px-16">
+ <WholesaleLeadForm heading={ctaHeading} checkboxLabel={ctaCheckboxLabel} buttonLabel={ctaButtonLabel} />
  </div>
  {heroImage ? (
- <div className="relative mx-auto aspect-[4/5] w-full max-w-lg overflow-hidden rounded-3xl shadow-lg">
+ <div className="relative min-h-[320px] bg-gradient-to-br from-brand-soft/50 to-brand-soft/10 sm:min-h-[420px] lg:min-h-0">
  <Image
  src={heroImage.url}
  alt={heroImage.alt}
  fill
- sizes="(min-width: 1024px) 45vw, 100vw"
+ sizes="(min-width: 1024px) 66vw, 100vw"
  className="object-cover"
  />
  </div>
  ) : null}
- </div>
  </div>
 
  {sliderImages.length > 0 ? (

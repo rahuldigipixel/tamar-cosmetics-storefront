@@ -23,10 +23,25 @@
    
 }
 
+/* Site-wide guard against a stray horizontal scrollbar: every intentional
+   horizontally-scrolling element on this site (carousels, sliders) already
+   scopes its own overflow-x-auto to a contained inner track, never to the
+   page itself — see useInfiniteCarousel.ts / CategorySlider.tsx. Nothing on
+   the page is meant to widen the document past the viewport, so clipping at
+   the root removes an entire class of bug (a section's own computed width
+   coming out a pixel or two over 100% from a sub-pixel/percentage rounding
+   edge case, a scrollbar-gutter width shift when page height crosses a
+   threshold, etc.) without touching any of those contained carousels, which
+   keep scrolling exactly as before. */
+html {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif; 
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 /* Site-wide: every clickable control shows a pointer cursor on hover,

@@ -56,7 +56,14 @@ export default async function RootLayout({
 
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${rubik.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
+      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
+          cz-shortcut-listen) inject attributes onto <body> before React
+          hydrates, which otherwise throws a full-tree hydration mismatch
+          that has nothing to do with our markup — the documented false
+          positive at https://nextjs.org/docs/messages/react-hydration-error.
+          Only suppresses the warning for this element's own attributes,
+          not for actual content mismatches anywhere else in the tree. */}
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
         <Footer logo={siteSettings?.footerLogo ?? null} />

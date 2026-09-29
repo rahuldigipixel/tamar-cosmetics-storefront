@@ -36,7 +36,7 @@ export function ProductSlider({
         <button
           onClick={() => step(-1)}
           aria-label="הקודם"
-          className="absolute -start-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -start-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -61,7 +61,7 @@ export function ProductSlider({
         <button
           onClick={() => step(1)}
           aria-label="הבא"
-          className="absolute -end-15 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -end-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>

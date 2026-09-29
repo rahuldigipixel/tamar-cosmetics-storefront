@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { wpEnv } from "./env";
 import { fetchGraphQLSafe } from "./client";
-import { GET_POSTS, GET_POST_BY_SLUG, GET_POST_NAV_LIST } from "./queries/posts";
+import { GET_CATEGORY_BY_SLUG, GET_POSTS, GET_POSTS_BY_CATEGORY, GET_POST_BY_SLUG, GET_POST_NAV_LIST } from "./queries/posts";
 
 export interface BlogPostSummary {
   id: string;
@@ -12,6 +12,7 @@ export interface BlogPostSummary {
   excerpt: string;
   image: { url: string; alt: string } | null;
   category: string | null;
+  categorySlug: string | null;
 }
 
 export interface BlogPost extends BlogPostSummary {
@@ -27,7 +28,7 @@ interface GqlPostNode {
   date: string;
   excerpt: string;
   featuredImage?: { node: { sourceUrl: string; altText: string } } | null;
-  categories?: { nodes: { name: string }[] } | null;
+  categories?: { nodes: { name: string; slug: string }[] } | null;
 }
 
 function toSummary(p: GqlPostNode): BlogPostSummary {
@@ -40,6 +41,7 @@ function toSummary(p: GqlPostNode): BlogPostSummary {
     excerpt: p.excerpt,
     image: p.featuredImage?.node ? { url: p.featuredImage.node.sourceUrl, alt: p.featuredImage.node.altText || p.title } : null,
     category: p.categories?.nodes[0]?.name ?? null,
+    categorySlug: p.categories?.nodes[0]?.slug ?? null,
   };
 }
 
@@ -66,6 +68,43 @@ export async function listPosts(params: { first?: number; after?: string | null 
     endCursor: data.posts.pageInfo.endCursor,
   };
 }
+
+export async function listPostsByCategory(
+  categorySlug: string,
+  params: { first?: number; after?: string | null } = {}
+): Promise<ListPostsResult> {
+  const data = await fetchGraphQLSafe<{
+    posts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlPostNode[] };
+  }>(
+    GET_POSTS_BY_CATEGORY,
+    { first: params.first ?? 9, after: params.after ?? null, categoryName: categorySlug },
+    { tags: ["posts", `category:${categorySlug}`], revalidate: 300 }
+  );
+
+  if (!data) return { posts: [], hasNextPage: false, endCursor: null };
+
+  return {
+    posts: data.posts.nodes.map(toSummary),
+    hasNextPage: data.posts.pageInfo.hasNextPage,
+    endCursor: data.posts.pageInfo.endCursor,
+  };
+}
+
+export interface BlogCategory {
+  databaseId: number;
+  name: string;
+  slug: string;
+}
+
+export const getCategoryBySlug = cache(async (slug: string): Promise<BlogCategory | null> => {
+  const queryableSlug = encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
+  const data = await fetchGraphQLSafe<{ category: BlogCategory | null }>(
+    GET_CATEGORY_BY_SLUG,
+    { slug: queryableSlug },
+    { tags: ["posts", `category:${slug}`], revalidate: 300 }
+  );
+  return data?.category ?? null;
+});
 
 /**
  * Wrapped in React `cache()` because both generateMetadata() and the page

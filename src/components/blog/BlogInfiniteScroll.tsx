@@ -2,20 +2,24 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { BlogPostCard } from "./BlogPostCard";
-import { fetchMorePosts } from "@/lib/wpgraphql/blogActions";
+import { fetchMoreCategoryPosts, fetchMorePosts } from "@/lib/wpgraphql/blogActions";
 import type { BlogPostSummary } from "@/lib/wpgraphql/posts";
 
 /**
  * Loads more posts automatically as the sentinel below the grid scrolls
  * into view — same IntersectionObserver pattern as the shop/category grid
- * (see CategoryProductGrid.tsx) — instead of a "load more" click.
+ * (see CategoryProductGrid.tsx) — instead of a "load more" click. Pass
+ * `categorySlug` to scope pagination to a single category (see
+ * /category/[slug]/page.tsx); omitted, it paginates the full blog feed.
  */
 export function BlogInfiniteScroll({
   initialEndCursor,
   initialHasNextPage,
+  categorySlug,
 }: {
   initialEndCursor: string | null;
   initialHasNextPage: boolean;
+  categorySlug?: string;
 }) {
   const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [endCursor, setEndCursor] = useState(initialEndCursor);
@@ -30,7 +34,9 @@ export function BlogInfiniteScroll({
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isPending) {
           startTransition(async () => {
-            const result = await fetchMorePosts(endCursor);
+            const result = categorySlug
+              ? await fetchMoreCategoryPosts(categorySlug, endCursor)
+              : await fetchMorePosts(endCursor);
             setPosts((prev) => [...prev, ...result.posts]);
             setEndCursor(result.endCursor);
             setHasNextPage(result.hasNextPage);
@@ -41,7 +47,7 @@ export function BlogInfiniteScroll({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasNextPage, isPending, endCursor]);
+  }, [hasNextPage, isPending, endCursor, categorySlug]);
 
   return (
     <>

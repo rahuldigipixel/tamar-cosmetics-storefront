@@ -21,9 +21,56 @@ export const GET_POSTS = /* GraphQL */ `
         categories(first: 1) {
           nodes {
             name
+            slug
           }
         }
       }
+    }
+  }
+`;
+
+// Same shape as GET_POSTS, filtered to one category — powers /category/[slug].
+export const GET_POSTS_BY_CATEGORY = /* GraphQL */ `
+  query GetPostsByCategory($first: Int!, $after: String, $categoryName: String!) {
+    posts(
+      first: $first
+      after: $after
+      where: { status: PUBLISH, orderby: { field: DATE, order: DESC }, categoryName: $categoryName }
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        id
+        databaseId
+        title
+        slug
+        date
+        excerpt
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+        categories(first: 1) {
+          nodes {
+            name
+            slug
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_CATEGORY_BY_SLUG = /* GraphQL */ `
+  query GetCategoryBySlug($slug: ID!) {
+    category(id: $slug, idType: SLUG) {
+      databaseId
+      name
+      slug
     }
   }
 `;
@@ -61,6 +108,12 @@ export const GET_POST_BY_SLUG = /* GraphQL */ `
       author {
         node {
           name
+        }
+      }
+      categories(first: 1) {
+        nodes {
+          name
+          slug
         }
       }
     }

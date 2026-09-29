@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { FLASHY_REVIEWS_ELEMENT_ID, FLASHY_LEGACY_SITE_ORIGIN } from "@/lib/flashy";
 
@@ -30,6 +30,21 @@ export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+  // This container's content is injected by thunder.js directly into the
+  // DOM, outside React's control. Server-rendering the container (as an
+  // empty div) gives React's hydration pass something to compare against
+  // that the third-party script can then mutate before or during that
+  // comparison, throwing a full-tree hydration mismatch. `useSyncExternalStore`
+  // returns the server snapshot (false) through hydration and only switches
+  // to the client snapshot (true) afterward, so the container is skipped
+  // server-side and on the first client render, then mounted fresh as an
+  // ordinary post-hydration update — nothing to hydrate, nothing to mismatch.
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -38,7 +53,7 @@ export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
     const observer = new MutationObserver(() => rewriteLegacyLinks(el));
     observer.observe(el, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, []);
+  }, [mounted]);
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     const link = (e.target as HTMLElement).closest("a");
@@ -52,6 +67,8 @@ export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
     e.preventDefault();
     router.push(url.pathname);
   }
+
+  if (!mounted) return null;
 
   return (
     <div

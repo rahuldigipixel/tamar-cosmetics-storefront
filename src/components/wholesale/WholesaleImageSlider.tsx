@@ -43,18 +43,22 @@ export function WholesaleImageSlider({ images }: { images: WholesaleImage[] }) {
       </div>
 
       {images.length > 1 ? (
+        // Same button styling as the home page's ProductSlider (white bg,
+        // border, shadow) — positioned centered below the strip here
+        // instead of ProductSlider's absolute left/right sides, matching
+        // the reference site's layout for this slider.
         <div className="mt-4 flex justify-center gap-2">
           <button
             onClick={() => step(-1)}
             aria-label="הקודם"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-black/60 transition-colors hover:border-brand-accent hover:text-brand-accent"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
           <button
             onClick={() => step(1)}
             aria-label="הבא"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-black/60 transition-colors hover:border-brand-accent hover:text-brand-accent"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>

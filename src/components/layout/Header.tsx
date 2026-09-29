@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -176,6 +176,22 @@ export function Header({
   const openCartDrawer = useCartStore((s) => s.openDrawer);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Both stores persist to localStorage, which zustand's `persist` middleware
+  // reads synchronously on the client the moment the module loads — before
+  // React's hydration pass ever runs. The server always renders an empty
+  // cart/wishlist (no localStorage), so a returning visitor's first client
+  // render already disagrees with the server-rendered HTML for these counts,
+  // throwing a full-tree hydration failure. `useSyncExternalStore` returns
+  // the server snapshot (false) through hydration and only switches to the
+  // client snapshot (true) afterward — the React-recommended way to gate
+  // client-only values without the cascading-render setState-in-effect
+  // pattern (see https://react.dev/reference/react/useSyncExternalStore).
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+
   // Desktop mega-menu: `openItemId` remembers the last-hovered/clicked
   // top-level item (it isn't cleared on close), while `menuVisible` alone
   // drives the open/closed CSS transition. Keeping the id around lets the
@@ -329,9 +345,9 @@ export function Header({
       <>
         <span className="relative">
           <ShoppingCart className="h-5 w-5 stroke-[1.5]" />
-          {countBadge(cart.itemCount)}
+          {countBadge(mounted ? cart.itemCount : 0)}
         </span>
-        {showTotal ? <span className="ms-[15px]">{formatPrice(cart.total)}</span> : null}
+        {showTotal ? <span className="ms-[15px]">{formatPrice(mounted ? cart.total : 0)}</span> : null}
       </>
     );
     const className =
@@ -462,7 +478,7 @@ export function Header({
               >
                 <span className="relative">
                   <Image src="/brand/like.svg" alt="" width={18} height={15} unoptimized className="w-[18px]" />
-                  {countBadge(wishlistCount)}
+                  {countBadge(mounted ? wishlistCount : 0)}
                 </span>
               </Link>
             </div>

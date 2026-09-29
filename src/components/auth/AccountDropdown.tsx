@@ -34,7 +34,7 @@ export function AccountDropdown() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full px-6 py-3 text-[16px] text-black/55 transition-colors hover:text-brand-accent"
+                  className="block w-full px-5 py-2.5 text-right text-[16px] text-black/55 transition-colors hover:text-brand-accent"
                 >
                   {item.label}
                 </button>
@@ -43,7 +43,7 @@ export function AccountDropdown() {
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className="block px-6 py-3 text-[16px] text-black/55 transition-colors hover:text-brand-accent"
+                  className="block px-5 py-2.5 text-right text-[16px] text-black/55 transition-colors hover:text-brand-accent"
                 >
                   {item.label}
                 </Link>

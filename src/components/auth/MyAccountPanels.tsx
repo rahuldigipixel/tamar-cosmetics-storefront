@@ -36,7 +36,7 @@ function LoginPanel({ notice }: { notice?: string | null }) {
     setError(null);
     try {
       await login(username, password, rememberMe);
-      router.push("/");
+      router.push("/my-account");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -126,7 +126,7 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
         // immediately (see /api/auth/register) — no need to make them
         // re-type their password.
         setSession(json.token, json.customer);
-        router.push("/");
+        router.push("/my-account");
       } else {
         onRegistered("ההרשמה הושלמה בהצלחה! ניתן להתחבר עם שם המשתמש והסיסמה שנבחרו.");
       }

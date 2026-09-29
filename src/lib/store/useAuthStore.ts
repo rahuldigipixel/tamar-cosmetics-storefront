@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { useWishlistStore } from "./useWishlistStore";
 
 export interface Customer {
   id: number;
@@ -44,10 +45,15 @@ export const useAuthStore = create<AuthState>()(
           customer: json.customer,
           rememberedUsername: rememberMe ? username : null,
         });
+        // Fold any guest-cookie wishlist items into the account's server
+        // wishlist now that there's a token to save them under.
+        useWishlistStore.getState().mergeGuestIntoAccount();
       },
 
-      setSession: (token, customer, rememberedUsername) =>
-        set({ token, customer, ...(rememberedUsername !== undefined ? { rememberedUsername } : {}) }),
+      setSession: (token, customer, rememberedUsername) => {
+        set({ token, customer, ...(rememberedUsername !== undefined ? { rememberedUsername } : {}) });
+        useWishlistStore.getState().mergeGuestIntoAccount();
+      },
 
       logout: async () => {
         const token = get().token;

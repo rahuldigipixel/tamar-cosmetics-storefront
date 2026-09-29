@@ -45,21 +45,28 @@ export interface WishlistItem {
   productId: number;
 }
 
-export function getWishlist(wishlistId: string) {
-  return tamarFetch<WishlistItem[]>(`/wishlist?wishlist_id=${encodeURIComponent(wishlistId)}`);
+// Wishlist is logged-in-only, stored on WP user meta in the same serialized
+// format the WoodMart theme already used pre-headless (see class-wishlist.php)
+// — auth is the bearer token from /api/auth/login, not a client-generated id.
+// Guests never call these; their wishlist lives entirely in a browser cookie
+// (useWishlistStore.ts).
+export function getWishlist(token: string) {
+  return tamarFetch<WishlistItem[]>(`/wishlist`, { headers: { Authorization: `Bearer ${token}` } });
 }
 
-export function addToWishlist(wishlistId: string, productId: number) {
+export function addToWishlist(token: string, productId: number) {
   return tamarFetch<WishlistItem[]>(`/wishlist`, {
     method: "POST",
-    body: JSON.stringify({ wishlist_id: wishlistId, product_id: productId }),
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ product_id: productId }),
   });
 }
 
-export function removeFromWishlist(wishlistId: string, productId: number) {
+export function removeFromWishlist(token: string, productId: number) {
   return tamarFetch<WishlistItem[]>(`/wishlist`, {
     method: "DELETE",
-    body: JSON.stringify({ wishlist_id: wishlistId, product_id: productId }),
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ product_id: productId }),
   });
 }
 

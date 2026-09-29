@@ -7,6 +7,7 @@ import type { Product } from "@/types/product";
 
 export default function WishlistPage() {
   const productIds = useWishlistStore((s) => s.productIds);
+  const hydrated = useWishlistStore((s) => s.hydrated);
   const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
   const [products, setProducts] = useState<Product[]>([]);
   // Tracks which ids the currently-shown `products` were fetched for, so
@@ -14,15 +15,6 @@ export default function WishlistPage() {
   // live ids is what keeps the page from ever rendering an empty-list flash
   // for ids that just haven't resolved yet.
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
-  // Gated on the persisted store rehydrating from localStorage first —
-  // otherwise productIds briefly reads as [] on mount and this page treats
-  // that as "nothing saved" before the real, persisted ids ever load.
-  const [storeReady, setStoreReady] = useState(() => useWishlistStore.persist?.hasHydrated() ?? true);
-
-  useEffect(() => {
-    if (storeReady) return;
-    return useWishlistStore.persist?.onFinishHydration(() => setStoreReady(true));
-  }, [storeReady]);
 
   useEffect(() => {
     fetchWishlist();
@@ -32,7 +24,7 @@ export default function WishlistPage() {
   const idsKey = productIds.join(",");
 
   useEffect(() => {
-    if (!storeReady) return;
+    if (!hydrated) return;
     let cancelled = false;
     // One batched request for the whole list — never one request per id.
     const request: Promise<Product[]> = idsKey
@@ -49,9 +41,9 @@ export default function WishlistPage() {
     return () => {
       cancelled = true;
     };
-  }, [idsKey, storeReady]);
+  }, [idsKey, hydrated]);
 
-  const loading = !storeReady || loadedKey !== idsKey;
+  const loading = !hydrated || loadedKey !== idsKey;
 
   return (
     <div className="mx-auto max-w-[1600px] px-[15px] py-8 ">

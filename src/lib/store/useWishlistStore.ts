@@ -1,27 +1,44 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { useAuthStore } from "./useAuthStore";
 
-// crypto.randomUUID() only exists in secure contexts (https, or localhost).
-// This app is also browsed over plain http on the LAN dev IP, where the
-// method is simply undefined — falls back to crypto.getRandomValues, which
-// (unlike randomUUID) is available everywhere the Web Crypto API exists.
-function randomUUID(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+// Logged-in wishlists live server-side (WP user meta, WoodMart's own
+// serialized format — see class-wishlist.php). Guests never hit the
+// backend: their wishlist lives entirely in this browser cookie, same
+// convention WoodMart itself uses for guests, with a 30-day expiry.
+const GUEST_COOKIE_NAME = "tamar_wishlist";
+const GUEST_COOKIE_MAX_AGE_DAYS = 30;
+
+function readGuestCookie(): number[] {
+  if (typeof document === "undefined") return [];
+  const match = document.cookie.match(new RegExp(`(?:^|; )${GUEST_COOKIE_NAME}=([^;]*)`));
+  if (!match) return [];
+  try {
+    const ids = JSON.parse(decodeURIComponent(match[1]));
+    return Array.isArray(ids) ? ids.filter((id): id is number => typeof id === "number") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCookie(ids: number[]) {
+  if (typeof document === "undefined") return;
+  const maxAge = GUEST_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60;
+  document.cookie = `${GUEST_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(ids))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function clearGuestCookie() {
+  if (typeof document === "undefined") return;
+  document.cookie = `${GUEST_COOKIE_NAME}=; path=/; max-age=0`;
 }
 
 interface WishlistState {
-  wishlistId: string;
   productIds: number[];
   hydrated: boolean;
-  ensureId: () => string;
   fetchWishlist: () => Promise<void>;
   toggle: (productId: number) => Promise<void>;
   has: (productId: number) => boolean;
+  /** Called on login: folds any guest-cookie items into the account's server wishlist, then clears the cookie. */
+  mergeGuestIntoAccount: () => Promise<void>;
 }
 
 // Header, every product card and the gallery all call fetchWishlist() on
@@ -30,108 +47,95 @@ interface WishlistState {
 // request per card.
 let wishlistRequest: Promise<void> | null = null;
 
-// The wishlist id is generated in this browser and every add/remove is
-// written to localStorage first, so the server copy can only differ if a
-// write was lost. Syncing once per browser session is enough — not on every
-// full page load (each sync is a WordPress round trip).
-const SESSION_SYNC_KEY = "tamar-wishlist-synced";
+export const useWishlistStore = create<WishlistState>()((set, get) => ({
+  productIds: [],
+  hydrated: false,
 
-function syncedThisSession(): boolean {
-  try {
-    return sessionStorage.getItem(SESSION_SYNC_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
+  fetchWishlist: async () => {
+    if (get().hydrated) return;
+    if (wishlistRequest) return wishlistRequest;
 
-function markSyncedThisSession() {
-  try {
-    sessionStorage.setItem(SESSION_SYNC_KEY, "1");
-  } catch {
-    // storage blocked — worst case we sync again next page load
-  }
-}
-
-export const useWishlistStore = create<WishlistState>()(
-  persist(
-    (set, get) => ({
-      wishlistId: "",
-      productIds: [],
-      hydrated: false,
-
-      ensureId: () => {
-        let id = get().wishlistId;
-        if (!id) {
-          id = randomUUID();
-          set({ wishlistId: id });
-        }
-        return id;
-      },
-
-      fetchWishlist: async () => {
-        // Only sync from the server once per browser session — the list already
-        // persists locally (localStorage), and this backend endpoint may
-        // not be implemented/reachable yet. Re-running this on every card's
-        // mount (a grid renders many at once) would both hammer the API
-        // and, on a failed/empty response, wipe out items the user just
-        // added locally before the server ever confirmed them.
-        if (get().hydrated) return;
-        if (wishlistRequest) return wishlistRequest;
-        // A brand-new id has nothing on the server yet — skip the round trip.
-        const isNewId = !get().wishlistId;
-        const id = get().ensureId();
-        if (isNewId || syncedThisSession()) {
-          set({ hydrated: true });
-          return;
-        }
-        wishlistRequest = (async () => {
-          try {
-            const res = await fetch(`/api/wishlist?wishlist_id=${id}`, { cache: "no-store" });
-            if (res.ok) {
-              const items = (await res.json()) as { productId: number }[];
-              if (Array.isArray(items) && items.length > 0) {
-                set((state) => ({
-                  productIds: Array.from(new Set([...state.productIds, ...items.map((i) => i.productId)])),
-                }));
-              }
-              markSyncedThisSession();
-            }
-          } catch {
-            // backend unreachable — keep whatever is already persisted locally
-          } finally {
-            set({ hydrated: true });
-            wishlistRequest = null;
-          }
-        })();
-        return wishlistRequest;
-      },
-
-      toggle: async (productId) => {
-        const id = get().ensureId();
-        const inList = get().productIds.includes(productId);
-        const method = inList ? "DELETE" : "POST";
-        set({
-          productIds: inList
-            ? get().productIds.filter((p) => p !== productId)
-            : [...get().productIds, productId],
+    // useAuthStore persists to localStorage and rehydrates asynchronously —
+    // reading its token before that finishes would misread a logged-in
+    // visitor as a guest (and since `hydrated` only flips once, permanently
+    // for this page load). Wait for it first.
+    if (useAuthStore.persist && !useAuthStore.persist.hasHydrated()) {
+      await new Promise<void>((resolve) => {
+        const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+          unsubscribe();
+          resolve();
         });
-        try {
-          await fetch("/api/wishlist", {
-            method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ wishlistId: id, productId }),
-          });
-        } catch {
-          // backend unreachable — local state (persisted) already reflects the change
-        }
-      },
-
-      has: (productId) => get().productIds.includes(productId),
-    }),
-    {
-      name: "tamar-wishlist",
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ wishlistId: state.wishlistId, productIds: state.productIds }),
+      });
     }
-  )
-);
+
+    const token = useAuthStore.getState().token;
+    if (!token) {
+      set({ productIds: readGuestCookie(), hydrated: true });
+      return;
+    }
+
+    wishlistRequest = (async () => {
+      try {
+        const res = await fetch("/api/wishlist", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const items = (await res.json()) as { productId: number }[];
+          set({ productIds: items.map((item) => item.productId) });
+        }
+      } catch {
+        // backend unreachable — leave productIds as they were
+      } finally {
+        set({ hydrated: true });
+        wishlistRequest = null;
+      }
+    })();
+    return wishlistRequest;
+  },
+
+  toggle: async (productId) => {
+    const inList = get().productIds.includes(productId);
+    const nextIds = inList ? get().productIds.filter((id) => id !== productId) : [...get().productIds, productId];
+    set({ productIds: nextIds });
+
+    const token = useAuthStore.getState().token;
+    if (!token) {
+      writeGuestCookie(nextIds);
+      return;
+    }
+
+    try {
+      await fetch("/api/wishlist", {
+        method: inList ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ productId }),
+      });
+    } catch {
+      // backend unreachable — local state already reflects the change
+    }
+  },
+
+  has: (productId) => get().productIds.includes(productId),
+
+  mergeGuestIntoAccount: async () => {
+    const guestIds = readGuestCookie();
+    const token = useAuthStore.getState().token;
+    if (guestIds.length === 0 || !token) return;
+
+    await Promise.all(
+      guestIds.map((productId) =>
+        fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ productId }),
+        }).catch(() => {
+          // best-effort — a failed item just stays out of the merged list
+        })
+      )
+    );
+    clearGuestCookie();
+    set({ hydrated: false });
+    await get().fetchWishlist();
+  },
+}));

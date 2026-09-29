@@ -64,7 +64,7 @@ export function LoginDrawer() {
     try {
       await login(username, password, rememberMe);
       closeDrawer();
-      router.push("/");
+      router.push("/my-account");
     } catch (err) {
       setError((err as Error).message);
     } finally {

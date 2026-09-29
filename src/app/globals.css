@@ -20,7 +20,17 @@
   --font-sans: var(--font-heebo);
   --font-heading: var(--font-rubik);
 
-   
+  /* Site-wide 18px minimum (AGENTS.md "Design conventions"): floor the
+     three smallest Tailwind type-scale tokens so every existing/future
+     text-xs|sm|base class anywhere in the app is clamped at 18px, without
+     having to audit each usage individually. text-lg and up are already
+     >=18px and untouched. */
+  --text-xs: 1.125rem;
+  --text-xs--line-height: 1.5rem;
+  --text-sm: 1.125rem;
+  --text-sm--line-height: 1.5rem;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.75rem;
 }
 
 /* Site-wide guard against a stray horizontal scrollbar: every intentional
@@ -41,6 +51,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-size: 18px;
   overflow-x: hidden;
 }
 

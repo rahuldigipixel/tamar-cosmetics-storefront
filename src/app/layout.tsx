@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { WelcomePopup } from "@/components/layout/WelcomePopup";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
@@ -70,6 +71,7 @@ export default async function RootLayout({
         <WelcomePopup />
         <CookieConsent />
         <CartDrawer />
+        <LoginDrawer />
         <FloatingActions />
         <AccessibilityWidget />
         <Script id="flashy-init" strategy="lazyOnload">

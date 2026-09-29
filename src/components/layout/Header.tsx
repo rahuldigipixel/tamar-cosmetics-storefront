@@ -18,6 +18,9 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useAuthDrawerStore } from "@/lib/store/useAuthDrawerStore";
+import { useAuthStore } from "@/lib/store/useAuthStore";
+import { AccountDropdown } from "@/components/auth/AccountDropdown";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -174,6 +177,8 @@ export function Header({
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
   const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
   const openCartDrawer = useCartStore((s) => s.openDrawer);
+  const openAuthDrawer = useAuthDrawerStore((s) => s.openDrawer);
+  const customer = useAuthStore((s) => s.customer);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Both stores persist to localStorage, which zustand's `persist` middleware
@@ -462,13 +467,18 @@ export function Header({
 
               {cartTrigger(true)}
 
-              <Link
-                href="/account/login"
-                aria-label="החשבון שלי"
-                className="flex h-[40px] items-center px-[10px] transition-opacity hover:opacity-60"
-              >
-                <Image src="/brand/user.svg" alt="" width={18} height={14} unoptimized className="w-[18px]" />
-              </Link>
+              {mounted && customer ? (
+                <AccountDropdown />
+              ) : (
+                <button
+                  type="button"
+                  onClick={openAuthDrawer}
+                  aria-label="החשבון שלי"
+                  className="flex h-[40px] items-center px-[10px] transition-opacity hover:opacity-60"
+                >
+                  <Image src="/brand/user.svg" alt="" width={18} height={14} unoptimized className="w-[18px]" />
+                </button>
+              )}
 
               <Link
                 href="/wishlist"
@@ -857,14 +867,28 @@ export function Header({
             );
           })}
 
-          <Link
-            href="/account/login"
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-2 py-4 text-base font-medium text-black/85 hover:text-brand-accent"
-          >
-            <User className="h-4 w-4" />
-            החשבון שלי
-          </Link>
+          {mounted && customer ? (
+            <Link
+              href="/my-account"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 py-4 text-base font-medium text-black/85 hover:text-brand-accent"
+            >
+              <User className="h-4 w-4" />
+              החשבון שלי
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                openAuthDrawer();
+              }}
+              className="flex items-center gap-2 py-4 text-base font-medium text-black/85 hover:text-brand-accent"
+            >
+              <User className="h-4 w-4" />
+              החשבון שלי
+            </button>
+          )}
 
           {[...linksRight, ...linksLeft].length > 0 ? (
             <div className="flex flex-col gap-3 border-t border-black/5 py-4">

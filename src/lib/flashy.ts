@@ -6,3 +6,8 @@
 // a GA/GTM ID), not secrets.
 export const FLASHY_ACCOUNT_ID = 3294;
 export const FLASHY_REVIEWS_ELEMENT_ID = "291";
+
+// The review data behind this widget is synced from the legacy WordPress site's
+// Flashy account, so every "view product" link it renders points there instead
+// of this headless frontend. Rewritten client-side in FlashyReviewsWidget.
+export const FLASHY_LEGACY_SITE_ORIGIN = "https://www.tamarcosmetics.co.il";

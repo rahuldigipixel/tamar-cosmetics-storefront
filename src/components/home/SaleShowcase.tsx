@@ -25,10 +25,11 @@ export function SaleShowcase({
 
   return (
     <section className="mx-auto max-w-[1600px] px-[15px] py-[70px]">
+     
+
       <div className="mb-7 text-center">
-        <h2 className="text-[72px] font-black leading-none tracking-tight text-[#000]">{badge || "SALE"}</h2>
-        <p className="mt-3 text-[23px] text-black/100">{title || "המבצעים שלנו"}</p>
-        {description ? <p className="mt-1 text-base text-black/60">{description}</p> : null}
+        <h2 className="text-[72px] font-black leading-none tracking-tight text-[#000] sm:text-[72px]">{title}</h2>
+        {description ? <p className="mt-3 text-[23px] text-black/100">{description}</p> : null}
       </div>
 
       <div className="relative">

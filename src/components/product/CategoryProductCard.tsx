@@ -149,7 +149,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
                 )}
               </div>
               {product.sku ? (
-                <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק"ט: {product.sku}</p>
+                <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק&quot;ט: {product.sku}</p>
               ) : null}
             </div>
             {/* Qty + cart on the left (RTL end) */}
@@ -171,7 +171,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
               )}
             </div>
             {product.sku ? (
-              <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק"ט: {product.sku}</p>
+              <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק&quot;ט: {product.sku}</p>
             ) : null}
             <Link
               href={`/product/${product.slug}`}

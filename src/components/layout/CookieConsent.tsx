@@ -55,6 +55,7 @@ export function CookieConsent() {
 
   useEffect(() => {
     if (readConsent()) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- gates the client-only render (no localStorage during SSR) before the entrance transition starts
     setMounted(true);
     const timer = window.setTimeout(() => setVisible(true), 300);
     return () => window.clearTimeout(timer);

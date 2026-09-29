@@ -13,6 +13,7 @@ export function RelatedToCartProducts({ items }: { items: CartItem[] }) {
 
   useEffect(() => {
     if (!categorySlug) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clears stale products fetched for a previous categorySlug once the cart no longer has one
       setProducts([]);
       return;
     }

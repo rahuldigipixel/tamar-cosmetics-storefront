@@ -233,18 +233,14 @@ export function SaleProductSlider({
 
   return (
     <section className="mx-auto max-w-[1600px] px-[15px] py-[50px]">
-      <div className="mx-auto flex max-w-2xl flex-col items-center gap-10 px-4 text-center sm:px-6">
-        <span className="flex w-fit items-center gap-1.5 rounded-full bg-brand-accent px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm">
-          {badgeIcon}
-          {badge}
-        </span>
-        <h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl lg:text-5xl">{title}</h2>
-        {description ? <p className="max-w-xl text-sm text-black/60 sm:text-lg">{description}</p> : null}
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-5 px-4 text-center sm:px-6">
+        <span className="flex w-fit items-center gap-1.5 rounded-full bg-brand-accent px-3.5 py-1.5  font-semibold uppercase tracking-[0.2em] text-white shadow-sm ">{badgeIcon}{badge}</span>        
+        {description ? <p className="  text-[23px] text-black/100">{description}</p> : null}
       </div>
 
       {/* Nav buttons float outside the carousel's own box, in the page's
           side margins — matching the other home sliders. */}
-      <div className="relative mx-auto mt-8 px-4 sm:mt-10  sm:px-0  ">
+      <div className="relative mx-auto mt-5 px-4 sm:mt-10  sm:px-0  ">
         <button
           onClick={() => step(-1)}
           aria-label="הקודם"

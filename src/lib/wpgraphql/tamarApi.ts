@@ -299,13 +299,11 @@ export interface HomePageSlide {
   link: string;
 }
 
-/** `bestsellers` | `new` | `sale` — which pre-fetched product list (see getHomeData()) feeds a home-page rail. */
-export type HomeProductSource = "bestsellers" | "new" | "sale";
-
 export interface HomePageRailSettings {
   title: string;
   description: string;
-  source: HomeProductSource;
+  /** Product database IDs curated in wp-admin (search-by-name/SKU multiselect), in display order. Empty = use the section's default product list (see pickRailProducts() in page.tsx). */
+  productIds: number[];
 }
 
 export type HomePageSaleSettings = HomePageRailSettings;

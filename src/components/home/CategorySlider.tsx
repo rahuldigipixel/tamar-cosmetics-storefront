@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductCategory } from "@/types/product";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
 

@@ -25,7 +25,6 @@ export function WelcomePopup() {
     // localStorage heartbeat, updated by whichever tab is open, lets us tell
     // "browser was actually closed" apart from "just refreshed/new tab."
     let heartbeatInterval: number | undefined;
-    let timer: number | undefined;
 
     try {
       const lastHeartbeat = Number(window.localStorage.getItem(HEARTBEAT_KEY) ?? "0");
@@ -52,7 +51,7 @@ export function WelcomePopup() {
       // localStorage unavailable — fall back to showing every time
     }
 
-    timer = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       try {
         window.localStorage.setItem(SHOWN_KEY, "1");
       } catch {

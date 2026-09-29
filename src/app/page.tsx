@@ -1,6 +1,6 @@
 import { Percent, Sparkles, Flame } from "lucide-react";
 import { getHomeData } from "@/lib/wpgraphql/home";
-import { getHomePageSettings, type HomeProductSource } from "@/lib/wpgraphql/tamarApi";
+import { getHomePageSettings } from "@/lib/wpgraphql/tamarApi";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CategorySlider } from "@/components/home/CategorySlider";
 import { BrandSlider } from "@/components/home/BrandSlider";
@@ -8,7 +8,6 @@ import { FeatureStrip } from "@/components/home/FeatureStrip";
 import { ProductSlider } from "@/components/home/ProductSlider";
 import { SaleProductSlider } from "@/components/home/SaleProductSlider";
 import { ClubSignup } from "@/components/home/ClubSignup";
-import { SaleShowcase } from "@/components/home/SaleShowcase";
 import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 import { RichContent } from "@/components/ui/RichContent";
 import type { Product, ProductCategory, Brand } from "@/types/product";
@@ -21,13 +20,9 @@ const DEFAULT_ABOUT_HTML =
   "<p>חנות למוצרי ציפורניים ולק ג&apos;ל, מבחר ענק של מקצועי למניקור, פדיקור וקוסמטיקה.</p>" +
   "<p>תמר קוסמטיקס מייבאת ומשווקת את המותגים האיכותיים והמתקדמים ביותר המחויבים לספק תוצאות. המותגים הללו ידועים בשל האמינות והיכולת לעזור לעצור ולקוחות להשיג את המראה והאפקט הרצויים, תוך שמירה על בריאות העור והציפורניים.</p>";
 
-function pickProducts(
-  source: HomeProductSource | undefined,
-  lists: { bestSellers: Product[]; newProducts: Product[]; saleProducts: Product[] }
-): Product[] {
-  if (source === "new") return lists.newProducts;
-  if (source === "sale") return lists.saleProducts;
-  return lists.bestSellers;
+/** Admin's manually-picked products for a rail (wp-admin → ניהול דף הבית), falling back to the section's default product list when nothing's been picked. */
+function pickRailProducts(selected: Product[], fallback: Product[]): Product[] {
+  return selected.length > 0 ? selected : fallback;
 }
 
 /** Admin-selected slugs, in the admin's chosen order; falls back to the top `limit` by product count when none are selected. */
@@ -44,16 +39,34 @@ function pickBySlugOrTopCount<T extends { slug: string; count: number }>(
 }
 
 export default async function HomePage() {
-  const [
-    { saleProducts: saleProductsRaw, bestSellers: bestSellersRaw, newProducts: newProductsRaw, categories, brands },
-    settings,
-  ] = await Promise.all([getHomeData(20), getHomePageSettings()]);
+  // Settings (wp-admin's HOT/NEW/SALE product-id picks) has to resolve
+  // before the GraphQL call below, since those ids feed the $hotIds/$newIds/
+  // $saleIds variables on GET_HOME_DATA — still just the same 2 requests
+  // this route has always made (settings REST + GraphQL), just sequential.
+  const settings = await getHomePageSettings();
+
+  const {
+    saleProducts: saleProductsRaw,
+    bestSellers: bestSellersRaw,
+    newProducts: newProductsRaw,
+    hotSelected: hotSelectedRaw,
+    newSelected: newSelectedRaw,
+    saleSelected: saleSelectedRaw,
+    categories,
+    brands,
+  } = await getHomeData(20, {
+    hot: settings?.hot.productIds,
+    new: settings?.new.productIds,
+    sale: settings?.sale.productIds,
+  });
 
   // Out-of-stock items shouldn't take up slots in these promotional home-page sliders.
   const saleProducts = saleProductsRaw.filter((p) => p.inStock);
   const bestSellers = bestSellersRaw.filter((p) => p.inStock);
   const newProducts = newProductsRaw.filter((p) => p.inStock);
-  const productLists = { bestSellers, newProducts, saleProducts };
+  const hotSelected = hotSelectedRaw.filter((p) => p.inStock);
+  const newSelected = newSelectedRaw.filter((p) => p.inStock);
+  const saleSelected = saleSelectedRaw.filter((p) => p.inStock);
 
   // Admin picks by term ID (see class-home-page-settings.php), so a selection
   // can be a subcategory too — match against every category, any depth, not
@@ -70,9 +83,9 @@ export default async function HomePage() {
   const brandsWithLogo: Brand[] = brands.filter((b) => b.thumbnailUrl);
   const displayBrands = pickBySlugOrTopCount(brandsWithLogo, settings?.brandSlugs, 20);
 
-  const hotProducts = pickProducts(settings?.hot.source, productLists);
-  const newSectionProducts = pickProducts(settings?.new.source, productLists);
-  const saleSectionProducts = pickProducts(settings?.sale.source ?? "sale", productLists);
+  const hotProducts = pickRailProducts(hotSelected, bestSellers);
+  const newSectionProducts = pickRailProducts(newSelected, newProducts);
+  const saleSectionProducts = pickRailProducts(saleSelected, saleProducts);
 
   const aboutTitle = settings?.aboutTitle || DEFAULT_ABOUT_TITLE;
   const aboutHtml = settings?.aboutContentHtml || DEFAULT_ABOUT_HTML;
@@ -118,11 +131,13 @@ export default async function HomePage() {
         products={saleSectionProducts}
       />
 
-      <SaleShowcase
-        products={saleSectionProducts.slice(0, 10)}
+      <ProductSlider
         badge="SALE"
-        title={settings?.sale.title}
+        badgeIcon={<Percent className="h-3.5 w-3.5" />}
+        title={settings?.sale.title || "המבצעים שלנו"}
         description={settings?.sale.description}
+        products={saleSectionProducts}
+        headerVariant="modern"
       />
 
       <FeatureStrip features={settings?.features} />

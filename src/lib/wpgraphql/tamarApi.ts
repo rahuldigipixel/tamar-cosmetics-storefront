@@ -406,3 +406,106 @@ export const getSecretClubPage = cache(function getSecretClubPage() {
     revalidate: 300,
   });
 });
+
+export interface OrderSummary {
+  id: number;
+  number: string;
+  date: string;
+  status: string;
+  statusLabel: string;
+  total: number;
+  itemCount: number;
+}
+
+export interface OrderDetail {
+  id: number;
+  number: string;
+  date: string;
+  status: string;
+  statusLabel: string;
+  items: { name: string; quantity: number; total: number; meta: { label: string; value: string }[] }[];
+  subtotal: number;
+  discount: number;
+  shippingTotal: number;
+  shippingMethod: string;
+  paymentMethod: string;
+  total: number;
+  note: string;
+  billing: {
+    name: string;
+    company: string;
+    address1: string;
+    address2: string;
+    city: string;
+    phone: string;
+    email: string;
+  };
+}
+
+// Logged-in customer's own orders (includes/class-orders.php) — user-specific,
+// so never cached; the bearer token is what scopes the result.
+export function getOrders(token: string) {
+  return tamarFetch<OrderSummary[]>(`/orders`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function getOrder(token: string, id: number) {
+  return tamarFetch<OrderDetail>(`/orders/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export interface BillingAddress {
+  first_name: string;
+  last_name: string;
+  country: string;
+  /** Stored in billing_state — see mutations/checkout.ts. */
+  city: string;
+  address_1: string;
+  address_2: string;
+  appartment: string;
+  postcode: string;
+  phone: string;
+  email: string;
+}
+
+export interface AccountProfile {
+  firstName: string;
+  lastName: string;
+  displayName: string;
+  email: string;
+  /** New address awaiting confirmation via the emailed link (WP's _new_email flow); "" when none. */
+  pendingEmail: string;
+  /** Only on the save response: whether the confirmation email went out. */
+  emailSent?: boolean;
+}
+
+export type AccountSection = "billing" | "profile" | "confirm-email" | "cancel-email";
+
+/**
+ * Logged-in account read/write (includes/class-account.php). Unlike
+ * tamarFetch this keeps the backend's error message (e.g. "wrong current
+ * password") so the form can show it, while keeping the same timeout.
+ */
+export async function accountRequest<T>(
+  section: AccountSection,
+  token: string,
+  body?: unknown
+): Promise<{ ok: boolean; status: number; data: T | { message?: string } | null }> {
+  const path = `/account/${section}`;
+  logApiCall("REST", path);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${TAMAR_API_BASE}${path}`, {
+      method: body === undefined ? "GET" : "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+  } catch {
+    return { ok: false, status: 502, data: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}

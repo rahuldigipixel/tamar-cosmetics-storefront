@@ -7,7 +7,8 @@ import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
 export function AccountLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const pathname = safeDecode(rawPathname);
   const logout = useAuthStore((s) => s.logout);
 
   async function handleLogout() {
@@ -28,7 +29,9 @@ export function AccountLayout({ children }: { children: React.ReactNode }) {
           <nav>
             <ul className="divide-y divide-black/5">
               {ACCOUNT_NAV_ITEMS.map((item) => {
-                const active = !item.isLogout && pathname === item.href;
+                const active =
+                  !item.isLogout &&
+                  (pathname === item.href || (item.href === "/my-account/orders" && pathname.startsWith("/my-account/view-order")) || (item.href !== "/my-account" && pathname.startsWith(`${item.href}/`)));
                 if (item.isLogout) {
                   return (
                     <li key={item.label}>
@@ -65,4 +68,13 @@ export function AccountLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
+}
+
+// usePathname() can return Hebrew paths percent-encoded; nav hrefs are plain Hebrew.
+function safeDecode(path: string) {
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
+  }
 }

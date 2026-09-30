@@ -13,10 +13,10 @@ export interface AccountNavItem {
 export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   { label: "לוח בקרה", href: "/my-account", icon: FileText },
   { label: "הזמנות", href: "/my-account/orders", icon: FileText },
-  { label: "כתובת", href: "/my-account/address", icon: MapPin },
+  { label: "כתובת", href: "/my-account/edit-address", icon: MapPin },
   { label: "פרטי חשבון", href: "/my-account/edit-account", icon: CircleUserRound },
-  { label: "רשימת המשאלות", href: "/wishlist", icon: Heart },
-  { label: "מעקב אחר המשלוח", href: "/my-account/order-tracking", icon: Settings },
+  { label: "רשימת המשאלות", href: "/רשימת-משאלות", icon: Heart },
+  { label: "מעקב אחר המשלוח", href: "/my-account/d-shipment-tracking", icon: Settings },
   { label: "התנתק", href: "", icon: LogOut, isLogout: true },
 ];
 
@@ -27,9 +27,9 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
 // left: (הזמנות, כתובת, פרטי חשבון) then (רשימת המשאלות, מעקב אחר המשלוח, התנתק).
 export const DASHBOARD_CARDS: AccountNavItem[] = [
   { label: "הזמנות", href: "/my-account/orders", icon: FileText },
-  { label: "כתובת", href: "/my-account/address", icon: MapPin },
+  { label: "כתובת", href: "/my-account/edit-address", icon: MapPin },
   { label: "פרטי חשבון", href: "/my-account/edit-account", icon: CircleUserRound },
-  { label: "רשימת המשאלות", href: "/wishlist", icon: Heart },
-  { label: "מעקב אחר המשלוח", href: "/my-account/order-tracking", icon: Settings },
+  { label: "רשימת המשאלות", href: "/רשימת-משאלות", icon: Heart },
+  { label: "מעקב אחר המשלוח", href: "/my-account/d-shipment-tracking", icon: Settings },
   { label: "התנתק", href: "", icon: LogOut, isLogout: true },
 ];

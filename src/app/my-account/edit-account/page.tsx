@@ -1,5 +1,6 @@
-import { AccountStubPage } from "@/components/auth/AccountStubPage";
+import { EditAccountForm } from "@/components/auth/EditAccountForm";
 
-export default function EditAccountPage() {
-  return <AccountStubPage title="פרטי חשבון" />;
+export default async function EditAccountPage({ searchParams }: { searchParams: Promise<{ newuseremail?: string }> }) {
+  const { newuseremail } = await searchParams;
+  return <EditAccountForm confirmHash={newuseremail} />;
 }

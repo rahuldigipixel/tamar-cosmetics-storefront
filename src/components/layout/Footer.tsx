@@ -17,7 +17,7 @@ const SERVICE_LINKS = [
   { href: "/contact", label: "צור קשר" },
   { href: "/account/login", label: "החשבון שלי" },
   { href: "/account/orders", label: "מעקב הזמנה" },
-  { href: "/wishlist", label: "רשימת המשאלות" },
+  { href: "/רשימת-משאלות", label: "רשימת המשאלות" },
   { href: "/cart", label: "עגלת קניות" },
 ];
 

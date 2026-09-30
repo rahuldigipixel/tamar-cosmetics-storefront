@@ -1,5 +1,5 @@
-import { AccountStubPage } from "@/components/auth/AccountStubPage";
+import { OrdersList } from "@/components/auth/OrdersList";
 
 export default function OrdersPage() {
-  return <AccountStubPage title="הזמנות" />;
+  return <OrdersList />;
 }

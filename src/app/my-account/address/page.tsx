@@ -1,5 +1,5 @@
-import { AccountStubPage } from "@/components/auth/AccountStubPage";
+import { redirect } from "next/navigation";
 
-export default function AddressPage() {
-  return <AccountStubPage title="כתובת" />;
+export default function LegacyAddressPage() {
+  redirect("/my-account/edit-address");
 }

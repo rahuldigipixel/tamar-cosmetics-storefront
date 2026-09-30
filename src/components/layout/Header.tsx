@@ -481,7 +481,7 @@ export function Header({
               )}
 
               <Link
-                href="/wishlist"
+                href="/רשימת-משאלות"
                 dir="ltr"
                 aria-label="רשימת המשאלות"
                 className="flex h-[40px] items-center px-[10px] transition-opacity hover:opacity-60"

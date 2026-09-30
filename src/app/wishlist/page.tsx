@@ -1,65 +1,7 @@
-﻿"use client";
+import { WishlistView } from "@/components/wishlist/WishlistView";
 
-import { useEffect, useState } from "react";
-import { ProductGridCard } from "@/components/product/ProductGridCard";
-import { useWishlistStore } from "@/lib/store/useWishlistStore";
-import type { Product } from "@/types/product";
-
+// Public URL is "/רשימת-משאלות" (rewrite in next.config.ts) — same
+// non-ASCII-directory limitation as /brand-list for "/מותג/".
 export default function WishlistPage() {
-  const productIds = useWishlistStore((s) => s.productIds);
-  const hydrated = useWishlistStore((s) => s.hydrated);
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
-  const [products, setProducts] = useState<Product[]>([]);
-  // Tracks which ids the currently-shown `products` were fetched for, so
-  // "loading" can be derived instead of toggled — comparing this against the
-  // live ids is what keeps the page from ever rendering an empty-list flash
-  // for ids that just haven't resolved yet.
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchWishlist();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const idsKey = productIds.join(",");
-
-  useEffect(() => {
-    if (!hydrated) return;
-    let cancelled = false;
-    // One batched request for the whole list — never one request per id.
-    const request: Promise<Product[]> = idsKey
-      ? fetch(`/api/products?ids=${idsKey}`)
-          .then((r) => (r.ok ? r.json() : { products: [] }))
-          .then((d: { products?: Product[] }) => d.products ?? [])
-          .catch(() => [])
-      : Promise.resolve([]);
-    request.then((fetched) => {
-      if (cancelled) return;
-      setProducts(fetched);
-      setLoadedKey(idsKey);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [idsKey, hydrated]);
-
-  const loading = !hydrated || loadedKey !== idsKey;
-
-  return (
-    <div className="mx-auto max-w-[1600px] px-[15px] py-8 ">
-      <h1 className="mb-6 text-2xl font-bold">רשימת המשאלות</h1>
-
-      {loading ? (
-        <p className="text-black/60">טוען...</p>
-      ) : products.length === 0 ? (
-        <p className="text-black/60">רשימת המשאלות שלך ריקה.</p>
-      ) : (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {products.map((product) => (
-            <ProductGridCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  return <WishlistView />;
 }

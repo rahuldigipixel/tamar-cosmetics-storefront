@@ -26,7 +26,7 @@ export function AccountDropdown() {
         <Image src="/brand/user.svg" alt="" width={18} height={14} unoptimized className="w-[18px]" />
       </Link>
 
-      <div className="invisible absolute end-0 top-full z-50 w-[230px] translate-y-1 bg-white opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="invisible absolute end-0 top-full z-50 w-[300px] translate-y-1 bg-white opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
         <ul className="py-3 text-right">
           {ACCOUNT_NAV_ITEMS.map((item) =>
             item.isLogout ? (
@@ -43,7 +43,7 @@ export function AccountDropdown() {
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className="block px-5 py-2.5 text-right text-[16px] text-black/55 transition-colors hover:text-brand-accent"
+                  className="block px-5 py-1.5 text-right text-[15px] text-black/55 transition-colors hover:text-brand-accent"
                 >
                   {item.label}
                 </Link>

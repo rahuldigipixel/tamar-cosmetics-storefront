@@ -17,8 +17,10 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-accent: var(--brand-accent);
   --color-brand-soft: var(--brand-soft);
-  --font-sans: var(--font-heebo);
-  --font-heading: var(--font-rubik);
+  /* Single site-wide typeface (matches the legacy site): Open Sans, loaded in
+     layout.tsx. Every font utility resolves to it — never add another family. */
+  --font-sans: var(--font-open-sans);
+  --font-heading: var(--font-open-sans);
 
   /* Site-wide 18px minimum (AGENTS.md "Design conventions"): floor the
      three smallest Tailwind type-scale tokens so every existing/future

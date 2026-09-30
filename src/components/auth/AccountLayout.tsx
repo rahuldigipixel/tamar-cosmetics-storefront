@@ -1,20 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
+import { usePathname } from "next/navigation";
+import { useLogoutToHome } from "@/lib/store/useLogoutToHome";
 import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
 export function AccountLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const rawPathname = usePathname();
   const pathname = safeDecode(rawPathname);
-  const logout = useAuthStore((s) => s.logout);
-
-  async function handleLogout() {
-    await logout();
-    router.push("/");
-  }
+  const handleLogout = useLogoutToHome();
 
   return (
     <div className="mx-auto max-w-[1600px] px-[15px] py-16">

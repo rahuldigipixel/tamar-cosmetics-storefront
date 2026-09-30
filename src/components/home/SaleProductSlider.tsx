@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Percent } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
+import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 const COPIES = 5;
@@ -141,7 +142,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
   return (
     <div
       ref={cardRef}
-      className="group flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
+      className="group relative flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
     >
       <Link href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-accent/5">
         {image ? (
@@ -160,6 +161,8 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
           </span>
         ) : null}
       </Link>
+
+      <ProductHoverActions product={product} className="start-3 top-3" />
 
       <div className="flex flex-1 flex-col gap-1 p-4 text-right">
         <Link

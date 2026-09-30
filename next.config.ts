@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   // = "מותג") — the literal Hebrew string here never matches the incoming
   // request path, confirmed against the dev server.
   async rewrites() {
-    return [
+    const afterFiles = [
       { source: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA", destination: "/wishlist" },
       { source: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA/", destination: "/wishlist" },
       { source: "/%D7%9E%D7%95%D7%AA%D7%92", destination: "/brand-list" },
@@ -41,8 +41,16 @@ const nextConfig: NextConfig = {
       { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA", destination: "/secret-club" },
       { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA/", destination: "/secret-club" },
     ];
+    return {
+      // Product search results live at the WordPress-style "/?s=term&post_type=product"
+      // (page: /search). "/" is a real page, so this must run before the filesystem check.
+      beforeFiles: [{ source: "/", has: [{ type: "query" as const, key: "s" }], destination: "/search" }],
+      afterFiles,
+    };
   },
   images: {
+    // 90 = hero banner (HeroCarousel); 75 = Next default for everything else.
+    qualities: [75, 90],
     remotePatterns: [
       // Local backend
       { protocol: "http", hostname: "192.168.0.107", pathname: "/tamarcosmetics_react/wp-content/uploads/**" },

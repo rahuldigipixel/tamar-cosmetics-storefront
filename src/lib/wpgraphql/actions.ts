@@ -1,6 +1,6 @@
 "use server";
 
-import { listProducts, type ListProductsResult } from "./products";
+import { getQuickViewProduct, listProducts, type ListProductsResult } from "./products";
 
 export type CategorySortOption = "POPULARITY" | "PRICE_ASC" | "PRICE_DESC" | "DATE";
 
@@ -28,6 +28,7 @@ function toOrderby(sort: CategorySortOption | undefined) {
 export async function fetchCategoryProducts(params: {
   category?: string;
   brand?: string;
+  search?: string;
   after: string | null;
   sort?: CategorySortOption;
   minPrice?: number;
@@ -37,10 +38,16 @@ export async function fetchCategoryProducts(params: {
   return listProducts({
     category: params.category,
     brand: params.brand,
+    search: params.search,
     after: params.after ?? undefined,
     first: params.first ?? 20,
     orderby: toOrderby(params.sort),
     minPrice: params.minPrice,
     maxPrice: params.maxPrice,
   });
+}
+
+/** Powers the quick-view popup — fetched only when a shopper opens it. */
+export async function fetchQuickViewProduct(databaseId: number) {
+  return getQuickViewProduct(databaseId);
 }

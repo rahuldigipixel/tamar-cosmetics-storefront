@@ -6,17 +6,29 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
 import type { HomePageSlide } from "@/lib/wpgraphql/tamarApi";
 
-function HeroSingleSlide({ slide, aspectClassName }: { slide: HomePageSlide; aspectClassName: string }) {
+// Slides render at the first slide's aspect ratio, filling 100% width (object-cover
+// only trims a slide whose uploaded ratio differs from the first) and at
+// quality 90 so wp-admin's uploaded artwork shows as-is. All slides in a track
+// share the first slide's ratio so the track height doesn't jump between slides.
+const FALLBACK_ASPECT = 16 / 5;
+const HERO_IMAGE_QUALITY = 90;
+
+function slideAspect(slide: HomePageSlide) {
+  return slide.width > 0 && slide.height > 0 ? slide.width / slide.height : FALLBACK_ASPECT;
+}
+
+function HeroSingleSlide({ slide, aspect }: { slide: HomePageSlide; aspect: number }) {
   return (
-    <div className={`relative w-full ${aspectClassName}`}>
+    <div className="relative w-full" style={{ aspectRatio: aspect }}>
       <Link href={slide.link || "/shop"} className="relative block h-full w-full">
-        <Image src={slide.url} alt={slide.alt} fill priority sizes="100vw" className="object-cover" />
+        <Image src={slide.url} alt={slide.alt} fill priority quality={HERO_IMAGE_QUALITY} sizes="100vw" className="object-cover" />
       </Link>
     </div>
   );
 }
 
-function HeroTrack({ slides, aspectClassName }: { slides: HomePageSlide[]; aspectClassName: string }) {
+function HeroTrack({ slides }: { slides: HomePageSlide[] }) {
+  const aspect = slideAspect(slides[0]);
   const { trackRef, itemRefs, looped, step, middleStart } = useInfiniteCarousel<HomePageSlide, HTMLDivElement>({
     items: slides,
     autoplayMs: 6000,
@@ -26,7 +38,7 @@ function HeroTrack({ slides, aspectClassName }: { slides: HomePageSlide[]; aspec
   // static image with no arrows/autoplay/looping track instead of a
   // one-item "carousel" that can never actually move.
   if (slides.length === 1) {
-    return <HeroSingleSlide slide={slides[0]} aspectClassName={aspectClassName} />;
+    return <HeroSingleSlide slide={slides[0]} aspect={aspect} />;
   }
 
   return (
@@ -41,7 +53,8 @@ function HeroTrack({ slides, aspectClassName }: { slides: HomePageSlide[]; aspec
             ref={(el) => {
               itemRefs.current[i] = el;
             }}
-            className={`relative w-full shrink-0 snap-start ${aspectClassName}`}
+            className="relative w-full shrink-0 snap-start"
+            style={{ aspectRatio: aspect }}
           >
             <Link href={slide.link || "/shop"} className="relative block h-full w-full">
               <Image
@@ -49,6 +62,7 @@ function HeroTrack({ slides, aspectClassName }: { slides: HomePageSlide[]; aspec
                 alt={slide.alt}
                 fill
                 priority={i === middleStart}
+                quality={HERO_IMAGE_QUALITY}
                 sizes="100vw"
                 className="object-cover"
               />
@@ -90,23 +104,18 @@ export function HeroCarousel({
   const hasMobile = Boolean(mobileSlides && mobileSlides.length > 0);
   if (!hasDesktop && !hasMobile) return null;
 
-  // If only one set is saved in wp-admin, reuse it for the other viewport
-  // rather than showing nothing there. A dedicated mobile set is a portrait
-  // crop (recommended 800×900), so it gets its own aspect ratio; reusing the
-  // wide desktop set on mobile keeps the desktop crop instead.
+  // If only one set is saved in wp-admin, reuse it for the other viewport rather
+  // than showing nothing there.
   const desktop = hasDesktop ? desktopSlides! : mobileSlides!;
   const mobile = hasMobile ? mobileSlides! : desktop;
-  // ~75px taller than before at a 1920px-wide viewport (scales with width,
-  // since these are aspect-ratio-based, not a fixed pixel height).
-  const mobileAspect = hasMobile ? "aspect-[8/9]" : "aspect-[16/6]";
 
   return (
     <section className="relative bg-brand-soft/20">
       <div className="hidden sm:block">
-        <HeroTrack slides={desktop} aspectClassName="aspect-[16/5]" />
+        <HeroTrack slides={desktop} />
       </div>
       <div className="sm:hidden">
-        <HeroTrack slides={mobile} aspectClassName={mobileAspect} />
+        <HeroTrack slides={mobile} />
       </div>
     </section>
   );

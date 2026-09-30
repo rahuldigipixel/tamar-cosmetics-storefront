@@ -1,5 +1,7 @@
 "use client";
 
+import { useLogoutToHome } from "@/lib/store/useLogoutToHome";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,7 +18,6 @@ interface MyAccountPanelsProps {
 }
 
 function LoginPanel({ notice }: { notice?: string | null }) {
-  const router = useRouter();
   const login = useAuthStore((s) => s.login);
   const rememberedUsername = useAuthStore((s) => s.rememberedUsername);
   // Only the username is ever pre-filled from a previous "remember me"
@@ -24,6 +25,7 @@ function LoginPanel({ notice }: { notice?: string | null }) {
   // remembered, and this panel remounts fresh on every visit/toggle anyway
   // since it's conditionally rendered rather than kept mounted.
   const [username, setUsername] = useState(rememberedUsername ?? "");
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(Boolean(rememberedUsername));
   const [error, setError] = useState<string | null>(null);
@@ -191,16 +193,11 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
 }
 
 export function MyAccountPanels({ initialMode }: MyAccountPanelsProps) {
-  const router = useRouter();
   const customer = useAuthStore((s) => s.customer);
-  const logout = useAuthStore((s) => s.logout);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [registeredNotice, setRegisteredNotice] = useState<string | null>(null);
 
-  async function handleLogout() {
-    await logout();
-    router.push("/");
-  }
+  const handleLogout = useLogoutToHome();
 
   if (customer) {
     return <AccountDashboard customer={customer} onLogout={handleLogout} />;

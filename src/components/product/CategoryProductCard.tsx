@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
-import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 function discountPercent(product: Product): number | null {
@@ -46,8 +45,6 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
       ? { rating: Math.round(product.averageRating ?? 0), count: product.reviewCount! }
       : fakeReview(product.databaseId);
 
-  const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
-  const toggleWishlist = useWishlistStore((s) => s.toggle);
 
   return (
     <div className={`group relative flex h-full flex-col border border-black/[.106] bg-white p-[15px] text-right${standalone ? "" : " -mt-px -ml-px"}`}>
@@ -100,18 +97,8 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
         </span>
       ) : null}
 
-      {/* Wishlist — shown on hover, like the reference's quick buttons. */}
-      <button
-        type="button"
-        onClick={() => toggleWishlist(product.databaseId)}
-        aria-label={inWishlist ? "הסרה מרשימת המשאלות" : "הוספה לרשימת המשאלות"}
-        aria-pressed={inWishlist}
-        className={`absolute top-[26px] left-[6px] flex h-[45px] w-[50px] items-center justify-center bg-white transition-opacity ${
-          inWishlist ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-        }`}
-      >
-        <Heart className={`h-[18px] w-[18px] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : "text-[#333]"}`} />
-      </button>
+      {/* Quick view + wishlist — shown on hover. */}
+      <ProductHoverActions product={product} className="top-[26px] left-[6px]" />
 
       <Link
         href={`/product/${product.slug}`}

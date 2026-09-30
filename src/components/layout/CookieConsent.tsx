@@ -92,9 +92,8 @@ export function CookieConsent() {
             <Cookie className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <p className="text-base font-bold">אנחנו משתמשים בעוגיות</p>
-            <p className="mt-0.5 text-base leading-snug text-black/60">
-              כדי לספק את חוויית הגלישה הטובה ביותר אנו משתמשים בעוגיות לשיפור האתר, שיווק והתאמה אישית.
+            <p className="text-[12px] leading-snug text-black/70">
+              כדי לספק את חוויות המשתמש הטובות ביותר, אנו משתמשים בטכנולוגיות כמו קבצי Cookie כדי לאחסן ו/או לגשת למידע על המכשיר. הסכמה לטכנולוגיות אלו תאפשר לנו לעבד נתונים כגון התנהגות גלישה או מזהים ייחודיים באתר זה. אי הסכמה או ביטול הסכמה עלולים להשפיע לרעה על תכונות ופונקציות מסוימות.
             </p>
           </div>
         </div>
@@ -103,15 +102,15 @@ export function CookieConsent() {
           <div className="flex flex-col gap-2.5 border-t border-black/5 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-base font-semibold">עוגיות הכרחיות</p>
-                <p className="text-base text-black/50">נדרשות לתפקוד תקין של האתר</p>
+                <p className="text-[15px] font-semibold">עוגיות הכרחיות</p>
+                <p className="text-[12px] text-black/50">נדרשות לתפקוד תקין של האתר</p>
               </div>
               <Toggle checked disabled />
             </div>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-base font-semibold">עוגיות שיווק ואנליטיקה</p>
-                <p className="text-base text-black/50">עוזרות לנו להתאים מבצעים ותוכן עבורך</p>
+                <p className="text-[15px] font-semibold">עוגיות שיווק ואנליטיקה</p>
+                <p className="text-[12px] text-black/50">עוזרות לנו להתאים מבצעים ותוכן עבורך</p>
               </div>
               <Toggle checked={marketing} onChange={setMarketing} />
             </div>
@@ -122,17 +121,17 @@ export function CookieConsent() {
           <button
             type="button"
             onClick={acceptAll}
-            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-4 py-2 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] sm:w-auto sm:flex-1"
+            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-4 py-2 text-[15px] font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] sm:w-auto sm:flex-1"
           >
             <ShieldCheck className="h-3.5 w-3.5" />
-            קבל הכל
+            קבל
           </button>
           <button
             type="button"
             onClick={() => (showSettings ? savePreferences() : setShowSettings(true))}
-            className="w-full rounded-full border border-black/10 px-4 py-2 text-base font-semibold text-black/70 transition-colors hover:border-brand-accent hover:text-brand-accent sm:w-auto sm:flex-1"
+            className="w-full rounded-full border border-black/10 px-4 py-2 text-[15px] font-semibold text-black/70 transition-colors hover:border-brand-accent hover:text-brand-accent sm:w-auto sm:flex-1"
           >
-            {showSettings ? "שמור העדפות" : "התאמה אישית"}
+            {showSettings ? "שמור העדפות" : "ראה העדפות"}
           </button>
         </div>
       </div>

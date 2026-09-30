@@ -1,26 +1,24 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Heebo, Rubik } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 import { FLASHY_ACCOUNT_ID } from "@/lib/flashy";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { WelcomePopup } from "@/components/layout/WelcomePopup";
+import { FlashyTracker } from "@/components/layout/FlashyTracker";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
+import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
 
-const heebo = Heebo({
-  variable: "--font-heebo",
-  subsets: ["hebrew", "latin"],
-});
-
-const rubik = Rubik({
-  variable: "--font-rubik",
+// The single site-wide typeface (see --font-sans in globals.css).
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["hebrew", "latin"],
 });
 
@@ -56,7 +54,7 @@ export default async function RootLayout({
   const bar = global?.headerBar ?? null;
 
   return (
-    <html lang="he" dir="rtl" className={`${heebo.variable} ${rubik.variable} h-full antialiased`}>
+    <html lang="he" dir="rtl" className={`${openSans.variable} h-full antialiased`}>
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
           cz-shortcut-listen) inject attributes onto <body> before React
           hydrates, which otherwise throws a full-tree hydration mismatch
@@ -68,10 +66,12 @@ export default async function RootLayout({
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
         <Footer logo={siteSettings?.footerLogo ?? null} />
-        <WelcomePopup />
+        <FlashyTracker />
         <CookieConsent />
         <CartDrawer />
         <LoginDrawer />
+        <QuickViewHost />
+        <LogoutOverlay />
         <FloatingActions />
         <AccessibilityWidget />
         <Script id="flashy-init" strategy="lazyOnload">
@@ -83,7 +83,9 @@ export default async function RootLayout({
               e.src = c; e.async = true; d.parentNode.insertBefore(e, d);
             }
           })(window, "script", "https://js.flashyapp.com/thunder.js");
-          flashy("init", ${FLASHY_ACCOUNT_ID});`}
+          flashy("init", ${FLASHY_ACCOUNT_ID});
+          (window.__flashyPending || []).forEach(function (p) { flashy.apply(null, p); });
+          window.__flashyPending = [];`}
         </Script>
       </body>
     </html>

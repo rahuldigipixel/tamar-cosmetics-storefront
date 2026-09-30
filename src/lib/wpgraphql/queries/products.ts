@@ -217,3 +217,57 @@ export const GET_PRODUCT_SLUGS = /* GraphQL */ `
     }
   }
 `;
+
+const QUICK_VIEW_TYPE_FIELDS = /* GraphQL */ `
+  sku
+  shortDescription
+  onSale
+  price(format: RAW)
+  regularPrice(format: RAW)
+  salePrice(format: RAW)
+  stockStatus
+`;
+
+/** Quick-view popup: only what the popup renders, fetched on demand when it opens (never on page load). */
+export const GET_PRODUCT_QUICK_VIEW = /* GraphQL */ `
+  query GetProductQuickView($id: ID!) {
+    product(id: $id, idType: DATABASE_ID) {
+      __typename
+      id
+      databaseId
+      slug
+      name
+      ... on SimpleProduct {
+        ${QUICK_VIEW_TYPE_FIELDS}
+      }
+      ... on VariableProduct {
+        ${QUICK_VIEW_TYPE_FIELDS}
+      }
+      image {
+        id
+        sourceUrl
+        altText
+      }
+      galleryImages {
+        nodes {
+          id
+          sourceUrl
+          altText
+        }
+      }
+      productCategories {
+        nodes {
+          id
+          name
+          slug
+        }
+      }
+      allPaBrand {
+        nodes {
+          name
+          thumbnailUrl
+        }
+      }
+    }
+  }
+`;

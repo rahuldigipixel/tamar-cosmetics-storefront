@@ -86,7 +86,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  // at 1920px): full-width banner straight under the header → pink title
  // band (40px/700 #242424, 15px padding) → 12px breadcrumb → centered 21px
  // description → horizontal filter bar → product grid.
- <div className="font-['Open_Sans_Hebrew',Arial,Helvetica,sans-serif]">
+ <div>
  {banner ? <CategoryBanner banner={banner} title={title} /> : null}
 
  <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">

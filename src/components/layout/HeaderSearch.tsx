@@ -106,11 +106,12 @@ export function HeaderSearch({
     };
   }, [open]);
 
-  const allResultsHref = `/shop?q=${encodeURIComponent(trimmed)}`;
+  const allResultsHref = `/?s=${encodeURIComponent(trimmed)}&post_type=product`;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setOpen(false);
+    (document.activeElement as HTMLElement | null)?.blur();
     router.push(trimmed ? allResultsHref : "/shop");
   }
 
@@ -123,7 +124,6 @@ export function HeaderSearch({
             setQuery(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
           placeholder="חיפוש מוצר"
           aria-label="חיפוש מוצר"
           className={inputClassName}

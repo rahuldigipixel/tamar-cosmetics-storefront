@@ -18,6 +18,8 @@ interface AuthState {
   // wp-login.php: it pre-fills the login field on your next visit, it does
   // not keep you (or anyone else on a shared machine) silently signed in.
   rememberedUsername: string | null;
+  /** True while a logout-then-go-home is in flight; drives LogoutOverlay. Never persisted. */
+  loggingOut: boolean;
   login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
   setSession: (token: string, customer: Customer, rememberedUsername?: string | null) => void;
   logout: () => Promise<void>;
@@ -29,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       customer: null,
       rememberedUsername: null,
+      loggingOut: false,
 
       login: async (username, password, rememberMe = false) => {
         const res = await fetch("/api/auth/login", {

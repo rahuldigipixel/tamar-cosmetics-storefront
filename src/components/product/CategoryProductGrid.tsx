@@ -218,6 +218,8 @@ function OptionList<T extends string>({
 export function CategoryProductGrid({
   categorySlug,
   brandSlug,
+  search,
+  hideFilters = false,
   initialProducts,
   initialHasNextPage,
   initialEndCursor,
@@ -227,6 +229,10 @@ export function CategoryProductGrid({
   /** Exactly one of categorySlug/brandSlug should be passed. */
   categorySlug?: string;
   brandSlug?: string;
+  /** Search-results mode: query the product list by this term. */
+  search?: string;
+  /** Search results show the bare grid — no filter bar. */
+  hideFilters?: boolean;
   initialProducts: Product[];
   initialHasNextPage: boolean;
   initialEndCursor: string | null;
@@ -283,6 +289,7 @@ export function CategoryProductGrid({
       const result = await fetchCategoryProducts({
         category: categorySlug,
         brand: effectiveBrand,
+        search,
         after,
         sort: sort === "DEFAULT" ? undefined : sort,
         minPrice: priceRange?.min,
@@ -350,6 +357,7 @@ export function CategoryProductGrid({
     <div>
       {/* Horizontal filter bar (reference: WoodMart product filters) —
           one dropdown per filter across the full width, above the grid. */}
+      {hideFilters ? null : (
       <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] md:grid-cols-4">
         <FilterDropdown title="מיין לפי" value={sort !== "DEFAULT" ? SORT_OPTIONS.find((o) => o.value === sort)?.label : undefined}>
           {(close) => (
@@ -414,8 +422,9 @@ export function CategoryProductGrid({
           </FilterDropdown>
         ) : null}
       </div>
+      )}
 
-      <div className="mt-[35px]">
+      <div className={hideFilters ? "" : "mt-[35px]"}>
         {activeChips.length > 0 ? (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             {activeChips.map((chip) => (
@@ -441,7 +450,11 @@ export function CategoryProductGrid({
 
         {products.length === 0 && !isPending ? (
           <p className="py-10 text-center text-lg text-black/60">
-            {brandSlug ? "אין מוצרים זמינים במותג זה כרגע." : "אין מוצרים זמינים בקטגוריה זו כרגע."}
+            {search
+              ? "לא נמצאו מוצרים התואמים לחיפוש."
+              : brandSlug
+                ? "אין מוצרים זמינים במותג זה כרגע."
+                : "אין מוצרים זמינים בקטגוריה זו כרגע."}
           </p>
         ) : (
           // Shared 1px grid lines like the reference: each card draws a full

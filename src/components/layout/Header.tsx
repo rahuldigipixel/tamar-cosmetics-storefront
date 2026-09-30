@@ -7,9 +7,11 @@ import { usePathname } from "next/navigation";
 import {
   ChevronDown,
   ChevronLeft,
+  ChevronUp,
   Clock,
   Flame,
   Gift,
+  Heart,
   Menu,
   Shield,
   ShoppingCart,
@@ -207,6 +209,7 @@ export function Header({
   const [menuTop, setMenuTop] = useState(0);
   const [overlayTop, setOverlayTop] = useState(0);
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
+  const [mobileTab, setMobileTab] = useState<"categories" | "menu">("categories");
   const categoryNavRef = useRef<HTMLElement>(null);
   const closeTimerRef = useRef<number | null>(null);
 
@@ -235,6 +238,15 @@ export function Header({
     : panelProductChild
       ? { ...panelProductChild, displayLabel: panelProductChild.label, cta: "לצפייה במוצר" }
       : null;
+
+  // Mobile drawer sub-view: the drilled-into top-level category.
+  const mobileItem = menu.find((item) => item.id === mobileOpenId) ?? null;
+  const mobileLinkChildren: HeaderMenuLinkChild[] =
+    mobileItem?.children.filter((c): c is HeaderMenuLinkChild => c.type === "link") ?? [];
+  const mobileImagesMode = mobileLinkChildren.some((c) => c.image);
+  const mobileProductChild =
+    mobileItem?.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
+  const mobileFeatured = mobileItem?.featuredCategory ?? mobileProductChild;
 
   // usePathname can hand back the raw (percent-encoded) segment for
   // non-ASCII slugs instead of the decoded text depending on how the route
@@ -372,7 +384,7 @@ export function Header({
     <div style={compact && fullHeight ? { height: fullHeight } : undefined}>
     <header
       ref={headerRef}
-      className={`z-40 bg-white font-['Open_Sans_Hebrew',Arial,Helvetica,sans-serif] ${
+      className={`z-40 bg-white ${
         compact ? "animate-header-slide-down fixed inset-x-0 top-0 shadow-[0_1px_3px_rgba(0,0,0,.12)]" : "relative"
       }`}
     >
@@ -640,7 +652,10 @@ export function Header({
                       : `gap-x-[40px] gap-y-[44px] ${panelFeature ? "grid-cols-3" : "grid-cols-5"}`
                   }`}
                 >
-                  {panelLinkChildren.slice(0, 20).map((child) =>
+                  {/* Row caps so the panel never overflows: text mode shows at
+                      most 6 rows (columns × 6), image-card mode at most 2 rows
+                      of 7 — the "הצג את כל המוצרים" button below covers the rest. */}
+                  {panelLinkChildren.slice(0, imagesMode ? 7 * 2 : (panelFeature ? 3 : 5) * 6).map((child) =>
                     imagesMode ? (
                       <li key={child.id}>
                         <Link
@@ -745,163 +760,221 @@ export function Header({
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* Mobile menu drawer */}
+      {/* Mobile menu drawer — reference (WoodMart): slides in from the right
+          (RTL), "סגירה" close row, two tabs ("כל הקטגוריות" / "תפריט"), 50px
+          rows with the label on the right and a bordered chevron on the left
+          that drills into the sub-category view. */}
       <aside
-        className={`fixed inset-y-0 end-0 z-50 flex w-[82%] max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
-          mobileOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
+        className={`fixed inset-y-0 right-0 z-50 flex w-[300px] max-w-[85%] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
-          <Image
-            src={logo?.url ?? FALLBACK_LOGO_SRC}
-            alt={logo?.alt || "תמר קוסמטיקס"}
-            width={logo?.width ?? 90}
-            height={logo?.height ?? 50}
-            className="h-auto w-16"
-          />
-          <button
-            onClick={() => setMobileOpen(false)}
-            aria-label="סגור תפריט"
-            className="rounded-full p-2 text-black/60 hover:bg-black/5 hover:text-brand-accent"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          aria-label="סגור תפריט"
+          className="flex h-[52px] shrink-0 items-center gap-2 px-[15px] text-[16px] font-semibold text-black"
+        >
+          <X className="h-5 w-5" />
+          סגירה
+        </button>
+
+        <div className="flex shrink-0 border-b-[3px] border-[#fde7eb]">
+          {(
+            [
+              ["categories", "כל הקטגוריות"],
+              ["menu", "תפריט"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                setMobileTab(key);
+                setMobileOpenId(null);
+              }}
+              className={`h-[50px] flex-1 text-[13px] font-bold transition-colors ${
+                mobileTab === key ? "bg-[#f1f1f1] text-black" : "bg-[#f8f8f8] text-black/50"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        <nav className="flex flex-col overflow-y-auto px-5 py-2">
-          {menu.map((item) => {
-            const sale = isSaleItem(item);
-
-            if (item.children.length === 0) {
-              const active = isActiveHref(item.url);
-              return (
-                <Link
-                  key={item.id}
-                  href={item.url}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-2 border-b border-black/5 py-4 text-[22px] font-semibold last:border-none ${
-                    active ? "text-brand-accent" : "text-black/85 hover:text-brand-accent"
-                  }`}
-                >
-                  {sale ? <Flame className="h-5 w-5" fill="currentColor" /> : null}
-                  {decodeHtml(item.label)}
-                </Link>
-              );
-            }
-
-            const linkChildren = item.children.filter((c): c is HeaderMenuLinkChild => c.type === "link");
-            const productChild = item.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
-            const featured = item.featuredCategory
-              ? { ...item.featuredCategory, price: null }
-              : productChild
-                ? { label: productChild.label, url: productChild.url, image: productChild.image, price: productChild.price }
-                : null;
-            const isMobileOpen = mobileOpenId === item.id;
-
-            return (
-              <div key={item.id} className="border-b border-black/5">
+        <nav className="min-h-0 flex-1 overflow-y-auto">
+          {mobileTab === "categories" && mobileItem ? (
+            <div>
+              <div className="flex h-[50px] items-stretch border-b border-black/10">
+                <span className="flex flex-1 items-center px-[20px] text-[13px] font-bold text-black">
+                  {decodeHtml(mobileItem.label)}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setMobileOpenId((id) => (id === item.id ? null : item.id))}
-                  className="flex w-full items-center justify-between py-4 text-[22px] font-semibold text-black/85"
+                  onClick={() => setMobileOpenId(null)}
+                  aria-label="חזרה"
+                  className="flex w-[50px] shrink-0 items-center justify-center bg-[#d52027] text-white"
                 >
-                  {decodeHtml(item.label)}
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isMobileOpen ? "rotate-180" : ""}`} />
+                  <ChevronUp className="h-5 w-5" />
                 </button>
-                <div
-                  className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ${
-                    isMobileOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                  }`}
+              </div>
+
+              <p className="px-[20px] py-[24px] text-center text-[16px] font-light text-black">
+                {decodeHtml(mobileItem.featuredTitle || mobileItem.label)}
+              </p>
+
+              {mobileFeatured ? (
+                <Link
+                  href={mobileFeatured.url}
+                  onClick={() => setMobileOpen(false)}
+                  className="mx-[15px] mb-[10px] flex items-center gap-3 rounded-lg bg-white p-2.5 shadow-[0_0_10px_rgba(0,0,0,.1)]"
                 >
-                  <div className="flex min-h-0 flex-col gap-1 rounded-xl bg-brand-soft/20 p-2 pb-2">
-                    {item.featuredTitle ? (
-                      <p className="pt-1 pb-1 text-center text-base font-bold text-black/80">{item.featuredTitle}</p>
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-brand-soft/40">
+                    {mobileFeatured.image ? (
+                      <Image
+                        src={mobileFeatured.image.url}
+                        alt={mobileFeatured.image.alt}
+                        fill
+                        sizes="56px"
+                        className="object-contain p-1"
+                      />
                     ) : null}
-                    {featured ? (
-                      <Link
-                        href={featured.url}
-                        onClick={() => setMobileOpen(false)}
-                        className="mb-1 flex items-center gap-3 rounded-lg bg-white p-2.5 shadow-sm"
-                      >
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-brand-soft/40">
-                          {featured.image ? (
+                  </div>
+                  <span className="min-w-0 flex-1 text-[13px] font-semibold leading-snug text-black">
+                    {decodeHtml(mobileFeatured.label)}
+                  </span>
+                </Link>
+              ) : null}
+
+              <ul>
+                {mobileLinkChildren.map((child) => (
+                  <li key={child.id} className="border-t border-black/10">
+                    <Link
+                      href={child.url}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex min-h-[66px] items-center gap-[15px] px-[20px] py-[8px] text-[13px] leading-snug ${
+                        isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
+                      }`}
+                    >
+                      {mobileImagesMode ? (
+                        <span className="relative h-[40px] w-1/2 shrink-0">
+                          {child.image ? (
                             <Image
-                              src={featured.image.url}
-                              alt={featured.image.alt}
+                              src={child.image.url}
+                              alt={child.image.alt || child.label}
                               fill
-                              sizes="56px"
-                              className="object-contain p-1"
+                              sizes="120px"
+                              className="object-contain"
                             />
                           ) : null}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-base font-semibold text-black/80">{featured.label}</p>
-                          {featured.price !== null ? (
-                            <span className="text-sm font-bold text-brand-accent">{formatPrice(featured.price)}</span>
-                          ) : null}
-                        </div>
-                        <ChevronLeft className="h-4 w-4 shrink-0 text-brand-accent" />
-                      </Link>
-                    ) : null}
-                    {linkChildren.map((child) => (
-                      <Link
-                        key={child.id}
-                        href={child.url}
-                        onClick={() => setMobileOpen(false)}
-                        className="group flex items-center justify-between gap-1.5 rounded-lg px-3 py-2.5 text-base text-black/70 transition-colors hover:bg-white hover:text-brand-accent"
-                      >
-                        <span className="truncate">{decodeHtml(child.label)}</span>
-                        <ChevronLeft className="h-3.5 w-3.5 shrink-0 text-black/30 transition-colors group-hover:text-brand-accent" />
-                      </Link>
-                    ))}
+                        </span>
+                      ) : null}
+                      <span className="min-w-0 flex-1">{decodeHtml(child.label)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex justify-center border-t border-black/10 px-[15px] py-[24px]">
+                <Link
+                  href={mobileItem.url}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-[42px] items-center rounded-[35px] border-2 border-[#d52027] px-[20px] text-[13px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
+                >
+                  הצג את כל המוצרים
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
+          {mobileTab === "categories" && !mobileItem
+            ? menu.map((item) => {
+                const rowClass = "flex min-h-[50px] flex-1 items-center gap-2 px-[20px] py-[10px] text-[13px] font-bold";
+                if (item.children.length === 0) {
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.url}
+                      onClick={() => setMobileOpen(false)}
+                      className={`${rowClass} border-b border-black/10 ${
+                        isActiveHref(item.url) ? "text-[#d52027]" : "text-black"
+                      }`}
+                    >
+                      {decodeHtml(item.label)}
+                      {isSaleItem(item) ? <Flame className="h-5 w-5" fill="currentColor" /> : null}
+                    </Link>
+                  );
+                }
+                return (
+                  <div key={item.id} className="flex items-stretch border-b border-black/10">
                     <Link
                       href={item.url}
                       onClick={() => setMobileOpen(false)}
-                      className="mt-1 rounded-lg px-3 py-2.5 text-center text-base font-semibold text-brand-accent hover:bg-white"
+                      className={`${rowClass} ${isActiveHref(item.url) ? "text-[#d52027]" : "text-black"}`}
                     >
-                      לכל המוצרים
+                      {decodeHtml(item.label)}
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenId(item.id)}
+                      aria-label={decodeHtml(item.label)}
+                      className="flex w-[50px] shrink-0 items-center justify-center border-s border-black/10 text-black/60"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })
+            : null}
 
-          {mounted && customer ? (
-            <Link
-              href="/my-account"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 py-4 text-base font-medium text-black/85 hover:text-brand-accent"
-            >
-              <User className="h-4 w-4" />
-              החשבון שלי
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                openAuthDrawer();
-              }}
-              className="flex items-center gap-2 py-4 text-base font-medium text-black/85 hover:text-brand-accent"
-            >
-              <User className="h-4 w-4" />
-              החשבון שלי
-            </button>
-          )}
-
-          {[...linksRight, ...linksLeft].length > 0 ? (
-            <div className="flex flex-col gap-3 border-t border-black/5 py-4">
-              {[...linksRight, ...linksLeft].map((link) => (
-                <TopBarLink key={link.id} link={link} />
-              ))}
+          {mobileTab === "menu" ? (
+            <div>
+              {[...linksRight, ...linksLeft].map((link) => {
+                const cls =
+                  "flex min-h-[50px] items-center border-b border-black/10 px-[20px] py-[10px] text-[13px] font-bold text-black";
+                return isExternalUrl(link.url) ? (
+                  <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className={cls}>
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link key={link.id} href={link.url} onClick={() => setMobileOpen(false)} className={cls}>
+                    {link.label}
+                  </Link>
+                );
+              })}
+              <Link
+                href="/רשימת-משאלות"
+                onClick={() => setMobileOpen(false)}
+                className="flex min-h-[50px] items-center gap-2 border-b border-black/10 px-[20px] py-[10px] text-[13px] font-bold text-black"
+              >
+                רשימת המשאלות
+                <Heart className="h-5 w-5" />
+              </Link>
+              {mounted && customer ? (
+                <Link
+                  href="/my-account"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex min-h-[50px] items-center gap-2 border-b border-black/10 px-[20px] py-[10px] text-[13px] font-bold text-black"
+                >
+                  <User className="h-5 w-5" />
+                  החשבון שלי
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openAuthDrawer();
+                  }}
+                  className="flex min-h-[50px] w-full items-center gap-2 border-b border-black/10 px-[20px] py-[10px] text-[13px] font-bold text-black"
+                >
+                  <User className="h-5 w-5" />
+                  החשבון שלי
+                </button>
+              )}
             </div>
           ) : null}
         </nav>
-
-        <div className="mt-auto border-t border-black/5 px-5 py-4 text-xs text-black/40">
-          משלוח חינם בקנייה מעל 349 ₪
-        </div>
       </aside>
     </header>
     </div>

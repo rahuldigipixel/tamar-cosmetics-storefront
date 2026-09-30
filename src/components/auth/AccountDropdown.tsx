@@ -1,19 +1,13 @@
 "use client";
 
+import { useLogoutToHome } from "@/lib/store/useLogoutToHome";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/store/useAuthStore";
 import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
 export function AccountDropdown() {
-  const router = useRouter();
-  const logout = useAuthStore((s) => s.logout);
-
-  async function handleLogout() {
-    await logout();
-    router.push("/");
-  }
+  const handleLogout = useLogoutToHome();
 
   return (
     <div className="group relative flex h-[40px] items-center">

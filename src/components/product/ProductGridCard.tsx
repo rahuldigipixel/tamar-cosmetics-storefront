@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
-import { useWishlistStore } from "@/lib/store/useWishlistStore";
+import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 /**
@@ -30,14 +29,11 @@ export function ProductGridCard({
   const image = product.images[0];
   const hoverImage = product.images[1];
 
-  const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
-  // Wishlist ids are synced once by the Header (root layout) — no per-card fetch.
-  const toggleWishlist = useWishlistStore((s) => s.toggle);
 
   return (
     <div
       ref={cardRef}
-      className={`group flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
+      className={`group relative flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
     >
       <Link
         href={`/product/${product.slug}`}
@@ -78,21 +74,9 @@ export function ProductGridCard({
             />
           </span>
         ) : null}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            toggleWishlist(product.databaseId);
-          }}
-          aria-label={inWishlist ? "הסרה מרשימת המשאלות" : "הוספה לרשימת המשאלות"}
-          aria-pressed={inWishlist}
-          className={`absolute start-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white ${
-            product.brandLogoUrl ? "top-14" : "top-3"
-          } ${inWishlist ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-        >
-          <Heart className={`h-4 w-4 ${inWishlist ? "fill-brand-accent text-brand-accent" : "text-black/60"}`} />
-        </button>
       </Link>
+
+      <ProductHoverActions product={product} className={`start-3 ${product.brandLogoUrl ? "top-14" : "top-3"}`} />
 
       <div className="flex flex-1 flex-col gap-1.5 p-4 text-right">
         <Link

@@ -5,6 +5,7 @@ import {
   GET_PRODUCT_BY_SLUG,
   GET_PRODUCTS_BY_IDS,
   GET_PRODUCT_SLUGS,
+  GET_PRODUCT_QUICK_VIEW,
 } from "./queries/products";
 import { getProductLabels, getProductTabs } from "./tamarApi";
 import type { Product, ProductAttribute, ProductVariation } from "@/types/product";
@@ -246,4 +247,14 @@ export async function listProductSlugs(): Promise<string[]> {
     { tags: ["products"], revalidate: 3600 }
   );
   return data?.products.nodes.map((n) => n.slug) ?? [];
+}
+
+/** Detail fields for the quick-view popup (short description, gallery, categories), by database id. */
+export async function getQuickViewProduct(databaseId: number): Promise<Product | null> {
+  const data = await fetchGraphQLSafe<{ product: GqlProductNode | null }>(
+    GET_PRODUCT_QUICK_VIEW,
+    { id: String(databaseId) },
+    { tags: ["products"], revalidate: 60 }
+  );
+  return data?.product ? fromGraphqlProduct(data.product) : null;
 }

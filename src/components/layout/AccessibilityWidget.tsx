@@ -454,7 +454,7 @@ export function AccessibilityWidget() {
           justify-content: center;
           gap: 7px;
           font-size: 11px;
-          font-family: Arial, sans-serif;
+          font-family: inherit;
           text-align: center;
           line-height: 1.28;
           padding: 8px 5px 10px;
@@ -482,7 +482,7 @@ export function AccessibilityWidget() {
           color: rgba(255,255,255,0.55);
           cursor: pointer;
           font-size: 12px;
-          font-family: Arial, sans-serif;
+          font-family: inherit;
           display: flex;
           align-items: center;
           gap: 5px;

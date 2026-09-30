@@ -56,6 +56,9 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "192.168.0.107", pathname: "/tamarcosmetics_react/wp-content/uploads/**" },
       // Live/staging WordPress backend
       { protocol: "https", hostname: "digipixeldemo.com", pathname: "/tamarcosmetics/wp-content/uploads/**" },
+      // upress dev WordPress backend (both schemes, so switching to https needs no code change)
+      { protocol: "http", hostname: "tamarcosmetics-co-il-dev.s808.upress.link", pathname: "/wp-content/uploads/**" },
+      { protocol: "https", hostname: "tamarcosmetics-co-il-dev.s808.upress.link", pathname: "/wp-content/uploads/**" },
     ],
     // Next.js 16 blocks image optimization for URLs resolving to a private IP by
     // default (SSRF hardening). Our local dev backend (192.168.0.107) is exactly

@@ -421,8 +421,8 @@ export function Header({
               {serviceIcons.map((item) => {
                 const iconImage = SERVICE_ICON_IMAGES[item.icon];
                 const Icon = SERVICE_ICON_MAP[item.icon] ?? Tag;
-                return (
-                  <div key={item.id} className="flex items-center gap-[1vw] text-black">
+                const content = (
+                  <>
                     <span className="relative h-[25px] w-[25px] shrink-0 min-[1301px]:h-[31px] min-[1301px]:w-[31px]">
                       {iconImage ? (
                         <Image src={iconImage} alt="" fill sizes="31px" className="object-contain" />
@@ -436,7 +436,24 @@ export function Header({
                         <span className="block text-[12px] font-bold leading-[16px]">{item.subtitle}</span>
                       ) : null}
                     </span>
-                  </div>
+                  </>
+                );
+                const itemClass = "flex items-center gap-[1vw] text-black";
+                if (!item.url) {
+                  return (
+                    <div key={item.id} className={itemClass}>
+                      {content}
+                    </div>
+                  );
+                }
+                return isExternalUrl(item.url) ? (
+                  <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className={itemClass}>
+                    {content}
+                  </a>
+                ) : (
+                  <Link key={item.id} href={item.url} className={itemClass}>
+                    {content}
+                  </Link>
                 );
               })}
             </div>

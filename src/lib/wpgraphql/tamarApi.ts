@@ -183,6 +183,8 @@ export interface HeaderServiceIcon {
   icon: string;
   title: string;
   subtitle: string;
+  /** Optional admin-set link; the item is only rendered as a link when non-empty. */
+  url?: string;
 }
 
 export interface HeaderBar {

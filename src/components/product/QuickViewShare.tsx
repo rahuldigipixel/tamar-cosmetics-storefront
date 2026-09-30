@@ -18,7 +18,18 @@ const ICON_PATHS = {
  * Pinterest → LinkedIn → Telegram reads right-to-left on screen, which is
  * the reference's order (Telegram, in, Pinterest, X, f from the left).
  */
-export function QuickViewShare({ url, title, image }: { url: string; title: string; image?: string }) {
+export function QuickViewShare({
+  url,
+  title,
+  image,
+  label,
+}: {
+  url: string;
+  title: string;
+  image?: string;
+  /** Overrides the bold English "Share:" label — the product page uses the regular-weight Hebrew "שיתוף:". */
+  label?: string;
+}) {
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
   const links = [
@@ -35,9 +46,13 @@ export function QuickViewShare({ url, title, image }: { url: string; title: stri
 
   return (
     <div className="flex items-center gap-[14px]" dir="rtl">
-      <span dir="ltr" className="text-[22px] leading-none font-bold text-[#333]">
-        Share:
-      </span>
+      {label ? (
+        <span className="text-[18px] leading-none font-normal text-[#333]">{label}</span>
+      ) : (
+        <span dir="ltr" className="text-[22px] leading-none font-bold text-[#333]">
+          Share:
+        </span>
+      )}
       {links.map(({ key, label, href }) => (
         <a
           key={key}

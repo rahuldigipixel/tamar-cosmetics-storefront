@@ -68,6 +68,45 @@ export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
   }
 `;
 
+// `barcode` / `tip_description` ("Tamar Tip") are the ACF meta keys shown on the product page. Global attribute
+// options come back as raw term slugs, so `terms` supplies the display names.
+const DETAIL_BARCODE_AND_ATTRIBUTES = /* GraphQL */ `
+  barcode: metaData(keysIn: ["barcode"]) {
+    value
+  }
+  tip: metaData(keysIn: ["tip_description"]) {
+    value
+  }
+  tamarCoupon {
+    code
+    label
+  }
+  # YITH Tab Manager tabs with content for this product (empty tabs already omitted by the backend).
+  tamarTabs {
+    id
+    title
+    content
+  }
+  attributes {
+    nodes {
+      id
+      name
+      label
+      options
+      variation
+      ... on GlobalProductAttribute {
+        terms {
+          nodes {
+            name
+            slug
+            tamarImageUrl
+          }
+        }
+      }
+    }
+  }
+`;
+
 const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
   __typename
   id
@@ -86,15 +125,7 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
     salePrice(format: RAW)
     stockStatus
     weight
-    attributes {
-      nodes {
-        id
-        name
-        label
-        options
-        variation
-      }
-    }
+    ${DETAIL_BARCODE_AND_ATTRIBUTES}
   }
   ... on VariableProduct {
     sku
@@ -106,15 +137,7 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
     salePrice(format: RAW)
     stockStatus
     weight
-    attributes {
-      nodes {
-        id
-        name
-        label
-        options
-        variation
-      }
-    }
+    ${DETAIL_BARCODE_AND_ATTRIBUTES}
   }
   image {
     id
@@ -188,10 +211,54 @@ export const GET_PRODUCT_BY_SLUG = /* GraphQL */ `
   query GetProductBySlug($slug: ID!, $relatedFirst: Int = 13) {
     product(id: $slug, idType: SLUG) {
       ${PRODUCT_DETAIL_FIELDS}
+      upsell(first: $relatedFirst) {
+        nodes {
+          ${PRODUCT_LIST_FIELDS}
+        }
+      }
       related(first: $relatedFirst) {
         nodes {
           ${PRODUCT_LIST_FIELDS}
         }
+      }
+    }
+    # Admin-managed icon boxes (wp-admin → Single Product Settings) — folded in here to keep the page at 2 backend calls.
+    pageSettings: tamarProductPageSettings {
+      visibility {
+        tip
+        iconBoxes
+        barcode
+        coupon
+        share
+        unitPrice
+        iconStrip
+        complementary
+        similar
+        upsells
+        related
+      }
+      iconStrip {
+        title
+        link
+        image {
+          url
+          width
+          height
+          alt
+        }
+      }
+      features {
+        iconType
+        icon
+        iconImage {
+          url
+          width
+          height
+          alt
+        }
+        title
+        subtitle
+        link
       }
     }
   }

@@ -9,6 +9,7 @@ import {
 } from "./queries/products";
 import { getProductLabels, getProductTabs } from "./tamarApi";
 import type { Product, ProductAttribute, ProductVariation } from "@/types/product";
+import type { HomePageFeature } from "./tamarApi";
 
 /**
  * tamar-headless-api's /product-labels and /product-tabs routes are still
@@ -50,7 +51,21 @@ export interface GqlProductNode {
   galleryFirstImage?: { nodes: GqlImage[] };
   productCategories?: { nodes: { id: string; name: string; slug: string }[] };
   allPaBrand?: { nodes: { name: string; slug: string; thumbnailUrl?: string | null }[] };
-  attributes?: { nodes: { id: string; name: string; label: string; options: string[]; variation: boolean }[] };
+  attributes?: {
+    nodes: {
+      id: string;
+      name: string;
+      label: string;
+      options: string[];
+      variation: boolean;
+      /** Global attributes only. */
+      terms?: { nodes: { name: string; slug?: string; tamarImageUrl?: string | null }[] };
+    }[];
+  };
+  barcode?: { value: string | null }[];
+  tip?: { value: string | null }[];
+  tamarCoupon?: { code?: string | null; label?: string | null } | null;
+  tamarTabs?: { id: number; title?: string | null; content?: string | null }[] | null;
   variations?: {
     nodes: {
       id: string;
@@ -79,6 +94,9 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
       name: a.name,
       label: a.label,
       options: a.options ?? [],
+      optionNames: a.terms?.nodes.map((t) => t.name),
+      optionImages: a.terms?.nodes.map((t) => t.tamarImageUrl ?? null),
+      optionSlugs: a.terms?.nodes.map((t) => t.slug ?? ""),
       variation: a.variation,
     })) ?? [];
 
@@ -101,6 +119,9 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     slug: node.slug,
     name: node.name,
     sku: node.sku,
+    barcode: node.barcode?.[0]?.value || undefined,
+    tamarTip: node.tip?.[0]?.value?.trim() || undefined,
+    coupon: node.tamarCoupon?.code ? { code: node.tamarCoupon.code, label: node.tamarCoupon.label ?? "" } : undefined,
     type: node.__typename === "VariableProduct" || variations.length > 0 ? "variable" : "simple",
     shortDescription: node.shortDescription,
     description: node.description,
@@ -115,7 +136,9 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     labels: [],
     attributes,
     variations,
-    tabs: [],
+    tabs: (node.tamarTabs ?? [])
+      .filter((t) => t.title && t.content)
+      .map((t) => ({ title: t.title as string, content: t.content as string })),
     brand: node.allPaBrand?.nodes[0]?.name,
     brandLogoUrl: node.allPaBrand?.nodes[0]?.thumbnailUrl ?? undefined,
     weight: node.weight || undefined,
@@ -135,7 +158,8 @@ async function withCustomFields(product: Product): Promise<Product> {
   return {
     ...product,
     labels: labels ?? [],
-    tabs: tabs ?? [],
+    // Tabs now arrive with the product query (`tamarTabs`); only fall back to the REST stub if that was empty.
+    tabs: product.tabs.length > 0 ? product.tabs : (tabs ?? []),
   };
 }
 
@@ -200,10 +224,44 @@ export async function listProducts(params: ListProductsParams = {}): Promise<Lis
   return { products, hasNextPage: data.products.pageInfo.hasNextPage, endCursor: data.products.pageInfo.endCursor };
 }
 
+/** Which optional elements the product page shows — wp-admin → Single Product Settings checkboxes. */
+export interface ProductPageVisibility {
+  tip: boolean;
+  iconBoxes: boolean;
+  barcode: boolean;
+  coupon: boolean;
+  share: boolean;
+  unitPrice: boolean;
+  iconStrip: boolean;
+  /** Flashy "frequently bought together" widget (client-side embed). */
+  complementary: boolean;
+  /** Flashy "similar products" widget (client-side embed). */
+  similar: boolean;
+  upsells: boolean;
+  related: boolean;
+}
+
+export interface ProductPageSettings {
+  visibility: ProductPageVisibility;
+  features: HomePageFeature[];
+  /** Full-width strip under the tabs — image, title and link are each optional. */
+  iconStrip: ProductStripItem[];
+}
+
+export interface ProductStripItem {
+  image: { url: string; width: number; height: number; alt: string } | null;
+  title: string;
+  link: string;
+}
+
 export interface ProductWithRelated {
   product: Product;
+  /** Admin-managed single-product-page settings (icon boxes). */
+  pageSettings: ProductPageSettings;
   /** WooCommerce's own related-products algorithm (tags + categories + cross-sells) via the `related` field on Product — fetched in the same request as the product itself instead of a second query. */
   related: Product[];
+  /** Products linked as upsells in the product's wp-admin "Linked Products" tab. */
+  upsells: Product[];
 }
 
 /**
@@ -216,16 +274,64 @@ export interface ProductWithRelated {
  */
 export const getProductBySlug = cache(async (slug: string): Promise<ProductWithRelated | null> => {
   const data = await fetchGraphQLSafe<{
-    product: (GqlProductNode & { related?: { nodes: GqlProductNode[] } }) | null;
-  }>(GET_PRODUCT_BY_SLUG, { slug, relatedFirst: 13 }, { tags: [`product:${slug}`], revalidate: 60 });
+    product: (GqlProductNode & { related?: { nodes: GqlProductNode[] }; upsell?: { nodes: GqlProductNode[] } }) | null;
+    pageSettings: {
+      iconStrip?: { title?: string | null; link?: string | null; image?: { url: string; width?: number | null; height?: number | null; alt?: string | null } | null }[] | null;
+      visibility?: Partial<Record<keyof ProductPageVisibility, boolean | null>> | null;
+      features?:
+        | {
+            iconType?: string | null;
+            icon?: string | null;
+            iconImage?: { url: string; width?: number | null; height?: number | null; alt?: string | null } | null;
+            title?: string | null;
+            subtitle?: string | null;
+            link?: string | null;
+          }[]
+        | null;
+    } | null;
+  }>(GET_PRODUCT_BY_SLUG, { slug, relatedFirst: 13 }, { tags: [`product:${slug}`, "product-page"], revalidate: 60 });
   if (!data?.product) return null;
 
-  const [product, related] = await Promise.all([
+  const [product, related, upsells] = await Promise.all([
     withCustomFields(fromGraphqlProduct(data.product)),
     mapProductListNodes(data.product.related?.nodes ?? []),
+    mapProductListNodes(data.product.upsell?.nodes ?? []),
   ]);
 
-  return { product, related };
+  // Everything shows unless the admin explicitly switched it off (also the fallback if the backend plugin is older).
+  const v = data.pageSettings?.visibility;
+  const pageSettings: ProductPageSettings = {
+    visibility: {
+      tip: v?.tip !== false,
+      iconBoxes: v?.iconBoxes !== false,
+      barcode: v?.barcode !== false,
+      coupon: v?.coupon !== false,
+      share: v?.share !== false,
+      unitPrice: v?.unitPrice !== false,
+      iconStrip: v?.iconStrip !== false,
+      complementary: v?.complementary !== false,
+      similar: v?.similar !== false,
+      upsells: v?.upsells !== false,
+      related: v?.related !== false,
+    },
+    iconStrip: (data.pageSettings?.iconStrip ?? []).map((s) => ({
+      image: s.image ? { url: s.image.url, width: s.image.width ?? 72, height: s.image.height ?? 72, alt: s.image.alt ?? "" } : null,
+      title: s.title ?? "",
+      link: s.link ?? "",
+    })).filter((s) => s.image || s.title),
+    features: (data.pageSettings?.features ?? []).map((f) => ({
+      iconType: f.iconType === "image" && f.iconImage ? "image" : "lucide",
+      icon: f.icon ?? "",
+      iconImage: f.iconImage
+        ? { url: f.iconImage.url, width: f.iconImage.width ?? 60, height: f.iconImage.height ?? 60, alt: f.iconImage.alt ?? "" }
+        : null,
+      title: f.title ?? "",
+      subtitle: f.subtitle ?? "",
+      link: f.link ?? "",
+    })),
+  };
+
+  return { product, related, upsells, pageSettings };
 });
 
 /** Card-level data for many products in one request, returned in the order of `ids`. */

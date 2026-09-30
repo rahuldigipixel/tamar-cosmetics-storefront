@@ -8,7 +8,15 @@ const SIZES = {
   xs: { width: "w-fit", padding: "px-2.5 py-1.5", text: "text-sm", icon: "h-3 w-3", gap: "gap-1", showIcon: false, iconOnly: false },
   sm: { width: "w-fit", padding: "p-2.5", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: true },
   md: { width: "w-full", padding: "px-6 py-3", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: false },
+  // Single product page: legacy-site sizing (arbitrary px on purpose — approved exception to the 18px floor).
+  lg: { width: "w-full", padding: "px-4 h-[40px]", text: "text-[16px]", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },
 } as const;
+
+const PRIMARY_STYLE =
+  "bg-gradient-to-l from-brand-accent to-[#ff6b72] text-white shadow-sm hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)]";
+// Light-pink secondary CTA (reference "הוספה לסל" next to the red "קנה עכשיו").
+const SOFT_STYLE =
+  "bg-[#f3c3cc] text-[#333] hover:bg-[#eeb0bb] hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.35)]";
 
 export function AddToCartButton({
   productId,
@@ -16,12 +24,14 @@ export function AddToCartButton({
   variationId,
   quantity = 1,
   size = "md",
+  variant = "primary",
 }: {
   productId: number;
   inStock: boolean;
   variationId?: number;
   quantity?: number;
   size?: keyof typeof SIZES;
+  variant?: "primary" | "soft";
 }) {
   const addItem = useCartStore((s) => s.addItem);
   const [submitting, setSubmitting] = useState(false);
@@ -69,7 +79,7 @@ export function AddToCartButton({
       onClick={handleClick}
       disabled={submitting}
       aria-label={s.iconOnly ? "הוספה לסל" : undefined}
-      className={`flex ${s.width} shrink-0 items-center justify-center ${s.gap} rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] ${s.padding} ${s.text} font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0`}
+      className={`flex ${s.width} shrink-0 items-center justify-center ${s.gap} rounded-full ${variant === "soft" ? SOFT_STYLE : PRIMARY_STYLE} ${s.padding} ${s.text} font-semibold transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0`}
     >
       {submitting ? (
         <Loader2 className={`${s.icon} animate-spin`} />

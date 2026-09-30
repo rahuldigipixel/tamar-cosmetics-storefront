@@ -15,6 +15,12 @@ export interface ProductAttribute {
   name: string;
   label: string;
   options: string[];
+  /** Display names of a global attribute's terms (`options` holds their raw slugs) — only set on the product page query. */
+  optionNames?: string[];
+  /** Image URL of each term (same order as `optionNames`), when one is set in wp-admin — e.g. the brand logo. */
+  optionImages?: (string | null)[];
+  /** Term slugs (same order as `optionNames`) — e.g. for linking the brand to its page. */
+  optionSlugs?: string[];
   variation: boolean;
 }
 
@@ -36,6 +42,12 @@ export interface Product {
   slug: string;
   name: string;
   sku?: string;
+  /** ACF `barcode` meta — product page query only. */
+  barcode?: string;
+  /** ACF `tip_description` ("Tamar Tip") — product page query only. */
+  tamarTip?: string;
+  /** Coupon promoted on the product page (wps-woo-extended "show in product" coupon) — product page query only. */
+  coupon?: { code: string; label: string };
   type: "simple" | "variable";
   shortDescription?: string;
   description?: string;
@@ -50,7 +62,7 @@ export interface Product {
   labels: ProductLabel[];
   attributes: ProductAttribute[];
   variations: ProductVariation[];
-  /** Populated once tamar-headless-api tabs endpoint is live; empty until then. */
+  /** YITH Tab Manager tabs with content for this product (GraphQL `tamarTabs`); detail query only. */
   tabs: { title: string; content: string }[];
   /** Populated once ACF video field is mapped; empty until then. */
   videoUrl?: string;

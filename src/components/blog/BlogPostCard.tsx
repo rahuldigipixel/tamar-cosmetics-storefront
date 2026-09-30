@@ -35,12 +35,12 @@ export function BlogPostCard({ post }: { post: BlogPostSummary }) {
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        <h3 className="line-clamp-2 text-xl font-bold leading-snug text-black/90 group-hover:text-brand-accent">
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <h3 className="line-clamp-2 text-lg font-bold leading-snug text-[#0c0c0c] group-hover:text-brand-accent">
           {post.title}
         </h3>
-        <p className="line-clamp-3 text-base leading-relaxed text-black/60">{plainExcerpt(post.excerpt)}</p>
-        <span className="mt-auto pt-2 text-base font-semibold text-brand-accent">המשיכי לקרוא</span>
+        <p className="line-clamp-3 text-[18px] leading-[25px] text-[#333]">{plainExcerpt(post.excerpt)}</p>
+        <span className="mt-auto pt-2 text-[13px] font-extrabold text-[#d52027]">המשיכי לקרוא</span>
       </div>
     </Link>
   );

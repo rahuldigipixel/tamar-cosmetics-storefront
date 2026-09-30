@@ -2,20 +2,19 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Expand, Heart, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
-import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
+// The wishlist heart lives in the details column (reference layout); the
+// brand logo shows both there and overlaid top-left here, at the same size.
 export function ProductGallery({
   images,
   name,
-  productId,
   brandName,
   brandLogoUrl,
 }: {
   images: ProductImage[];
   name: string;
-  productId: number;
   brandName?: string;
   brandLogoUrl?: string;
 }) {
@@ -24,10 +23,6 @@ export function ProductGallery({
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const current = images[active];
-
-  const inWishlist = useWishlistStore((s) => s.has(productId));
-  // Wishlist ids are synced once by the Header (root layout).
-  const toggleWishlist = useWishlistStore((s) => s.toggle);
 
   function step(direction: 1 | -1) {
     if (images.length === 0) return;
@@ -79,6 +74,16 @@ export function ProductGallery({
           />
         ) : null}
 
+        {brandLogoUrl ? (
+          <Image
+            src={brandLogoUrl}
+            alt={brandName ?? ""}
+            width={110}
+            height={30}
+            className="pointer-events-none absolute top-3 left-3 z-10 h-[30px] w-auto max-w-[110px] object-contain object-left"
+          />
+        ) : null}
+
         <div className="group/expand absolute bottom-3 start-3 z-20">
           <button
             type="button"
@@ -90,34 +95,10 @@ export function ProductGallery({
           >
             <Expand className="h-4 w-4 text-black/60" />
           </button>
-          <span className="pointer-events-none absolute bottom-full start-0 mb-2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover/expand:opacity-100">
+          <span className="pointer-events-none absolute bottom-full start-0 mb-2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[13px] leading-[18px] font-medium text-white opacity-0 transition-opacity group-hover/expand:opacity-100">
             הגדלת תמונה
           </span>
         </div>
-
-        {brandLogoUrl ? (
-          <span className="absolute top-3 left-3 z-10 flex h-11 max-w-[5.5rem] items-center justify-center overflow-hidden rounded-md bg-white/90 p-1.5 shadow-sm backdrop-blur-sm">
-            <Image
-              src={brandLogoUrl}
-              alt={brandName ?? ""}
-              width={88}
-              height={44}
-              className="h-full w-auto object-contain"
-            />
-          </span>
-        ) : null}
-
-        <button
-          type="button"
-          onClick={() => toggleWishlist(productId)}
-          onMouseEnter={() => setZoomed(false)}
-          onMouseMove={(e) => e.stopPropagation()}
-          aria-label={inWishlist ? "הסרה מרשימת המשאלות" : "הוספה לרשימת המשאלות"}
-          aria-pressed={inWishlist}
-          className="absolute top-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all hover:scale-110 hover:bg-white"
-        >
-          <Heart className={`h-5 w-5 ${inWishlist ? "fill-brand-accent text-brand-accent" : "text-black/60"}`} />
-        </button>
 
         {images.length > 1 ? (
           <>

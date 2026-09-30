@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   // Wishlist lives at the Hebrew "/רשימת-משאלות" (encoded here for the same reason
   // as the rewrites below); the ASCII /wishlist route is where the page file is,
   // and old /wishlist links redirect to the public URL.
+  async headers() {
+    return [
+      // Proxied WP uploads (see rewrites): let the browser/CDN cache them.
+      { source: "/wp-content/uploads/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
+    ];
+  },
   async redirects() {
     return [
       { source: "/my-account/order-tracking", destination: "/my-account/d-shipment-tracking", permanent: false },
@@ -41,6 +47,13 @@ const nextConfig: NextConfig = {
       { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA", destination: "/secret-club" },
       { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA/", destination: "/secret-club" },
     ];
+    // Backend on plain http (no valid SSL) can't serve images to an https
+    // storefront (mixed content). Proxy uploads server-side; src/lib/wpgraphql/mediaUrl.ts
+    // rewrites absolute upload URLs in API responses to these relative paths.
+    const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL;
+    if (wpUrl?.startsWith("http://")) {
+      afterFiles.push({ source: "/wp-content/uploads/:path*", destination: `${wpUrl.replace(/\/+$/, "")}/wp-content/uploads/:path*` });
+    }
     return {
       // Product search results live at the WordPress-style "/?s=term&post_type=product"
       // (page: /search). "/" is a real page, so this must run before the filesystem check.

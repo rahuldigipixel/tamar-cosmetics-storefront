@@ -1,5 +1,6 @@
 import { wpEnv } from "./env";
 import { graphqlOperationName, logApiCall } from "./apiAuditLog";
+import { localizeMediaUrls } from "./mediaUrl";
 
 export class GraphQLError extends Error {
   constructor(
@@ -72,7 +73,7 @@ export async function fetchGraphQL<T>(
     clearTimeout(timer);
   }
 
-  const text = await response.text();
+  const text = localizeMediaUrls(await response.text());
   let json: GraphQLResponse<T>;
   try {
     json = JSON.parse(text) as GraphQLResponse<T>;

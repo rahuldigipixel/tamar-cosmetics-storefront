@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { wpEnv } from "./env";
 import { logApiCall } from "./apiAuditLog";
+import { localizeMediaUrls } from "./mediaUrl";
 import type { ProductLabel } from "@/types/product";
 
 const TAMAR_API_BASE = `${wpEnv.wordpressUrl}/wp-json/tamar/v1`;
@@ -31,7 +32,7 @@ async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Pro
       signal: controller.signal,
     });
     if (!res.ok) return null;
-    return (await res.json()) as T;
+    return JSON.parse(localizeMediaUrls(await res.text())) as T;
   } catch {
     // tamar-headless-api plugin may not be installed/activated yet on this backend,
     // or the request timed out — either way, callers treat null as "fall back".

@@ -21,7 +21,9 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
                   alt={image.alt || title}
                   width={image.width}
                   height={image.height}
-                  className="h-[72px] w-auto max-w-[110px] object-contain"
+                  // Icons are uploaded at 2x — show them at half their pixel size (natural width × height), not a fixed height.
+                  style={{ width: image.width / 2, height: image.height / 2 }}
+                  className="max-w-full shrink-0 object-contain"
                 />
               ) : null}
               {title ? <span className="text-[15px] leading-[22px] text-black">{title}</span> : null}

@@ -7,6 +7,7 @@ import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
+import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 /**
@@ -63,6 +64,7 @@ export function ProductGridCard({
             מבצע
           </span>
         ) : null}
+        <ProductLabels html={product.labelsHtml?.image} />
         {product.brandLogoUrl ? (
           <span className="absolute top-3 start-3 flex h-9 max-w-[4.5rem] items-center justify-center overflow-hidden rounded-md bg-white/90 p-1 shadow-sm backdrop-blur-sm">
             <Image

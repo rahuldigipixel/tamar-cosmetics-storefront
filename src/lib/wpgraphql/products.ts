@@ -45,6 +45,8 @@ export interface GqlProductNode {
   averageRating?: number;
   reviewCount?: number;
   image?: GqlImage | null;
+  /** Rendered Advanced Product Labels HTML by placement; null when no label applies to the product. */
+  tamarLabels?: { image?: string | null; label?: string | null } | null;
   galleryImages?: { nodes: GqlImage[] };
   /** Only requested on list queries (first gallery image only) — a lighter alternative to `galleryImages` for the hover-swap thumbnail. */
   galleryFirstImage?: { nodes: GqlImage[] };
@@ -163,6 +165,9 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     images,
     categories: node.productCategories?.nodes.map((c) => ({ id: c.id, name: c.name, slug: c.slug, parent: c.parent?.node })) ?? [],
     labels: [],
+    labelsHtml: node.tamarLabels
+      ? { image: node.tamarLabels.image || undefined, label: node.tamarLabels.label || undefined }
+      : undefined,
     attributes,
     variations,
     tabs: (node.tamarTabs ?? [])

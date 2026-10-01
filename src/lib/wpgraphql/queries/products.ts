@@ -40,6 +40,11 @@ const PRODUCT_CARD_SHARED_FIELDS = /* GraphQL */ `
       altText
     }
   }
+  # Rendered Advanced Product Labels (wp-admin → BeRocket → Advanced Labels) — which products get one is decided there.
+  tamarLabels {
+    image
+    label
+  }
 `;
 
 export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
@@ -164,6 +169,10 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
     id
     sourceUrl
     altText
+  }
+  tamarLabels {
+    image
+    label
   }
   galleryImages {
     nodes {

@@ -7,6 +7,7 @@ import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
+import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 function discountPercent(product: Product): number | null {
@@ -39,7 +40,6 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   const image = product.images[0];
   const hoverImage = product.images[1];
   const discount = discountPercent(product);
-  const label = product.labels[0];
   const review =
     (product.reviewCount ?? 0) > 0
       ? { rating: Math.round(product.averageRating ?? 0), count: product.reviewCount! }
@@ -48,26 +48,31 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
 
   return (
     <div className={`group relative flex h-full flex-col border border-black/[.106] bg-white p-[15px] text-right${standalone ? "" : " -mt-px -ml-px"}`}>
-      <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
-        {image ? (
-          <Image
-            src={image.src}
-            alt={image.alt || product.name}
-            fill
-            sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
-            className="object-contain"
-          />
-        ) : null}
-        {hoverImage ? (
-          <Image
-            src={hoverImage.src}
-            alt={hoverImage.alt || product.name}
-            fill
-            sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
-            className="object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          />
-        ) : null}
-      </Link>
+      {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
+      <div className="relative">
+        <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
+          {image ? (
+            <Image
+              src={image.src}
+              alt={image.alt || product.name}
+              fill
+              sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
+              className="object-contain"
+            />
+          ) : null}
+          {hoverImage ? (
+            <Image
+              src={hoverImage.src}
+              alt={hoverImage.alt || product.name}
+              fill
+              sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
+              className="object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            />
+          ) : null}
+        </Link>
+        <ProductLabels html={product.labelsHtml?.image} />
+      </div>
+      <ProductLabels html={product.labelsHtml?.label} />
 
       {/* Top-right: discount badge, brand logo under it. */}
       <div className="pointer-events-none absolute top-[21px] right-[15px] flex flex-col items-end gap-[5px]">
@@ -86,16 +91,6 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
           />
         ) : null}
       </div>
-
-      {/* Promo label (admin product labels) on the image's left. */}
-      {label ? (
-        <span
-          className="pointer-events-none absolute top-[101px] left-[22px] max-w-[70px] rounded-[3px] px-[6px] py-[5px] text-center text-[14px] font-semibold leading-[16.8px] text-white"
-          style={{ backgroundColor: label.background || "#ff3300", color: label.color || "#fff" }}
-        >
-          {label.text}
-        </span>
-      ) : null}
 
       {/* Quick view + wishlist — shown on hover. */}
       <ProductHoverActions product={product} className="top-[26px] left-[6px]" />

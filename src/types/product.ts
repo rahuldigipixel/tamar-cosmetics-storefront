@@ -81,6 +81,8 @@ export interface Product {
   images: ProductImage[];
   categories: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string } }[];
   labels: ProductLabel[];
+  /** Ready-made HTML of the product's Advanced Product Labels by placement (GraphQL `tamarLabels`); styled by GlobalData.labelsCss. */
+  labelsHtml?: { image?: string; label?: string };
   attributes: ProductAttribute[];
   variations: ProductVariation[];
   /** YITH Tab Manager tabs with content for this product (GraphQL `tamarTabs`); detail query only. */

@@ -8,6 +8,7 @@ import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
+import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 const COPIES = 5;
@@ -160,6 +161,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
             {discountPercent}%-
           </span>
         ) : null}
+        <ProductLabels html={product.labelsHtml?.image} />
       </Link>
 
       <ProductHoverActions product={product} className="start-3 top-3" />

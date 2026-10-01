@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
+import { ProductLabels } from "@/components/product/ProductLabels";
 
 // The wishlist heart lives in the details column (reference layout); the
 // brand logo is overlaid top-left here at the legacy label size (max 100×110,
@@ -13,11 +14,14 @@ export function ProductGallery({
   name,
   brandName,
   brandLogoUrl,
+  labelsHtml,
 }: {
   images: ProductImage[];
   name: string;
   brandName?: string;
   brandLogoUrl?: string;
+  /** Rendered Advanced Product Labels for the image (Product.labelsHtml.image). */
+  labelsHtml?: string;
 }) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
@@ -52,6 +56,8 @@ export function ProductGallery({
 
   return (
     <div>
+      {/* Outer wrapper holds the labels so the image box's overflow-hidden (zoom) doesn't clip their negative offset. */}
+      <div className="relative">
       <div
         className="relative aspect-square w-full overflow-hidden rounded-lg bg-brand-soft/30"
         onMouseMove={(e) => {
@@ -129,6 +135,8 @@ export function ProductGallery({
             </button>
           </>
         ) : null}
+      </div>
+      <ProductLabels html={labelsHtml} />
       </div>
 
       {images.length > 1 ? (

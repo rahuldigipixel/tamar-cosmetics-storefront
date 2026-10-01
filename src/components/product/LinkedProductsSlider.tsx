@@ -22,7 +22,7 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
   const price = product.onSale && product.salePrice ? product.salePrice : product.price;
 
   return (
-    <li className="flex items-start gap-[10px] py-[8px] text-right" style={{ height: ROW_HEIGHT }}>
+    <li className="flex items-start gap-[10px] py-[4px] text-right" style={{ height: ROW_HEIGHT }}>
       {product.image ? (
         <Link href={href} className="shrink-0" aria-label={product.name}>
           <Image src={product.image.url} alt={product.image.alt || product.name} width={80} height={80} className="h-[70px] w-[70px] object-contain" />
@@ -34,21 +34,21 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         </Link>
         <FlashyStarRating productId={product.databaseId} className="mt-[4px] min-h-[20px]" />
 
-        <div className="mt-[8px] flex items-center justify-between gap-[6px]">
+        <div className="mt-[8px] flex items-center justify-between gap-[4px]">
           {/* RTL: price + SKU on the right, cart controls on the left. */}
           <div className="shrink-0">
-            <p className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap leading-[22px]">
+            <p className="flex flex-col whitespace-nowrap leading-[22px]">
               <span className="text-[18px] font-bold text-brand-accent">{formatPrice(price)}</span>
               {product.onSale && product.salePrice ? (
-                <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                <span className="text-[15px] font-bold leading-[18px] text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               ) : null}
             </p>
             {product.sku ? <p className="mt-[4px] text-[13px] leading-[18px] text-black">מק&quot;ט: {product.sku}</p> : null}
           </div>
           {product.purchasable ? (
-            <div className="flex items-center gap-[6px]">              
-              {product.inStock ? <QuantityStepper quantity={quantity} onChange={setQuantity} size="mini" /> : null}
-              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="sm" />
+            <div className="flex w-[100px] shrink-0 flex-col items-center gap-[4px]">
+              {product.inStock ? <QuantityStepper quantity={quantity} onChange={setQuantity} size="slider" /> : null}
+              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="slider" />
             </div>
           ) : (
             <Link href={href} className="rounded-full bg-[#f3c3cc] px-[10px] py-[6px] text-[14px] font-semibold text-[#333] transition-colors hover:bg-[#eeb0bb]">

@@ -17,6 +17,9 @@ import { BrandTip } from "@/components/product/BrandTip";
 import { LinkedProductsSlider } from "@/components/product/LinkedProductsSlider";
 import { FlashyProductWidget } from "@/components/product/FlashyProductWidget";
 import { ProductIconStrip } from "@/components/product/ProductIconStrip";
+import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
+import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
+import { resolveIntegrations } from "@/lib/integrations";
 import { ProductSlider } from "@/components/home/ProductSlider";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { getUnitPrice } from "@/lib/utils/unitPrice";
@@ -78,7 +81,8 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
  const { slug } = await params;
- const result = await getProductBySlug(normalizeSlug(slug));
+ const [result, global] = await Promise.all([getProductBySlug(normalizeSlug(slug)), getGlobalData()]);
+ const integrations = resolveIntegrations(global?.settings);
 
  if (!result) notFound();
  const { product, related, upsells, pageSettings } = result;
@@ -194,7 +198,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </nav>
 
  <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
- <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} />
+ <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} />
  </div>
 
  <div className="px-[10px] text-right md:col-start-1 md:row-start-2">
@@ -301,6 +305,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  shippingReturnsHtml={show.shippingTab ? pageSettings.shippingReturns : undefined}
  />
  </div>
+
+ {/* Flashy customer reviews for this product (same widget as /reviews, filtered by data-item-id). */}
+ <section className="mx-auto w-full max-w-[1400px] px-4 py-[30px] sm:px-6">
+ <FlashyReviewsWidget itemId={product.databaseId} elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
+ </section>
 
  {showStrip ? <ProductIconStrip items={pageSettings.iconStrip} /> : null}
 

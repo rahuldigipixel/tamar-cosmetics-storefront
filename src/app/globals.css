@@ -142,3 +142,9 @@ input[type="radio"] {
 .animate-header-slide-down {
   animation: header-slide-down 0.3s ease-out;
 }
+
+/* Product labels (ProductLabels.tsx) sit over product images/links — never intercept clicks or hover (the cards' own links and hover actions stay usable). */
+.berocket_better_labels,
+.berocket_better_labels * {
+  pointer-events: none !important;
+}

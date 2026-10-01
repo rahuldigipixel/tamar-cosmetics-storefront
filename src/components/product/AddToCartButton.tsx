@@ -9,6 +9,8 @@ const SIZES = {
   sm: { width: "w-fit", padding: "p-2.5", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: true },
   // Compact icon-only variant (linked-products slider on the product page).
   mini: { width: "w-fit", padding: "p-2", text: "text-sm", icon: "h-3.5 w-3.5", gap: "gap-1", showIcon: true, iconOnly: true },
+  // Linked-products slider: full-width text button under the quantity box.
+  slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },
   md: { width: "w-full", padding: "px-6 py-3", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: false },
   // Single product page: legacy-site sizing (arbitrary px on purpose — approved exception to the 18px floor).
   lg: { width: "w-full", padding: "px-4 h-[40px]", text: "text-[16px]", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },

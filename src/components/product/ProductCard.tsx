@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils/formatPrice";
+import { ProductLabels } from "@/components/product/ProductLabels";
 
 export function ProductCard({ product }: { product: Product }) {
   const image = product.images[0];
@@ -22,16 +23,8 @@ export function ProductCard({ product }: { product: Product }) {
           />
         ) : null}
 
-        {product.labels.map((label, i) => (
-          <span
-            key={i}
-            className="absolute top-2 end-2 rounded px-2 py-1 text-xs font-semibold text-white"
-            style={{ background: label.background ?? "var(--brand-accent)", color: label.color }}
-          >
-            {label.text}
-          </span>
-        ))}
-        {!product.labels.length && product.onSale ? (
+        <ProductLabels html={product.labelsHtml?.image} />
+        {product.onSale ? (
           <span className="absolute top-2 end-2 rounded bg-brand-accent px-2 py-1 text-xs font-semibold text-white">
             מבצע
           </span>

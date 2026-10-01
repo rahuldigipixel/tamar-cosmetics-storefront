@@ -199,6 +199,8 @@ export interface GlobalData {
   menu: HeaderMenuItem[];
   settings: SiteSettings | null;
   headerBar: HeaderBar | null;
+  /** Stylesheet for the Advanced Product Labels HTML on products (`Product.labelsHtml`). */
+  labelsCss?: string;
 }
 
 /**

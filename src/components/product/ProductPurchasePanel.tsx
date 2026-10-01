@@ -8,7 +8,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
   return (
-    <div className="flex h-[40px] shrink-0 items-center text-[16px] text-black">
+    <div className="flex h-[40px] shrink-0 items-center rounded-full border border-black/20 px-1 text-[16px] text-black">
       <button
         type="button"
         onClick={() => onChange(Math.max(1, quantity - 1))}

@@ -53,6 +53,7 @@ export default async function RootLayout({
   const siteSettings = global?.settings ?? null;
   const bar = global?.headerBar ?? null;
   const integrations = resolveIntegrations(siteSettings);
+  const labelsCss = global?.labelsCss?.replace(/<\/style/gi, "") ?? "";
 
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} h-full antialiased`}>
@@ -64,6 +65,8 @@ export default async function RootLayout({
           Only suppresses the warning for this element's own attributes,
           not for actual content mismatches anywhere else in the tree. */}
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {/* Product label styles (wp-admin → BeRocket → Advanced Labels), from the same /global-data call as the menu. */}
+        {labelsCss ? <style dangerouslySetInnerHTML={{ __html: labelsCss }} /> : null}
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
         <Footer logo={siteSettings?.footerLogo ?? null} whatsappNumber={integrations.whatsappNumber} />

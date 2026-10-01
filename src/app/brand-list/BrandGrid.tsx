@@ -29,12 +29,16 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
       {visible.length === 0 ? (
         <p className="py-12 text-center text-black/50">לא נמצאו מותגים.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-[1px] overflow-hidden bg-black/10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        // Cell borders (not a tinted grid background) so empty slots in the
+        // last row stay white; the negative margin + overflow-hidden clips the
+        // outer-edge borders, leaving only the inner dividers.
+        <div className="overflow-hidden">
+        <div className="-mb-px -me-px grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {visible.map((brand) => (
             <Link
               key={brand.id}
               href={`/brand/${brand.slug}/`}
-              className="group flex flex-col bg-white p-4 text-center"
+              className="group flex flex-col border-b border-e border-black/10 bg-white p-4 text-center"
             >
               <div className="relative aspect-square w-full">
                 <Image
@@ -51,6 +55,7 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
               </span>
             </Link>
           ))}
+        </div>
         </div>
       )}
     </>

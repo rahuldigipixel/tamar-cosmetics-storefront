@@ -13,6 +13,7 @@ import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductWishlistButton } from "@/components/product/ProductWishlistButton";
 import { ProductFeatures } from "@/components/product/ProductFeatures";
 import { TamarTip } from "@/components/product/TamarTip";
+import { BrandTip } from "@/components/product/BrandTip";
 import { LinkedProductsSlider } from "@/components/product/LinkedProductsSlider";
 import { FlashyProductWidget } from "@/components/product/FlashyProductWidget";
 import { ProductIconStrip } from "@/components/product/ProductIconStrip";
@@ -82,7 +83,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  if (!result) notFound();
  const { product, related, upsells, pageSettings } = result;
 
- const primaryCategory = product.categories[0];
+ // Prefer the deepest category (one with a parent) so the breadcrumb reads home / parent / child / product.
+ const primaryCategory = product.categories.find((c) => c.parent) ?? product.categories[0];
+ const parentCategory = primaryCategory?.parent;
  const productUrl = `${wpEnv.siteUrl}/product/${product.slug}`;
 
  const jsonLd = {
@@ -130,15 +133,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const brandAttribute = product.attributes.find((a) => /מותג|brand/i.test(`${a.label} ${a.name}`));
  const brandName = brandAttribute?.optionNames?.[0] ?? product.brand;
  const brandSlug = brandAttribute?.optionSlugs?.[0] || undefined;
+ // pa_term_hint of the brand term → "?" tooltip next to the brand; hidden when empty.
+ const brandTipText = show.brandTip ? brandAttribute?.optionHints?.[0]?.trim() || undefined : undefined;
  const brandLogoUrl = brandAttribute?.optionNames?.length ? (brandAttribute.optionImages?.[0] ?? undefined) : product.brandLogoUrl;
 
  const brandLogoImage = brandLogoUrl ? (
  <Image
  src={brandLogoUrl}
  alt={brandName ?? ""}
- width={110}
- height={30}
- className="h-[30px] w-auto max-w-[110px] object-contain object-right"
+ width={140}
+ height={70}
+ className="h-[70px] w-auto max-w-[140px] object-contain object-right"
  />
  ) : null;
  // Logo above the title links to the brand's product list.
@@ -159,37 +164,49 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
  <div className="mx-auto max-w-[1600px] px-[15px] pt-[12px] pb-[25px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
- <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[520px_500px_minmax(0,1fr)]">
- <nav className="flex flex-wrap items-center gap-x-[8px] text-[13px] leading-[19px] text-[#777] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
+ <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_350px] xl:gap-x-[15px]">
+ <nav className="flex flex-wrap items-center gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>
+ {parentCategory ? (
+ <>
+ <span>/</span>
+ <Link href={`/product-category/${parentCategory.slug}/`} prefetch={false} className="hover:text-brand-accent">
+ {parentCategory.name}
+ </Link>
+ </>
+ ) : null}
  {primaryCategory ? (
  <>
  <span>/</span>
- <Link href={`/product-category/${primaryCategory.slug}/`} className="hover:text-brand-accent">
+ <Link
+ href={`/product-category/${parentCategory ? `${parentCategory.slug}/` : ""}${primaryCategory.slug}/`}
+ prefetch={false}
+ className="hover:text-brand-accent"
+ >
  {primaryCategory.name}
  </Link>
  </>
  ) : null}
  <span>/</span>
- <span className="font-bold text-black">{product.name}</span>
+ <span className="font-semibold text-[#333]">{product.name}</span>
  </nav>
 
- <div className="mx-auto w-full max-w-[500px] md:col-start-2 md:row-start-2 md:mx-0 xl:col-start-2">
+ <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
  <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} />
  </div>
 
- <div className="text-right md:col-start-1 md:row-start-2">
+ <div className="px-[10px] text-right md:col-start-1 md:row-start-2">
  {brandLogo}
 
- <h1 className="text-[34px] leading-[1.25] font-normal text-[#242424]">{product.name}</h1>
+ <h1 className="text-[34px] leading-[41px] font-normal text-black">{product.name}</h1>
 
  <FlashyStarRating productId={product.databaseId} />
 
  {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
 
- <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-black">
+ <div className="mt-[20px] space-y-[7px] text-[16px] leading-[24px] text-black">
  {product.sku ? (
  <p>
  <span className="text-[#555]">מק&quot;ט:</span> {product.sku}
@@ -203,6 +220,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {brandName ? (
  <p>
  <span className="text-[#555]">מותג:</span> {brandName}
+ {brandTipText ? <> <BrandTip text={brandTipText} /></> : null}
  </p>
  ) : null}
  {attributeLines.map((a) => (
@@ -235,7 +253,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <ProductPurchasePanel productId={product.databaseId} inStock={product.inStock} />
 
  {show.coupon && product.coupon ? (
- <p className="mt-[12px] border-2 rounded-lg border-brand-accent px-[8px] py-[4px] text-center text-[14px] leading-[18px] text-brand-accent">
+ <p className="mt-[22px] border-2 border-brand-accent px-[8px] py-[6px] text-center text-[14px] leading-[22px] text-brand-accent">
  <span dir="rtl">השתמש בקוד</span> <strong className="font-bold ">{product.coupon.code}</strong>
  {product.coupon.label ? (
  <>
@@ -264,9 +282,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </div>
 
  {showLinked || showTip || showFeatures ? (
- <div className="md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2">
+ <div className="md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2 xl:px-[10px]">
  {/* Without a tip the icons start lower, level with the gallery image. */}
- <div className={showLinked || showTip ? "space-y-[30px]" : ""}>
+ <div className={showLinked || showTip ? "space-y-[18px]" : ""}>
  {showLinked ? <LinkedProductsSlider products={linkedProducts} /> : null}
  {showTip && product.tamarTip ? <TamarTip text={product.tamarTip} /> : null}
  {showFeatures ? <ProductFeatures features={pageSettings.features} /> : null}
@@ -275,7 +293,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  ) : null}
  </div>
 
- <ProductTabs description={product.description} attributes={product.attributes} tabs={product.tabs} />
+ <ProductTabs
+ description={product.description}
+ attributes={product.attributes}
+ tabs={product.tabs}
+ aboutBrand={show.aboutBrandTab ? { html: brandAttribute?.optionDescriptions?.[0] ?? "" } : undefined}
+ shippingReturnsHtml={show.shippingTab ? pageSettings.shippingReturns : undefined}
+ />
  </div>
 
  {showStrip ? <ProductIconStrip items={pageSettings.iconStrip} /> : null}

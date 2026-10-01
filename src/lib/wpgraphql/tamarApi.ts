@@ -93,8 +93,8 @@ export interface SiteSettings {
   /** Compact sticky-header logo (wp-admin → כותרת → "לוגו כותרת מוקטנת (בגלילה)"); null = reuse headerLogo. */
   headerStickyLogo?: SiteLogo | null;
   footerLogo: SiteLogo | null;
-  /** Brand slugs curated in wp-admin → הגדרות תמר to show on the /מותג/ brand list page. Empty = show all. */
-  selectedBrandSlugs: string[];
+  /** pa_brand term IDs curated in wp-admin → הגדרות מותגים to show on the /מותג/ brand list page. Empty = show all. */
+  selectedBrandIds: number[];
   /** Title/description for the /מותג/ page, set in wp-admin → הגדרות מותגים. Empty string when unset. */
   brandPageTitle: string;
   brandPageDescription: string;

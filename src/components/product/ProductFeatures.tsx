@@ -12,7 +12,7 @@ export function ProductFeatures({ features }: { features: HomePageFeature[] }) {
   if (features.length === 0) return null;
 
   return (
-    <ul className="grid grid-cols-2 gap-x-[15px] gap-y-[25px]">
+    <ul className="grid grid-cols-2 gap-x-[15px] gap-y-[22px] pt-[5px]">
       {features.map(({ iconType, icon, iconImage, title, subtitle, link }, i) => {
         const Icon = getFeatureIcon(icon);
         const content = (
@@ -28,7 +28,7 @@ export function ProductFeatures({ features }: { features: HomePageFeature[] }) {
             ) : (
               <Icon className="h-[42px] w-[42px] text-brand-accent" strokeWidth={1.25} />
             )}
-            <span className="max-w-[140px] text-[14px] leading-[20px] font-bold text-black">
+            <span className="max-w-[140px] text-[15px] leading-[20px] font-bold text-black">
               {title}
               {subtitle ? <> {subtitle}</> : null}
             </span>

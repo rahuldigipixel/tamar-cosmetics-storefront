@@ -29,7 +29,7 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         </Link>
       ) : null}
       <div className="min-w-0 flex-1">
-        <Link href={href} className="line-clamp-2 text-[15px]  text-[#000] hover:text-brand-accent">
+        <Link href={href} className="line-clamp-2 text-[15px] leading-[16px] text-[#000] hover:text-brand-accent">
           {product.name}
         </Link>
         <FlashyStarRating productId={product.databaseId} className="mt-[4px] min-h-[20px]" />
@@ -43,7 +43,7 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
                 <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               ) : null}
             </p>
-            {product.sku ? <p className="mt-[4px] text-[16px] leading-[22px] text-[#242424]">מק&quot;ט: {product.sku}</p> : null}
+            {product.sku ? <p className="mt-[4px] text-[13px] leading-[18px] text-black">מק&quot;ט: {product.sku}</p> : null}
           </div>
           {product.purchasable ? (
             <div className="flex items-center gap-[6px]">              
@@ -85,8 +85,8 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   const copies = scrollable ? COPIES : 1;
 
   return (
-    <section className="mx-auto w-full max-w-[335px] rounded-[20px] border border-[#f1c1c9] bg-white px-[20px] py-[18px] text-right md:mx-0" aria-label="מוצרים קשורים">
-      <h2 className="text-center text-[21px] leading-[34px] font-semibold text-brand-accent">מוצרים קשורים</h2>
+    <section className="mx-auto w-full max-w-[335px] rounded-[20px] border border-[#f1c1c9] bg-white px-[20px] py-[10px] text-right md:mx-0" aria-label="מוצרים קשורים">
+      <h2 className="text-center text-[21px] leading-[34px] font-semibold text-[#d52027]">מוצרים קשורים</h2>
 
       {scrollable ? (
         <button type="button" onClick={() => step(-1)} aria-label="הקודם" className={`${chevron} mt-[8px]`}>
@@ -94,7 +94,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
         </button>
       ) : null}
 
-      <div ref={viewport} className="mt-[4px] overflow-hidden" style={{ height: ROW_HEIGHT * Math.min(VISIBLE, products.length) }}>
+      <div ref={viewport} className="mt-[6px] overflow-hidden" style={{ height: ROW_HEIGHT * Math.min(VISIBLE, products.length) }}>
         <ul>
           {Array.from({ length: copies }, (_, c) =>
             products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} />)

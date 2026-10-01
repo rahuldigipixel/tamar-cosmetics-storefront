@@ -11,9 +11,9 @@ export default async function BrandListPage() {
   const [brands, global] = await Promise.all([listBrands(), getGlobalData()]);
   const siteSettings = global?.settings ?? null;
 
-  const selectedSlugs = siteSettings?.selectedBrandSlugs ?? [];
+  const selectedIds = siteSettings?.selectedBrandIds ?? [];
   const visibleBrands =
-    selectedSlugs.length > 0 ? brands.filter((b) => selectedSlugs.includes(b.slug)) : brands;
+    selectedIds.length > 0 ? brands.filter((b) => selectedIds.includes(b.databaseId)) : brands;
 
   const title = siteSettings?.brandPageTitle || "מותגים";
   const description = siteSettings?.brandPageDescription || "";

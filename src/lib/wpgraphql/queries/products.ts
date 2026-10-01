@@ -119,6 +119,8 @@ const DETAIL_BARCODE_AND_ATTRIBUTES = /* GraphQL */ `
             name
             slug
             tamarImageUrl
+            tamarTermHint
+            tamarBrandDescription
           }
         }
       }
@@ -175,6 +177,13 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
       id
       name
       slug
+      parent {
+        node {
+          id
+          name
+          slug
+        }
+      }
     }
   }
   allPaBrand {
@@ -243,6 +252,7 @@ export const GET_PRODUCT_BY_SLUG = /* GraphQL */ `
     }
     # Admin-managed icon boxes (wp-admin → Single Product Settings) — folded in here to keep the page at 2 backend calls.
     pageSettings: tamarProductPageSettings {
+      shippingReturns
       visibility {
         tip
         iconBoxes
@@ -255,6 +265,9 @@ export const GET_PRODUCT_BY_SLUG = /* GraphQL */ `
         similar
         upsells
         related
+        brandTip
+        aboutBrandTab
+        shippingTab
       }
       iconStrip {
         title

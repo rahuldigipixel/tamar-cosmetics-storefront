@@ -14,7 +14,12 @@ const BRAND_DETAIL_FIELDS = /* GraphQL */ `
   description
   desktopBannerUrl
   mobileBannerUrl
+  desktopBannerWidth
+  desktopBannerHeight
+  mobileBannerWidth
+  mobileBannerHeight
   extraDescription
+  categoryExtraDescriptionText
 `;
 
 // hideEmpty relies on the term's "count" meta, which is stale for most

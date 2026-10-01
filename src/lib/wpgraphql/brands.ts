@@ -12,7 +12,12 @@ interface GqlBrandNode {
   thumbnailUrl?: string | null;
   desktopBannerUrl?: string | null;
   mobileBannerUrl?: string | null;
+  desktopBannerWidth?: number | null;
+  desktopBannerHeight?: number | null;
+  mobileBannerWidth?: number | null;
+  mobileBannerHeight?: number | null;
   extraDescription?: string | null;
+  categoryExtraDescriptionText?: string | null;
 }
 
 function fromGraphqlBrand(node: GqlBrandNode): Brand {
@@ -26,7 +31,12 @@ function fromGraphqlBrand(node: GqlBrandNode): Brand {
     thumbnailUrl: node.thumbnailUrl ?? undefined,
     desktopBannerUrl: node.desktopBannerUrl ?? undefined,
     mobileBannerUrl: node.mobileBannerUrl ?? undefined,
+    desktopBannerWidth: node.desktopBannerWidth ?? undefined,
+    desktopBannerHeight: node.desktopBannerHeight ?? undefined,
+    mobileBannerWidth: node.mobileBannerWidth ?? undefined,
+    mobileBannerHeight: node.mobileBannerHeight ?? undefined,
     extraDescription: node.extraDescription ?? undefined,
+    categoryExtraDescriptionText: node.categoryExtraDescriptionText ?? undefined,
   };
 }
 

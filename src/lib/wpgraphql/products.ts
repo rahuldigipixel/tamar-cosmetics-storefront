@@ -48,7 +48,7 @@ export interface GqlProductNode {
   galleryImages?: { nodes: GqlImage[] };
   /** Only requested on list queries (first gallery image only) — a lighter alternative to `galleryImages` for the hover-swap thumbnail. */
   galleryFirstImage?: { nodes: GqlImage[] };
-  productCategories?: { nodes: { id: string; name: string; slug: string }[] };
+  productCategories?: { nodes: { id: string; name: string; slug: string; parent?: { node: { id: string; name: string; slug: string } } | null }[] };
   allPaBrand?: { nodes: { name: string; slug: string; thumbnailUrl?: string | null }[] };
   attributes?: {
     nodes: {
@@ -58,7 +58,7 @@ export interface GqlProductNode {
       options: string[];
       variation: boolean;
       /** Global attributes only. */
-      terms?: { nodes: { name: string; slug?: string; tamarImageUrl?: string | null }[] };
+      terms?: { nodes: { name: string; slug?: string; tamarImageUrl?: string | null; tamarTermHint?: string | null; tamarBrandDescription?: string | null }[] };
     }[];
   };
   barcode?: { value: string | null }[];
@@ -111,6 +111,8 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
       optionNames: a.terms?.nodes.map((t) => t.name),
       optionImages: a.terms?.nodes.map((t) => t.tamarImageUrl ?? null),
       optionSlugs: a.terms?.nodes.map((t) => t.slug ?? ""),
+      optionHints: a.terms?.nodes.map((t) => t.tamarTermHint ?? null),
+      optionDescriptions: a.terms?.nodes.map((t) => t.tamarBrandDescription ?? null),
       variation: a.variation,
     })) ?? [];
 
@@ -159,7 +161,7 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     inStock: node.stockStatus !== "OUT_OF_STOCK",
     currency: "ILS",
     images,
-    categories: node.productCategories?.nodes.map((c) => ({ id: c.id, name: c.name, slug: c.slug })) ?? [],
+    categories: node.productCategories?.nodes.map((c) => ({ id: c.id, name: c.name, slug: c.slug, parent: c.parent?.node })) ?? [],
     labels: [],
     attributes,
     variations,
@@ -266,6 +268,9 @@ export interface ProductPageVisibility {
   similar: boolean;
   upsells: boolean;
   related: boolean;
+  brandTip: boolean;
+  aboutBrandTab: boolean;
+  shippingTab: boolean;
 }
 
 export interface ProductPageSettings {
@@ -273,6 +278,8 @@ export interface ProductPageSettings {
   features: HomePageFeature[];
   /** Full-width strip under the tabs — image, title and link are each optional. */
   iconStrip: ProductStripItem[];
+  /** HTML of the "משלוחים והחזרות" tab (empty when not set). */
+  shippingReturns: string;
 }
 
 export interface ProductStripItem {
@@ -303,6 +310,7 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
   const data = await fetchGraphQLSafe<{
     product: (GqlProductNode & { related?: { nodes: GqlProductNode[] }; upsell?: { nodes: GqlProductNode[] } }) | null;
     pageSettings: {
+      shippingReturns?: string | null;
       iconStrip?: { title?: string | null; link?: string | null; image?: { url: string; width?: number | null; height?: number | null; alt?: string | null } | null }[] | null;
       visibility?: Partial<Record<keyof ProductPageVisibility, boolean | null>> | null;
       features?:
@@ -340,7 +348,11 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
       similar: v?.similar !== false,
       upsells: v?.upsells !== false,
       related: v?.related !== false,
+      brandTip: v?.brandTip !== false,
+      aboutBrandTab: v?.aboutBrandTab !== false,
+      shippingTab: v?.shippingTab !== false,
     },
+    shippingReturns: data.pageSettings?.shippingReturns ?? "",
     iconStrip: (data.pageSettings?.iconStrip ?? []).map((s) => ({
       image: s.image ? { url: s.image.url, width: s.image.width ?? 72, height: s.image.height ?? 72, alt: s.image.alt ?? "" } : null,
       title: s.title ?? "",

@@ -21,6 +21,10 @@ export interface ProductAttribute {
   optionImages?: (string | null)[];
   /** Term slugs (same order as `optionNames`) — e.g. for linking the brand to its page. */
   optionSlugs?: string[];
+  /** Term hint (pa_term_hint) of each term (same order as `optionNames`) — the brand "?" tooltip, empty when not set. */
+  optionHints?: (string | null)[];
+  /** Brand description (pa_brand term description) of each term (same order as `optionNames`) — feeds the "אודות המותג" tab. */
+  optionDescriptions?: (string | null)[];
   variation: boolean;
 }
 
@@ -75,7 +79,7 @@ export interface Product {
   inStock: boolean;
   currency: string;
   images: ProductImage[];
-  categories: { id: string; name: string; slug: string }[];
+  categories: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string } }[];
   labels: ProductLabel[];
   attributes: ProductAttribute[];
   variations: ProductVariation[];
@@ -109,11 +113,16 @@ export interface Brand {
   name: string;
   slug: string;
   count: number;
-  /** Rich-text term description (contains a legacy inline logo image on some brands) — not shown; use thumbnailUrl instead. */
+  /** Term description (plain text with newlines, may contain simple inline HTML) — shown under the logo on the brand page. */
   description?: string;
   thumbnailUrl?: string;
   desktopBannerUrl?: string;
   mobileBannerUrl?: string;
+  desktopBannerWidth?: number;
+  desktopBannerHeight?: number;
+  mobileBannerWidth?: number;
+  mobileBannerHeight?: number;
   /** Shown after the product list on the brand's product-list page. */
   extraDescription?: string;
+  categoryExtraDescriptionText?: string;
 }

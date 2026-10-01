@@ -5,7 +5,9 @@ import type { CategoryBanner as CategoryBannerData } from "@/lib/wpgraphql/tamar
  * Category page banner — full width, straight under the header (as on the
  * reference). Desktop image from 768px up, mobile image below (art
  * direction via <picture>, so each viewport downloads only its own image).
- * If only one of the two is set, it's used at every width.
+ * If only one of the two is set, it's used at every width. From 768px up the
+ * banner is a fixed 1900x350 box (object-cover) whatever the uploaded size;
+ * mobile keeps the image's own ratio.
  */
 export function CategoryBanner({ banner, title }: { banner: CategoryBannerData; title: string }) {
   const desktop = banner.desktop ?? banner.mobile;
@@ -24,7 +26,7 @@ export function CategoryBanner({ banner, title }: { banner: CategoryBannerData; 
     <picture>
       <source media="(min-width: 768px)" srcSet={desktopSrcSet} width={desktop.width} height={desktop.height} />
       {/* eslint-disable-next-line jsx-a11y/alt-text -- art-directed <picture> per the next/image docs (getImageProps); alt is in `rest` */}
-      <img {...rest} srcSet={mobileSrcSet} className="block h-auto w-full" />
+      <img {...rest} srcSet={mobileSrcSet} className="block h-auto w-full object-cover md:aspect-[1900/350]" />
     </picture>
   );
 }

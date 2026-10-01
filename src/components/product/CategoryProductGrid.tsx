@@ -164,7 +164,7 @@ function FilterDropdown({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex h-[42px] w-full items-center gap-[8px] border-b-2 text-start text-[16px] text-[#0c0c0c] transition-colors ${
+        className={`flex h-[42px] w-full items-center gap-[8px] border-b-2 text-start text-[16px] font-semibold leading-[16px] text-[#333] transition-colors ${
           open ? "border-[#d52027]" : "border-black/10 hover:border-black/25"
         }`}
       >

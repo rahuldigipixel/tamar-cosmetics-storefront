@@ -1,6 +1,6 @@
 import { Percent, Sparkles, Flame } from "lucide-react";
 import { getHomeData } from "@/lib/wpgraphql/home";
-import { getGlobalData, getHomePageSettings } from "@/lib/wpgraphql/tamarApi";
+import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { resolveIntegrations } from "@/lib/integrations";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CategorySlider } from "@/components/home/CategorySlider";
@@ -11,7 +11,7 @@ import { SaleProductSlider } from "@/components/home/SaleProductSlider";
 import { ClubSignup } from "@/components/home/ClubSignup";
 import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 import { RichContent } from "@/components/ui/RichContent";
-import type { Product, ProductCategory, Brand } from "@/types/product";
+import type { ProductCategory, Brand } from "@/types/product";
 
 export const revalidate = 60;
 
@@ -20,11 +20,6 @@ const DEFAULT_ABOUT_HTML =
   "<p>המרכז הארצי לייבוא ושיווק מוצרים לקוסמטיקאיות באונליין</p>" +
   "<p>חנות למוצרי ציפורניים ולק ג&apos;ל, מבחר ענק של מקצועי למניקור, פדיקור וקוסמטיקה.</p>" +
   "<p>תמר קוסמטיקס מייבאת ומשווקת את המותגים האיכותיים והמתקדמים ביותר המחויבים לספק תוצאות. המותגים הללו ידועים בשל האמינות והיכולת לעזור לעצור ולקוחות להשיג את המראה והאפקט הרצויים, תוך שמירה על בריאות העור והציפורניים.</p>";
-
-/** Admin's manually-picked products for a rail (wp-admin → ניהול דף הבית), falling back to the section's default product list when nothing's been picked. */
-function pickRailProducts(selected: Product[], fallback: Product[]): Product[] {
-  return selected.length > 0 ? selected : fallback;
-}
 
 /** Admin-selected slugs, in the admin's chosen order; falls back to the top `limit` by product count when none are selected. */
 function pickBySlugOrTopCount<T extends { slug: string; count: number }>(
@@ -40,35 +35,17 @@ function pickBySlugOrTopCount<T extends { slug: string; count: number }>(
 }
 
 export default async function HomePage() {
-  // Settings (wp-admin's HOT/NEW/SALE product-id picks) has to resolve
-  // before the GraphQL call below, since those ids feed the $hotIds/$newIds/
-  // $saleIds variables on GET_HOME_DATA — still just the same 2 requests
-  // this route has always made (settings REST + GraphQL), just sequential.
-  const [settings, global] = await Promise.all([getHomePageSettings(), getGlobalData()]);
+  // Global data (layout, shared via cache()) + ONE page-body request: settings,
+  // curated rails, categories and brands all come from getHomeData().
+  const [homeData, global] = await Promise.all([getHomeData(), getGlobalData()]);
   const integrations = resolveIntegrations(global?.settings);
 
-  const {
-    saleProducts: saleProductsRaw,
-    bestSellers: bestSellersRaw,
-    newProducts: newProductsRaw,
-    hotSelected: hotSelectedRaw,
-    newSelected: newSelectedRaw,
-    saleSelected: saleSelectedRaw,
-    categories,
-    brands,
-  } = await getHomeData(20, {
-    hot: settings?.hot.productIds,
-    new: settings?.new.productIds,
-    sale: settings?.sale.productIds,
-  });
+  const { settings, categories, brands } = homeData;
 
   // Out-of-stock items shouldn't take up slots in these promotional home-page sliders.
-  const saleProducts = saleProductsRaw.filter((p) => p.inStock);
-  const bestSellers = bestSellersRaw.filter((p) => p.inStock);
-  const newProducts = newProductsRaw.filter((p) => p.inStock);
-  const hotSelected = hotSelectedRaw.filter((p) => p.inStock);
-  const newSelected = newSelectedRaw.filter((p) => p.inStock);
-  const saleSelected = saleSelectedRaw.filter((p) => p.inStock);
+  const hotProducts = homeData.hotProducts.filter((p) => p.inStock);
+  const newSectionProducts = homeData.newProducts.filter((p) => p.inStock);
+  const saleSectionProducts = homeData.saleProducts.filter((p) => p.inStock);
 
   // Admin picks by term ID (see class-home-page-settings.php), so a selection
   // can be a subcategory too — match against every category, any depth, not
@@ -84,10 +61,6 @@ export default async function HomePage() {
 
   const brandsWithLogo: Brand[] = brands.filter((b) => b.thumbnailUrl);
   const displayBrands = pickBySlugOrTopCount(brandsWithLogo, settings?.brandSlugs, 20);
-
-  const hotProducts = pickRailProducts(hotSelected, bestSellers);
-  const newSectionProducts = pickRailProducts(newSelected, newProducts);
-  const saleSectionProducts = pickRailProducts(saleSelected, saleProducts);
 
   const aboutTitle = settings?.aboutTitle || DEFAULT_ABOUT_TITLE;
   const aboutHtml = settings?.aboutContentHtml || DEFAULT_ABOUT_HTML;

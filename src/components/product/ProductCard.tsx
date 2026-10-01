@@ -7,7 +7,7 @@ export function ProductCard({ product }: { product: Product }) {
   const image = product.images[0];
 
   return (
-    <Link
+    <Link prefetch={false}
       href={`/product/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-lg border border-black/5 bg-white transition-shadow hover:shadow-lg"
     >

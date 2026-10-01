@@ -157,7 +157,7 @@ export function HeaderSearch({
                 }
               >
                 {results.map((r) => (
-                  <Link
+                  <Link prefetch={false}
                     key={r.id}
                     href={`/product/${r.slug}`}
                     onClick={() => setOpen(false)}

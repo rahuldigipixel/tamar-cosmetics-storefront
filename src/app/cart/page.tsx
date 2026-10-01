@@ -92,7 +92,7 @@ export default function CartPage() {
                 ) : null}
 
                 <div className="min-w-0 flex-1 text-right">
-                  <Link href={`/product/${item.product.slug}`} className="text-base font-medium hover:text-brand-accent">
+                  <Link prefetch={false} href={`/product/${item.product.slug}`} className="text-base font-medium hover:text-brand-accent">
                     {item.product.name}
                   </Link>
                   {item.variation ? <p className="mt-0.5 text-sm text-black/50">{item.variation.name}</p> : null}

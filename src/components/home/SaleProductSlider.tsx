@@ -144,7 +144,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
       ref={cardRef}
       className="group relative flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
     >
-      <Link href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-accent/5">
+      <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-accent/5">
         {image ? (
           <Image
             src={image.src}
@@ -165,7 +165,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
       <ProductHoverActions product={product} className="start-3 top-3" />
 
       <div className="flex flex-1 flex-col gap-1 p-4 text-right">
-        <Link
+        <Link prefetch={false}
           href={`/product/${product.slug}`}
           className="line-clamp-2 min-h-[2.8em] text-sm font-medium text-black/80 group-hover:text-brand-accent"
         >
@@ -197,7 +197,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
               />
             </>
           ) : (
-            <Link
+            <Link prefetch={false}
               href={`/product/${product.slug}`}
               className="block w-full rounded-full border border-brand-accent/20 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"
             >

@@ -35,7 +35,7 @@ export function ProductGridCard({
       ref={cardRef}
       className={`group relative flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
     >
-      <Link
+      <Link prefetch={false}
         href={`/product/${product.slug}`}
         className="relative block aspect-square w-full overflow-hidden bg-brand-soft/30"
       >
@@ -79,7 +79,7 @@ export function ProductGridCard({
       <ProductHoverActions product={product} className={`start-3 ${product.brandLogoUrl ? "top-14" : "top-3"}`} />
 
       <div className="flex flex-1 flex-col gap-1.5 p-4 text-right">
-        <Link
+        <Link prefetch={false}
           href={`/product/${product.slug}`}
           className="line-clamp-2 min-h-[2.8em] text-sm font-medium text-black/80 group-hover:text-brand-accent"
         >
@@ -115,7 +115,7 @@ export function ProductGridCard({
         ) : (
           <>
             <span className="text-xs text-black/60">{product.sku ? `מק"ט: ${product.sku}` : " "}</span>
-            <Link
+            <Link prefetch={false}
               href={`/product/${product.slug}`}
               className="mt-auto block w-full rounded-full border border-black/10 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"
             >

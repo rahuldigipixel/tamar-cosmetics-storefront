@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { scrollItemIntoRow } from "./scroll";
 
-const COPIES = 5; // odd count so there's a true middle copy to rest in
+const COPIES = 3; // odd count so there's a true middle copy to rest in; fewer copies = less DOM/HTML
 const RECENTER_DELAY_MS = 500; // must clear the smooth-scroll animation before jumping
 
 /**

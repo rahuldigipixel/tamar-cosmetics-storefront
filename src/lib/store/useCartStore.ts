@@ -80,7 +80,12 @@ export const useCartStore = create<CartState>()(
       sessionToken: null,
       loading: false,
       isDrawerOpen: false,
-      openDrawer: () => set({ isDrawerOpen: true }),
+      // The persisted cart already drives the header badge, so the server round trip
+      // (GetCart) is deferred until the visitor actually opens the drawer or /cart.
+      openDrawer: () => {
+        set({ isDrawerOpen: true });
+        void get().fetchCart();
+      },
       closeDrawer: () => set({ isDrawerOpen: false }),
 
       fetchCart: async () => {

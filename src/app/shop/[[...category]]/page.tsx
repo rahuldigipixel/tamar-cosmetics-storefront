@@ -1,5 +1,4 @@
-﻿import { listProducts } from "@/lib/wpgraphql/products";
-import { listCategories } from "@/lib/wpgraphql/categories";
+﻿import { getShopData } from "@/lib/wpgraphql/shop";
 import { ProductCard } from "@/components/product/ProductCard";
 import Link from "next/link";
 
@@ -15,14 +14,7 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
  const { q } = await searchParams;
  const activeCategory = categorySlugs?.[0];
 
- const [{ products }, categories] = await Promise.all([
- listProducts({ category: activeCategory, search: q }).catch(() => ({
- products: [],
- hasNextPage: false,
- endCursor: null,
- })),
- listCategories().catch(() => []),
- ]);
+ const { products, categories } = await getShopData({ category: activeCategory, search: q });
 
  return (
  <div className="mx-auto max-w-[1600px] px-[15px] py-8 ">

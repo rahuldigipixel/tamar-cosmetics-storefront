@@ -48,7 +48,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
 
   return (
     <div className={`group relative flex h-full flex-col border border-black/[.106] bg-white p-[15px] text-right${standalone ? "" : " -mt-px -ml-px"}`}>
-      <Link href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
+      <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
         {image ? (
           <Image
             src={image.src}
@@ -100,7 +100,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
       {/* Quick view + wishlist — shown on hover. */}
       <ProductHoverActions product={product} className="top-[26px] left-[6px]" />
 
-      <Link
+      <Link prefetch={false}
         href={`/product/${product.slug}`}
         className="mt-[4px] line-clamp-3 text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
       >
@@ -160,7 +160,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             {product.sku ? (
               <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק&quot;ט: {product.sku}</p>
             ) : null}
-            <Link
+            <Link prefetch={false}
               href={`/product/${product.slug}`}
               className="mt-[8px] block w-full rounded-full border border-black/10 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"
             >

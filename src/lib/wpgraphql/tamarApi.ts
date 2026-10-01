@@ -351,19 +351,9 @@ export interface HomePageSettings {
   aboutContentHtml: string;
 }
 
-/**
- * Managed from wp-admin → הגדרות תמר → ניהול דף הבית (includes/class-home-page-settings.php).
- * Only carries *which* categories/brands/products to show and what text to
- * display — the Next.js home page already has the full category/brand/
- * product objects from getHomeData() (WPGraphQL), so this stays a lean 3rd
- * call rather than duplicating that data (same budget as /wholesale-page).
- */
-export const getHomePageSettings = cache(function getHomePageSettings() {
-  return tamarFetch<HomePageSettings>(`/home-page`, {
-    tags: ["home-page"],
-    revalidate: 300,
-  });
-});
+// Managed from wp-admin → הגדרות תמר → ניהול דף הבית (includes/class-home-page-settings.php).
+// Delivered inside the GetHomeData GraphQL request (`tamarHomePage`, see
+// lib/wpgraphql/home.ts) — the home page makes no separate REST call for it.
 
 export interface ClubSignupInput {
   name: string;

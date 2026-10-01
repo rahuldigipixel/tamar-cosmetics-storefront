@@ -64,6 +64,11 @@ const nextConfig: NextConfig = {
   images: {
     // 90 = hero banner (HeroCarousel); 75 = Next default for everything else.
     qualities: [75, 90],
+    // Trimmed from Next's default 8+8 widths: every <img srcSet> lists each width, and
+    // the home page renders hundreds of product images, so the default list alone
+    // added ~0.5 MB of HTML. 3840/2048w are never needed for these layouts.
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [128, 256, 384],
     remotePatterns: [
       // Local backend
       { protocol: "http", hostname: "192.168.0.107", pathname: "/tamarcosmetics_react/wp-content/uploads/**" },

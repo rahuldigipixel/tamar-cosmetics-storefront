@@ -175,7 +175,6 @@ export function Header({
     };
   }, []);
   const cart = useCartStore((s) => s.cart);
-  const fetchCart = useCartStore((s) => s.fetchCart);
   const wishlistCount = useWishlistStore((s) => s.productIds.length);
   const fetchWishlist = useWishlistStore((s) => s.fetchWishlist);
   const openCartDrawer = useCartStore((s) => s.openDrawer);
@@ -321,7 +320,7 @@ export function Header({
   }, [menuVisible]);
 
   useEffect(() => {
-    fetchCart();
+    // Cart badge comes from the persisted store; GetCart runs when the drawer opens (see openDrawer).
     fetchWishlist();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

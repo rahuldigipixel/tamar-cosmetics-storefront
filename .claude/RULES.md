@@ -54,3 +54,12 @@ The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamar
 - [ ] Never commit `.env*`, `node_modules/`, `.next/`, `.vercel/`, `*.tsbuildinfo`, or local IDE/editor folders (see `.gitignore`).
 - [ ] Before `git add`, run `git status` and review the file list for anything that shouldn't be staged (secrets, build artifacts, large binaries).
 - [ ] Never edit `.claude/settings.local.json` into the repo (already git-ignored) — personal permission overrides stay local.
+
+## 5. Lessons applied 2026-10-01 (apply to every new page/component)
+
+- [ ] **Page settings never get their own REST call.** Expose wp-admin settings as a WPGraphQL root field in the plugin (e.g. `tamarHomePage`, `tamarCategoryInfo`, `tamarProductPageSettings`) and put it in the page's one GraphQL query. Admin-picked product lists are resolved server-side in PHP (`Factory::resolve_crud_object`) — never "fetch settings first, then query by ids" (that's a request waterfall).
+- [ ] **Links to dynamic data routes (`/product/…`, `/product-category/…`) in lists/cards use `prefetch={false}`.** In production, Next prefetches every visible link and each prefetch re-runs the route's backend query (a homepage load fired 11 `GetProductBySlug` calls).
+- [ ] **Client state that is already persisted (cart badge) must not refetch on every page load.** Fetch the cart only when the drawer / `/cart` / `/checkout` opens (`openDrawer` in `useCartStore`).
+- [ ] **Check rendered HTML size, not just API calls.** `curl` the page and inspect: target well under ~1 MB uncompressed. Causes found: `useInfiniteCarousel` `COPIES` (now 3 — every extra copy re-renders every card), `images.deviceSizes/imageSizes` in `next.config.ts` (trimmed so each `<img srcSet>` stays short), per-card inline SVG icons.
+- [ ] **Verify call counts in production mode** (`npm run build` + `npm run start`), not only `next dev` — prefetch behaviour only shows up there. Count lines in the plugin's `logs/api-YYYY-MM-DD.log` per page load.
+- [ ] **Read the plugin log for every task**: `logs/api-YYYY-MM-DD.log` now shows duration as `0.752s (752ms)` and the real uncompressed response size (e.g. `57.5KB`). Any call over ~0.5s or ~50 KB needs a look. API JSON is gzipped by the plugin (`class-api-logger.php`). Anything inlined into every page's header (menu, header bar) must stay lean: no repeated width/height/alt, no percent-encoded Hebrew URLs (decode with `rawurldecode`).

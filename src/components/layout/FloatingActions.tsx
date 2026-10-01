@@ -15,10 +15,9 @@ export function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const WHATSAPP_URL = "https://api.whatsapp.com/send?phone=972545405470";
 const SHOW_SCROLL_TOP_AFTER_PX = 400;
 
-export function FloatingActions() {
+export function FloatingActions({ whatsappNumber }: { whatsappNumber: string }) {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -31,7 +30,7 @@ export function FloatingActions() {
   return (
     <>
       <a
-        href={WHATSAPP_URL}
+        href={`https://api.whatsapp.com/send?phone=${whatsappNumber}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="שוחחו איתנו בוואטסאפ"

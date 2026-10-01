@@ -4,7 +4,6 @@ import {
   GET_PRODUCTS,
   GET_PRODUCT_BY_SLUG,
   GET_PRODUCTS_BY_IDS,
-  GET_PRODUCT_SLUGS,
   GET_PRODUCT_QUICK_VIEW,
 } from "./queries/products";
 import { getProductLabels, getProductTabs } from "./tamarApi";
@@ -65,6 +64,21 @@ export interface GqlProductNode {
   barcode?: { value: string | null }[];
   tip?: { value: string | null }[];
   tamarCoupon?: { code?: string | null; label?: string | null } | null;
+  tamarSliderProducts?:
+    | {
+        databaseId: number;
+        slug: string;
+        name: string;
+        sku?: string | null;
+        price?: string | null;
+        regularPrice?: string | null;
+        salePrice?: string | null;
+        onSale?: boolean | null;
+        inStock?: boolean | null;
+        purchasable?: boolean | null;
+        image?: { url: string; width?: number | null; height?: number | null; alt?: string | null } | null;
+      }[]
+    | null;
   tamarTabs?: { id: number; title?: string | null; content?: string | null }[] | null;
   variations?: {
     nodes: {
@@ -122,6 +136,19 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     barcode: node.barcode?.[0]?.value || undefined,
     tamarTip: node.tip?.[0]?.value?.trim() || undefined,
     coupon: node.tamarCoupon?.code ? { code: node.tamarCoupon.code, label: node.tamarCoupon.label ?? "" } : undefined,
+    sliderProducts: node.tamarSliderProducts?.map((p) => ({
+      databaseId: p.databaseId,
+      slug: p.slug,
+      name: p.name,
+      sku: p.sku || undefined,
+      price: p.price || "0",
+      regularPrice: p.regularPrice || p.price || "0",
+      salePrice: p.salePrice || undefined,
+      onSale: Boolean(p.onSale),
+      inStock: p.inStock !== false,
+      purchasable: p.purchasable !== false,
+      image: p.image ? { url: p.image.url, width: p.image.width ?? 150, height: p.image.height ?? 150, alt: p.image.alt ?? "" } : undefined,
+    })),
     type: node.__typename === "VariableProduct" || variations.length > 0 ? "variable" : "simple",
     shortDescription: node.shortDescription,
     description: node.description,
@@ -344,15 +371,6 @@ export async function getProductsByIds(ids: number[]): Promise<Product[]> {
   );
   const byId = new Map((data?.products.nodes ?? []).map((n) => [n.databaseId, fromGraphqlProduct(n)]));
   return ids.map((id) => byId.get(id)).filter((p): p is Product => Boolean(p));
-}
-
-export async function listProductSlugs(): Promise<string[]> {
-  const data = await fetchGraphQLSafe<{ products: { nodes: { slug: string }[] } }>(
-    GET_PRODUCT_SLUGS,
-    {},
-    { tags: ["products"], revalidate: 3600 }
-  );
-  return data?.products.nodes.map((n) => n.slug) ?? [];
 }
 
 /** Detail fields for the quick-view popup (short description, gallery, categories), by database id. */

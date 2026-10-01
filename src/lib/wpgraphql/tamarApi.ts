@@ -81,13 +81,6 @@ export function getProductLabels(productId: number) {
   return tamarFetch<ProductLabel[]>(`/product-labels/${productId}`);
 }
 
-export function subscribeBackInStock(productId: number, email: string) {
-  return tamarFetch<{ success: boolean }>(`/back-in-stock`, {
-    method: "POST",
-    body: JSON.stringify({ product_id: productId, email }),
-  });
-}
-
 export interface SiteLogo {
   url: string;
   width: number;
@@ -105,6 +98,13 @@ export interface SiteSettings {
   /** Title/description for the /מותג/ page, set in wp-admin → הגדרות מותגים. Empty string when unset. */
   brandPageTitle: string;
   brandPageDescription: string;
+  /** Third-party IDs from wp-admin → הגדרות תמר → הגדרות כלליות; each is "" when unset (use resolveIntegrations() for defaults). */
+  integrations?: {
+    flashyAccountId: string;
+    flashyReviewsElementId: string;
+    flashyLegacySiteOrigin: string;
+    whatsappNumber: string;
+  };
 }
 
 export interface HeaderMenuImage {

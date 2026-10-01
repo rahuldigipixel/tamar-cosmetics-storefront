@@ -1,4 +1,3 @@
-﻿import type { Metadata } from "next";
 import { listPosts } from "@/lib/wpgraphql/posts";
 import { BlogPostCard } from "@/components/blog/BlogPostCard";
 import { BlogInfiniteScroll } from "@/components/blog/BlogInfiniteScroll";

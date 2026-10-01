@@ -41,7 +41,7 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-export function Footer({ logo = null }: { logo?: SiteLogo | null }) {
+export function Footer({ logo = null, whatsappNumber }: { logo?: SiteLogo | null; whatsappNumber: string }) {
   return (
     <footer className="relative mt-8 overflow-hidden bg-white text-black/70 sm:mt-15">
       {/* wave divider */}
@@ -183,7 +183,7 @@ export function Footer({ logo = null }: { logo?: SiteLogo | null }) {
             </li>
           </ul>
           <a
-            href="https://api.whatsapp.com/send?phone=972545405470"
+            href={`https://api.whatsapp.com/send?phone=${whatsappNumber}`}
             target="_blank"
             rel="noreferrer"
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 py-3 text-base font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"

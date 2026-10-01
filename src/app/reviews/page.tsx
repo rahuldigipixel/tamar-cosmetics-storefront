@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
-import { getReviewsPage } from "@/lib/wpgraphql/tamarApi";
+import { getGlobalData, getReviewsPage } from "@/lib/wpgraphql/tamarApi";
+import { resolveIntegrations } from "@/lib/integrations";
 import { RichContent } from "@/components/ui/RichContent";
 import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 
@@ -14,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // live site's own URL) — see the rewrite in next.config.ts, same reason
 // /brand-list exists for "/מותג/".
 export default async function ReviewsPage() {
- const page = await getReviewsPage();
+ const [page, global] = await Promise.all([getReviewsPage(), getGlobalData()]);
+ const integrations = resolveIntegrations(global?.settings);
 
  const heading = page?.heading || "ביקורות לקוחות";
  const descriptionHtml = page?.descriptionHtml || "";
@@ -38,7 +40,7 @@ export default async function ReviewsPage() {
 
  <section className="w-full bg-white py-4 sm:py-[0px]">
  <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
- <FlashyReviewsWidget />
+ <FlashyReviewsWidget elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
  </div>
  </section>
  </div>

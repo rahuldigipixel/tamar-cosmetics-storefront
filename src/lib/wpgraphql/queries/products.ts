@@ -81,6 +81,25 @@ const DETAIL_BARCODE_AND_ATTRIBUTES = /* GraphQL */ `
     code
     label
   }
+  # Products picked in the product edit screen (_single_product_slider_ids) — vertical slider above the tip.
+  tamarSliderProducts {
+    databaseId
+    slug
+    name
+    sku
+    price
+    regularPrice
+    salePrice
+    onSale
+    inStock
+    purchasable
+    image {
+      url
+      width
+      height
+      alt
+    }
+  }
   # YITH Tab Manager tabs with content for this product (empty tabs already omitted by the backend).
   tamarTabs {
     id
@@ -270,16 +289,6 @@ export const GET_PRODUCTS_BY_IDS = /* GraphQL */ `
     products(first: $first, where: { include: $ids, status: "publish" }) {
       nodes {
         ${PRODUCT_LIST_FIELDS}
-      }
-    }
-  }
-`;
-
-export const GET_PRODUCT_SLUGS = /* GraphQL */ `
-  query GetProductSlugs($first: Int = 200) {
-    products(first: $first, where: { status: "publish" }) {
-      nodes {
-        slug
       }
     }
   }

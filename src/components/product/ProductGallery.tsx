@@ -6,7 +6,8 @@ import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
 
 // The wishlist heart lives in the details column (reference layout); the
-// brand logo shows both there and overlaid top-left here, at the same size.
+// brand logo is overlaid top-left here at the legacy label size (max 100×110,
+// natural aspect, opacity .9), and shown smaller above the title there.
 export function ProductGallery({
   images,
   name,
@@ -78,9 +79,9 @@ export function ProductGallery({
           <Image
             src={brandLogoUrl}
             alt={brandName ?? ""}
-            width={110}
-            height={30}
-            className="pointer-events-none absolute top-3 left-3 z-10 h-[30px] w-auto max-w-[110px] object-contain object-left"
+            width={100}
+            height={93}
+            className="pointer-events-none absolute top-3 left-3 z-10 h-auto max-h-[110px] w-auto max-w-[100px] object-contain object-center opacity-90"
           />
         ) : null}
 

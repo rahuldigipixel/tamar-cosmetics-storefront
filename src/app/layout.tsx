@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Open_Sans } from "next/font/google";
-import { FLASHY_ACCOUNT_ID } from "@/lib/flashy";
+import { resolveIntegrations } from "@/lib/integrations";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FlashyTracker } from "@/components/layout/FlashyTracker";
@@ -52,6 +52,7 @@ export default async function RootLayout({
   const menu = global?.menu ?? [];
   const siteSettings = global?.settings ?? null;
   const bar = global?.headerBar ?? null;
+  const integrations = resolveIntegrations(siteSettings);
 
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} h-full antialiased`}>
@@ -65,14 +66,14 @@ export default async function RootLayout({
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
-        <Footer logo={siteSettings?.footerLogo ?? null} />
+        <Footer logo={siteSettings?.footerLogo ?? null} whatsappNumber={integrations.whatsappNumber} />
         <FlashyTracker />
         <CookieConsent />
         <CartDrawer />
         <LoginDrawer />
         <QuickViewHost />
         <LogoutOverlay />
-        <FloatingActions />
+        <FloatingActions whatsappNumber={integrations.whatsappNumber} />
         <AccessibilityWidget />
         <Script id="flashy-init" strategy="lazyOnload">
           {`(function (a, b, c) {
@@ -83,7 +84,7 @@ export default async function RootLayout({
               e.src = c; e.async = true; d.parentNode.insertBefore(e, d);
             }
           })(window, "script", "https://js.flashyapp.com/thunder.js");
-          flashy("init", ${FLASHY_ACCOUNT_ID});
+          flashy("init", ${integrations.flashyAccountId});
           (window.__flashyPending || []).forEach(function (p) { flashy.apply(null, p); });
           window.__flashyPending = [];`}
         </Script>

@@ -40,7 +40,7 @@ import {
 
 // Keys match Tamar_Home_Page_Settings::FEATURE_ICON_CHOICES on the WP side
 // (wp-admin → הגדרות תמר → ניהול דף הבית → רצועת יתרונות).
-export const FEATURE_ICON_MAP: Record<string, LucideIcon> = {
+const FEATURE_ICON_MAP: Record<string, LucideIcon> = {
   banknote: Banknote,
   "credit-card": CreditCard,
   "message-circle": MessageCircle,

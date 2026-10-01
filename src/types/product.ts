@@ -36,6 +36,21 @@ export interface ProductVariation {
   image?: ProductImage;
 }
 
+export interface SliderProduct {
+  databaseId: number;
+  slug: string;
+  name: string;
+  sku?: string;
+  price: string;
+  regularPrice: string;
+  salePrice?: string;
+  onSale: boolean;
+  inStock: boolean;
+  /** False for variable products — they can't be added without choosing an option. */
+  purchasable: boolean;
+  image?: { url: string; width: number; height: number; alt: string };
+}
+
 export interface Product {
   id: string;
   databaseId: number;
@@ -48,6 +63,8 @@ export interface Product {
   tamarTip?: string;
   /** Coupon promoted on the product page (wps-woo-extended "show in product" coupon) — product page query only. */
   coupon?: { code: string; label: string };
+  /** Products linked in the edit screen's slider field (`_single_product_slider_ids`) — product page query only. */
+  sliderProducts?: SliderProduct[];
   type: "simple" | "variable";
   shortDescription?: string;
   description?: string;

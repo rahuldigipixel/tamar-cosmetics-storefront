@@ -1,11 +1,14 @@
 ﻿import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
+import { resolveIntegrations } from "@/lib/integrations";
 
 export const metadata: Metadata = {
   title: "צור קשר",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { whatsappNumber } = resolveIntegrations((await getGlobalData())?.settings);
   return (
     <div className="mx-auto max-w-3xl px-[15px] py-16 text-right ">
       <h1 className="mb-2 text-3xl font-bold">צור קשר</h1>
@@ -31,7 +34,7 @@ export default function ContactPage() {
           <span className="text-sm text-black/60">info@tamarcosmetics.co.il</span>
         </a>
         <a
-          href="https://wa.me/972545405470"
+          href={`https://wa.me/${whatsappNumber}`}
           target="_blank"
           rel="noreferrer"
           className="flex flex-col items-center gap-2 rounded-xl border border-black/10 p-6 text-center transition-colors hover:border-brand-accent"

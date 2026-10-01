@@ -206,8 +206,9 @@ export function Header({
   // rendered, instead of blanking the instant it closes.
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [pinY, setPinY] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
-  const [overlayTop, setOverlayTop] = useState(0);
+  const [overlayHeight, setOverlayHeight] = useState(0);
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"categories" | "menu">("categories");
   const categoryNavRef = useRef<HTMLElement>(null);
@@ -281,8 +282,18 @@ export function Header({
     const navRect = categoryNavRef.current?.getBoundingClientRect();
     if (navRect) {
       setMenuTop(btnRect.bottom - navRect.top + 10);
-      setOverlayTop(navRect.bottom);
+      // Dim is anchored to the document (absolute under the nav), so it
+      // always starts right after the header and runs to the page bottom,
+      // whatever the scroll position.
+      const navBottomInDoc = navRect.bottom + window.scrollY;
+      setOverlayHeight(
+        Math.max(document.documentElement.scrollHeight - navBottomInDoc, btnRect.bottom - navRect.top + 10 + 570, window.innerHeight)
+      );
     }
+    // Compact header is `fixed`, so a tall panel could never be scrolled
+    // into view. While the menu is open, anchor the header at the current
+    // scroll position instead, so the page itself scrolls past the panel.
+    if (compact && !menuVisible) setPinY(window.scrollY);
     setOpenItemId(item.id);
     setMenuVisible(true);
   }
@@ -384,8 +395,13 @@ export function Header({
     <div style={compact && fullHeight ? { height: fullHeight } : undefined}>
     <header
       ref={headerRef}
+      style={compact && menuVisible ? { top: pinY } : undefined}
       className={`z-40 bg-white ${
-        compact ? "animate-header-slide-down fixed inset-x-0 top-0 shadow-[0_1px_3px_rgba(0,0,0,.12)]" : "relative"
+        compact
+          ? `animate-header-slide-down inset-x-0 shadow-[0_1px_3px_rgba(0,0,0,.12)] ${
+              menuVisible ? "absolute" : "fixed top-0"
+            }`
+          : "relative"
       }`}
     >
       {/* Announcement bar — admin-managed rotating messages (wp-admin →
@@ -572,7 +588,7 @@ export function Header({
             // at 1025–1115px), 18px-tall rgba(255,255,255,.25) separators,
             // hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[1.2] transition-colors min-[1116px]:px-[10px] min-[1216px]:text-[14px] min-[1426px]:text-[15px] min-[1508px]:text-[15px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[17px] transition-colors min-[1116px]:px-[10px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 
@@ -615,8 +631,8 @@ export function Header({
           aria-hidden
           onMouseEnter={scheduleCloseMenu}
           onClick={() => setMenuVisible(false)}
-          style={{ top: overlayTop }}
-          className={`fixed inset-x-0 bottom-0 bg-black/70 transition-opacity duration-200 ${
+          style={{ height: overlayHeight }}
+          className={`absolute inset-x-0 top-full bg-black/70 transition-opacity duration-200 ${
             menuVisible && panelItem ? "visible opacity-100" : "invisible opacity-0"
           }`}
         />
@@ -630,8 +646,8 @@ export function Header({
           <div
             onMouseEnter={cancelCloseMenu}
             onMouseLeave={scheduleCloseMenu}
-            style={{ top: menuTop, width: 1590, height: 570 }}
-            className={`absolute inset-x-0 z-50 mx-auto overflow-hidden bg-white shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
+            style={{ top: menuTop, width: 1590, minHeight: 570 }}
+            className={`absolute inset-x-0 z-50 mx-auto max-w-full bg-white shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
               menuVisible ? "visible opacity-100" : "invisible opacity-0"
             }`}
           >
@@ -666,13 +682,10 @@ export function Header({
                   className={`grid ${
                     imagesMode
                       ? "grid-cols-7 gap-x-[15px] gap-y-[20px] pt-[20px]"
-                      : `gap-x-[40px] gap-y-[44px] ${panelFeature ? "grid-cols-3" : "grid-cols-5"}`
+                      : `gap-x-[40px] gap-y-[40px] pt-[54px] ${panelFeature ? "grid-cols-3" : "grid-cols-5"}`
                   }`}
                 >
-                  {/* Row caps so the panel never overflows: text mode shows at
-                      most 6 rows (columns × 6), image-card mode at most 2 rows
-                      of 7 — the "הצג את כל המוצרים" button below covers the rest. */}
-                  {panelLinkChildren.slice(0, imagesMode ? 7 * 2 : (panelFeature ? 3 : 5) * 6).map((child) =>
+                  {panelLinkChildren.map((child) =>
                     imagesMode ? (
                       <li key={child.id}>
                         <Link
@@ -705,11 +718,11 @@ export function Header({
                         <Link
                           href={child.url}
                           onClick={() => setMenuVisible(false)}
-                          className={`flex items-center gap-[8px] text-[16px] font-light leading-[25px] transition-colors hover:text-[#d52027] ${
+                          className={`flex items-center gap-[12px] text-[17px] font-light leading-[28px] transition-colors hover:text-[#d52027] ${
                             isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
                           }`}
                         >
-                          <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-[#777]" />
+                          <span className="h-[8px] w-[8px] shrink-0 rounded-full bg-[#777]" />
                           <span>{decodeHtml(child.label)}</span>
                         </Link>
                       </li>

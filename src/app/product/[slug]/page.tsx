@@ -13,6 +13,7 @@ import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductWishlistButton } from "@/components/product/ProductWishlistButton";
 import { ProductFeatures } from "@/components/product/ProductFeatures";
 import { TamarTip } from "@/components/product/TamarTip";
+import { LinkedProductsSlider } from "@/components/product/LinkedProductsSlider";
 import { FlashyProductWidget } from "@/components/product/FlashyProductWidget";
 import { ProductIconStrip } from "@/components/product/ProductIconStrip";
 import { ProductSlider } from "@/components/home/ProductSlider";
@@ -116,6 +117,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const show = pageSettings.visibility;
  const unitPrice = show.unitPrice ? getUnitPrice(Number(product.price), product.attributes) : null;
  const showTip = show.tip && Boolean(product.tamarTip);
+ const linkedProducts = product.sliderProducts ?? [];
+ const showLinked = linkedProducts.length > 0;
  const showStrip = show.iconStrip && pageSettings.iconStrip.length > 0;
  const showSliders = show.complementary || show.similar || (show.upsells && upsells.length > 0) || (show.related && related.length > 0);
  const showFeatures = show.iconBoxes && pageSettings.features.length > 0;
@@ -154,10 +157,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
- <div className="mx-auto max-w-[1600px] px-[15px] py-[25px]">
+ <div className="mx-auto max-w-[1600px] px-[15px] pt-[12px] pb-[25px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
- <div className="grid gap-x-[80px] gap-y-[25px] md:grid-cols-2 md:items-start xl:grid-cols-[520px_500px_minmax(0,1fr)]">
- <nav className="flex flex-wrap items-center gap-x-[8px] text-[13px] leading-[19px] text-[#777] md:col-start-1 md:row-start-1">
+ <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[520px_500px_minmax(0,1fr)]">
+ <nav className="flex flex-wrap items-center gap-x-[8px] text-[13px] leading-[19px] text-[#777] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>
@@ -173,7 +176,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <span className="font-bold text-black">{product.name}</span>
  </nav>
 
- <div className="mx-auto w-full max-w-[500px] md:col-start-2 md:row-span-2 md:row-start-1 md:mx-0 xl:col-start-2">
+ <div className="mx-auto w-full max-w-[500px] md:col-start-2 md:row-start-2 md:mx-0 xl:col-start-2">
  <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} />
  </div>
 
@@ -260,10 +263,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  ) : null}
  </div>
 
- {showTip || showFeatures ? (
- <div className="md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-span-2 xl:row-start-1">
+ {showLinked || showTip || showFeatures ? (
+ <div className="md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2">
  {/* Without a tip the icons start lower, level with the gallery image. */}
- <div className={showTip ? "space-y-[30px]" : "xl:pt-[40px]"}>
+ <div className={showLinked || showTip ? "space-y-[30px]" : ""}>
+ {showLinked ? <LinkedProductsSlider products={linkedProducts} /> : null}
  {showTip && product.tamarTip ? <TamarTip text={product.tamarTip} /> : null}
  {showFeatures ? <ProductFeatures features={pageSettings.features} /> : null}
  </div>

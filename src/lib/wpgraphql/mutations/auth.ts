@@ -41,31 +41,3 @@ export const RESET_USER_PASSWORD = /* GraphQL */ `
     }
   }
 `;
-
-export const GET_CUSTOMER_ORDERS = /* GraphQL */ `
-  query GetCustomerOrders($customerId: Int!) {
-    customer(customerId: $customerId) {
-      orders {
-        nodes {
-          id
-          databaseId
-          orderNumber
-          date
-          status
-          total
-          lineItems {
-            nodes {
-              product {
-                node {
-                  name
-                }
-              }
-              quantity
-              total
-            }
-          }
-        }
-      }
-    }
-  }
-`;

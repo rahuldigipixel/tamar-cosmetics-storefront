@@ -1,6 +1,7 @@
 import { Percent, Sparkles, Flame } from "lucide-react";
 import { getHomeData } from "@/lib/wpgraphql/home";
-import { getHomePageSettings } from "@/lib/wpgraphql/tamarApi";
+import { getGlobalData, getHomePageSettings } from "@/lib/wpgraphql/tamarApi";
+import { resolveIntegrations } from "@/lib/integrations";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { CategorySlider } from "@/components/home/CategorySlider";
 import { BrandSlider } from "@/components/home/BrandSlider";
@@ -43,7 +44,8 @@ export default async function HomePage() {
   // before the GraphQL call below, since those ids feed the $hotIds/$newIds/
   // $saleIds variables on GET_HOME_DATA — still just the same 2 requests
   // this route has always made (settings REST + GraphQL), just sequential.
-  const settings = await getHomePageSettings();
+  const [settings, global] = await Promise.all([getHomePageSettings(), getGlobalData()]);
+  const integrations = resolveIntegrations(global?.settings);
 
   const {
     saleProducts: saleProductsRaw,
@@ -149,7 +151,7 @@ export default async function HomePage() {
 
       <section className="w-full bg-white py-8 sm:py-[50px]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-          <FlashyReviewsWidget />
+          <FlashyReviewsWidget elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
         </div>
       </section>
     </div>

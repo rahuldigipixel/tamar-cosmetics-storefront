@@ -2,12 +2,10 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { FLASHY_REVIEWS_ELEMENT_ID, FLASHY_LEGACY_SITE_ORIGIN } from "@/lib/flashy";
-
-function rewriteLegacyLinks(container: HTMLElement) {
-  const links = container.querySelectorAll<HTMLAnchorElement>(`a[href^="${FLASHY_LEGACY_SITE_ORIGIN}"]`);
+function rewriteLegacyLinks(container: HTMLElement, legacyOrigin: string) {
+  const links = container.querySelectorAll<HTMLAnchorElement>("a[href]");
   links.forEach((link) => {
-    link.href = link.href.replace(FLASHY_LEGACY_SITE_ORIGIN, window.location.origin);
+    if (link.href.startsWith(legacyOrigin)) link.href = link.href.replace(legacyOrigin, window.location.origin);
   });
 }
 
@@ -16,7 +14,7 @@ function rewriteLegacyLinks(container: HTMLElement) {
 // show the site-wide reviews feed instead of a single product's reviews.
 //
 // The review data was synced from the legacy WP site, so the "view product"
-// links thunder.js renders point at that domain (see FLASHY_LEGACY_SITE_ORIGIN),
+// links thunder.js renders point at that domain (the "Flashy — legacy site URL" setting),
 // even for products that also exist on this site. Two independent fixes, since
 // thunder.js injects content asynchronously with no render-complete hook:
 //   - a MutationObserver rewrites each link's href to this site's origin as it
@@ -26,7 +24,16 @@ function rewriteLegacyLinks(container: HTMLElement) {
 //     navigation instead of a full page reload, reading the path straight off
 //     the clicked link's href (works even if the observer hasn't run yet,
 //     since the path is the same regardless of which origin is on it).
-export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
+// `elementId` / `legacyOrigin` come from wp-admin → הגדרות תמר → הגדרות כלליות (see resolveIntegrations).
+export function FlashyReviewsWidget({
+  itemId,
+  elementId,
+  legacyOrigin,
+}: {
+  itemId?: number;
+  elementId: string;
+  legacyOrigin: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -49,11 +56,11 @@ export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
     const el = ref.current;
     if (!el) return;
 
-    rewriteLegacyLinks(el);
-    const observer = new MutationObserver(() => rewriteLegacyLinks(el));
+    rewriteLegacyLinks(el, legacyOrigin);
+    const observer = new MutationObserver(() => rewriteLegacyLinks(el, legacyOrigin));
     observer.observe(el, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [mounted]);
+  }, [mounted, legacyOrigin]);
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     const link = (e.target as HTMLElement).closest("a");
@@ -74,7 +81,7 @@ export function FlashyReviewsWidget({ itemId }: { itemId?: number }) {
     <div
       ref={ref}
       onClick={handleClick}
-      data-inject-flashy-element={FLASHY_REVIEWS_ELEMENT_ID}
+      data-inject-flashy-element={elementId}
       data-item-id={itemId}
     />
   );

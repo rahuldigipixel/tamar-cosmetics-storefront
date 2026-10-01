@@ -5,7 +5,7 @@
  * (empty) cart. Route handlers below are the only place that touches this —
  * client code just carries the opaque token in Zustand's persisted store.
  */
-export const SESSION_HEADER = "woocommerce-session";
+const SESSION_HEADER = "woocommerce-session";
 
 export function sessionRequestHeader(token: string | null): HeadersInit {
   return token ? { [SESSION_HEADER]: `Session ${token}` } : {};

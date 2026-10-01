@@ -37,8 +37,13 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         <div className="mt-[8px] flex items-center justify-between gap-[6px]">
           {/* RTL: price + SKU on the right, cart controls on the left. */}
           <div className="shrink-0">
-            <p className="text-[17px] leading-[22px] font-bold text-brand-accent">{formatPrice(price)}</p>
-            {product.sku ? <p className="mt-[4px] text-[12px] leading-[18px] text-[#242424]">מק&quot;ט: {product.sku}</p> : null}
+            <p className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap leading-[22px]">
+              <span className="text-[18px] font-bold text-brand-accent">{formatPrice(price)}</span>
+              {product.onSale && product.salePrice ? (
+                <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+              ) : null}
+            </p>
+            {product.sku ? <p className="mt-[4px] text-[16px] leading-[22px] text-[#242424]">מק&quot;ט: {product.sku}</p> : null}
           </div>
           {product.purchasable ? (
             <div className="flex items-center gap-[6px]">              

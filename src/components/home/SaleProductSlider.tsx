@@ -178,7 +178,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
           {product.onSale && product.salePrice ? (
             <>
               <span className="text-lg font-bold text-brand-accent">{formatPrice(product.salePrice)}</span>
-              <span className="text-sm text-black/40 line-through">{formatPrice(product.regularPrice)}</span>
+              <span className="text-lg font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
             </>
           ) : (
             <span className="text-lg font-bold text-brand-accent">{formatPrice(product.price)}</span>

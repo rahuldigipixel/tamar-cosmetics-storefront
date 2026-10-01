@@ -154,7 +154,7 @@ export function QuickViewModal({ product: cardProduct }: { product: Product }) {
             {onSale ? (
               <>
                 <span className="text-[28px] leading-[1.2] font-bold text-[#d52027]">{formatPrice(product.salePrice!)}</span>
-                <span className="text-lg text-[#535353] line-through">{formatPrice(product.regularPrice)}</span>
+                <span className="text-lg font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               </>
             ) : (
               <span className="text-[28px] leading-[1.2] font-bold text-[#d52027]">{formatPrice(product.price)}</span>

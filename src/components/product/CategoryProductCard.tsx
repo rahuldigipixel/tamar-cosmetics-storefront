@@ -123,42 +123,42 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
         </div>
         {product.type === "simple" ? (
           <div className="flex items-center justify-between gap-1">
-            {/* Price + SKU on the right (RTL start) */}
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-baseline gap-x-[6px]">
+            {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
+            <div className="shrink-0">
+              <div className="flex flex-nowrap items-baseline gap-x-[6px] whitespace-nowrap">
                 {product.onSale && product.salePrice ? (
                   <>
-                    <span className="text-[22px] font-bold leading-[24px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
-                    <span className="text-[13px] font-light text-[#535353] line-through">{formatPrice(product.regularPrice)}</span>
+                    <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
+                    <span className="text-[15px] font-[600] leading-[17px] text-[#333] line-through decoration-1 decoration-black/70 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
                   </>
                 ) : (
-                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]">{formatPrice(product.price)}</span>
+                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.price)}</span>
                 )}
               </div>
               {product.sku ? (
-                <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק&quot;ט: {product.sku}</p>
+                <p className="mt-[4px] text-[12px] font-semibold leading-[15px] text-[#333]">מק&quot;ט: {product.sku}</p>
               ) : null}
             </div>
             {/* Qty + cart on the left (RTL end) */}
-            <div className="flex shrink-0 items-center gap-1">
-              <QuantityStepper quantity={quantity} onChange={setQuantity} size="sm" />
+            <div className="flex min-w-0 items-center gap-1">
+              <QuantityStepper quantity={quantity} onChange={setQuantity} size="mini" />
               <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="sm" />
             </div>
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-baseline gap-x-[6px]">
+            <div className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap">
               {product.onSale && product.salePrice ? (
                 <>
-                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
-                  <span className="text-[13px] font-light text-[#535353] line-through">{formatPrice(product.regularPrice)}</span>
+                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
+                  <span className="text-[15px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
                 </>
               ) : (
-                <span className="text-[22px] font-bold leading-[24px] text-[#d52027]">{formatPrice(product.price)}</span>
+                <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.price)}</span>
               )}
             </div>
             {product.sku ? (
-              <p className="mt-[4px] text-[12px] font-semibold leading-[12px] text-[#333]">מק&quot;ט: {product.sku}</p>
+              <p className="mt-[4px] text-[16px] font-semibold leading-[20px] text-[#333]">מק&quot;ט: {product.sku}</p>
             ) : null}
             <Link prefetch={false}
               href={`/product/${product.slug}`}

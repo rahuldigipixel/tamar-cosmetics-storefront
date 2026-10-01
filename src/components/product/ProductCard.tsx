@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
           {product.onSale && product.salePrice ? (
             <>
               <span className="font-semibold text-brand-accent">{formatPrice(product.salePrice, product.currency)}</span>
-              <span className="text-xs text-black/40 line-through">
+              <span className="text-lg font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">
                 {formatPrice(product.regularPrice, product.currency)}
               </span>
             </>

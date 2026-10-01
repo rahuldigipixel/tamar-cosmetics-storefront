@@ -219,7 +219,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <span className="text-[44px] leading-none font-bold text-brand-accent">
  {formatPrice(product.salePrice, product.currency)}
  </span>
- <span className="text-[18px] text-black/50 line-through">
+ <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">
  {formatPrice(product.regularPrice, product.currency)}
  </span>
  </>

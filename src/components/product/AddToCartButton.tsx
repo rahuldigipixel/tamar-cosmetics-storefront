@@ -8,6 +8,10 @@ const SIZES = {
   xs: { width: "w-fit", padding: "px-2.5 py-1.5", text: "text-sm", icon: "h-3 w-3", gap: "gap-1", showIcon: false, iconOnly: false },
   sm: { width: "w-fit", padding: "p-2.5", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: true },
   // Compact icon-only variant (linked-products slider on the product page).
+  // Linked-products slider stripe: same 36px height as the quantity box and the price block, so they read as one row.
+  stripe: { width: "w-9", padding: "h-9", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
+  // Product-card slider row: 40px, same height as the quantity box and the price block.
+  row: { width: "w-10", padding: "h-10", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
   mini: { width: "w-fit", padding: "p-2", text: "text-sm", icon: "h-3.5 w-3.5", gap: "gap-1", showIcon: true, iconOnly: true },
   // Linked-products slider: full-width text button under the quantity box.
   slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },
@@ -52,7 +56,7 @@ export function AddToCartButton({
           >
             <ShoppingBag className={s.icon} />
           </button>
-          <span className="pointer-events-none absolute -top-9 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
+          <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] leading-[18px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
             אזל מהמלאי
           </span>
         </div>
@@ -103,7 +107,7 @@ export function AddToCartButton({
   return (
     <div className="group/cart relative inline-flex shrink-0">
       {button}
-      <span className="pointer-events-none absolute -top-8 left-5.5 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
+      <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] leading-[18px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
         הוספה לסל
       </span>
     </div>

@@ -13,8 +13,8 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-[40px] w-full border-y border-black/10 bg-brand-soft/40">
-      <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-[15px] gap-y-[30px] px-[15px] py-[45px] md:grid-cols-4">
+    <section className="mt-[20px] w-full border-y border-black/10 bg-brand-soft/40">
+      <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-[15px] gap-y-[20px] px-[15px] py-[40px] md:grid-cols-4">
         {items.map(({ image, title, link }, i) => {
           // Icons are uploaded at 2x — show them at half their pixel size, capped at
           // a 70×60 box since some backends report wrong dimensions

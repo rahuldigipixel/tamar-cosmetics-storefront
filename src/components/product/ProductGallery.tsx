@@ -60,7 +60,7 @@ export function ProductGallery({
   return (
     <div>
       {/* Outer wrapper holds the labels so the image box's overflow-hidden (zoom) doesn't clip their negative offset. */}
-      <div className="relative">
+      <div className="relative isolate">
       <div
         className="relative aspect-square w-full overflow-hidden rounded-lg bg-brand-soft/30"
         onMouseMove={(e) => {
@@ -149,7 +149,7 @@ export function ProductGallery({
       </div>
 
       {images.length > 1 ? (
-        <div className="mt-3 flex gap-2 overflow-x-auto">
+        <div className="mt-3 flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {images.map((image, i) => (
             <button
               key={`${image.id}-${i}`}
@@ -236,7 +236,7 @@ export function ProductGallery({
 
           {images.length > 1 ? (
             <div
-              className="flex justify-center gap-2 overflow-x-auto p-4"
+              className="flex justify-center gap-2 overflow-x-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {images.map((image, i) => (

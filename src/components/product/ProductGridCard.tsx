@@ -35,7 +35,7 @@ export function ProductGridCard({
   return (
     <div
       ref={cardRef}
-      className={`group relative flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
+      className={`group relative isolate flex shrink-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-shadow hover:shadow-lg ${widthClassName}`}
     >
       <Link prefetch={false}
         href={`/product/${product.slug}`}

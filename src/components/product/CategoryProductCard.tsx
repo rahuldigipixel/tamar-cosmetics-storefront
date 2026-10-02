@@ -35,10 +35,10 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   const discount = discountPercent(product);
 
   return (
-    <div className={`group relative flex h-full flex-col bg-white p-[15px] text-right ${standalone ? "shadow-[0_1px_6px_rgba(0,0,0,0.04)]" : "border border-black/[.106] -mt-px -ml-px"}`}>
+    <div className={`group relative isolate flex h-full flex-col bg-white ${standalone ? "p-[10px]" : "p-[15px]"} text-right ${standalone ? "" : "border border-black/[.106] -mt-px -ml-px"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
-      {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card's 15px padding. */}
-      <div className={standalone ? "relative -mx-[15px] -mt-[15px]" : "relative"}>
+      {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
+      <div className={standalone ? "relative -mx-[10px] -mt-[10px]" : "relative"}>
         <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
           {image ? (
             <Image
@@ -91,31 +91,31 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
         {product.name}
       </Link>
 
-      <div className="mt-auto pt-[6px]">
+      <div className="mt-auto pt-[1px]">
         {/* Titles all start on the same line and reserve 2 lines (so 1- and 2-line titles line up); stars + price are pinned to the card bottom. Stars row only renders when there are reviews. */}
-        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mb-[8px] h-[22px]" />
+        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mb-[3px] h-[20px]" />
         {product.type === "simple" ? (
           <div className="flex items-center justify-between gap-1">
             {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
-            <div className="shrink-0">
+            <div className="flex h-10 shrink-0 flex-col justify-between">
               <div className="flex flex-nowrap items-baseline gap-x-[6px] whitespace-nowrap">
                 {product.onSale && product.salePrice ? (
                   <>
-                    <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
-                    <span className="relative text-[15px] font-normal leading-[17px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={13} family="inherit" /></span>
+                    <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.salePrice} symbolSize={18} family="inherit" /></span>
+                    <span className="relative text-[13px] font-normal leading-[15px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={11} family="inherit" /></span>
                   </>
                 ) : (
-                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>
+                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.price} symbolSize={18} family="inherit" /></span>
                 )}
               </div>
               {product.sku ? (
-                <p className="mt-[4px] text-[12px] font-normal leading-[15px] text-[#0c0c0c]">מק&quot;ט: {product.sku}</p>
+                <p className="text-[12px] font-normal leading-[14px] text-[#0c0c0c]">מק&quot;ט: {product.sku}</p>
               ) : null}
             </div>
             {/* Qty + cart on the left (RTL end) */}
             <div className="flex min-w-0 items-center gap-1">
-              <QuantityStepper quantity={quantity} onChange={setQuantity} size="mini" />
-              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="sm" />
+              <QuantityStepper quantity={quantity} onChange={setQuantity} size="row" />
+              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="row" />
             </div>
           </div>
         ) : (
@@ -123,11 +123,11 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             <div className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap">
               {product.onSale && product.salePrice ? (
                 <>
-                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
-                  <span className="relative text-[15px] font-normal leading-[17px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={13} family="inherit" /></span>
+                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.salePrice} symbolSize={18} family="inherit" /></span>
+                  <span className="relative text-[13px] font-normal leading-[15px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={11} family="inherit" /></span>
                 </>
               ) : (
-                <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>
+                <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.price} symbolSize={18} family="inherit" /></span>
               )}
             </div>
             {product.sku ? (

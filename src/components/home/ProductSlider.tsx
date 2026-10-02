@@ -52,16 +52,16 @@ export function ProductSlider({
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        <div className="overflow-clip [overflow-clip-margin:14px]">
+        <div className="overflow-clip [overflow-clip-margin:2px]">
           <div
             ref={trackRef}
-            className="-mx-[12px] -mt-[12px] flex snap-x snap-mandatory gap-[15px] overflow-x-auto px-[12px] pt-[12px] pb-[16px] [scroll-padding-inline:12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {looped.map((product, i) => (
               <div
                 key={`${product.id}-${i}`}
                 ref={(el) => { itemRefs.current[i] = el; }}
-                className="w-[calc((100%-15px)/2)] shrink-0 snap-start self-stretch sm:w-[calc((100%-30px)/3)] lg:w-[calc((100%-60px)/5)]"
+                className="w-1/2 shrink-0 snap-start self-stretch sm:w-1/3 lg:w-1/5 [&:not(:first-child)]:border-s [&:not(:first-child)]:border-black/10"
               >
                 <CategoryProductCard product={product} standalone />
               </div>

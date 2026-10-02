@@ -144,7 +144,7 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
   return (
     <div
       ref={cardRef}
-      className="group relative flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
+      className="group relative isolate flex w-full shrink-0 snap-center flex-col overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/40 shadow-xl backdrop-blur-md transition-[transform,opacity,box-shadow,border-color] duration-300 ease-out sm:w-[calc((100%-0.5rem)/3)] lg:w-[calc((100%-1rem)/5)]"
     >
       <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full bg-brand-accent/5">
         {image ? (

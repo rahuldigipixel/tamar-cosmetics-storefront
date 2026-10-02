@@ -55,6 +55,10 @@ export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
   databaseId
   slug
   name
+  tamarCoupon {
+    code
+    label
+  }
   ... on SimpleProduct {
     sku
     onSale

@@ -44,7 +44,7 @@ function ActionButton({
         onClick={onClick}
         aria-label={label}
         aria-pressed={pressed}
-        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777] max-md:h-[32px] max-md:w-[32px] max-md:rounded-full max-md:shadow-[0_0_4px_rgba(0,0,0,.15)]"
+        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777] max-md:h-[35px] max-md:w-[35px] max-md:rounded-full max-md:shadow-[0_0_4px_rgba(0,0,0,.15)]"
       >
         {children}
       </button>
@@ -69,7 +69,7 @@ export function ProductHoverActions({ product, className = "" }: { product: Prod
 
   return (
     <div
-      className={`absolute z-10 flex flex-col bg-white opacity-0 max-md:bg-transparent max-md:opacity-100 max-md:shadow-none shadow-[0_0_5px_rgba(0,0,0,.15)] transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 ${className}`}
+      className={`absolute z-10 flex flex-col bg-white opacity-0 max-md:bg-transparent max-md:opacity-100 max-md:shadow-none shadow-[1px_1px_1px_rgba(0,0,0,.1)] transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 ${className}`}
     >
       <ActionButton label="מבט מהיר" hideOnMobile onClick={() => openQuickView(product)}>
         <QuickViewIcon />

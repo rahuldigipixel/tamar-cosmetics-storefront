@@ -31,6 +31,8 @@ export interface CategoryPageData {
   brands: Brand[];
   brandSlugsInCategory: Set<string>;
   info: CategoryInfo | null;
+  /** Ancestor categories (incl. empty ones the full list hides) for breadcrumb names. */
+  breadcrumbCategories: { name: string; slug: string }[];
 }
 
 const EMPTY: CategoryPageData = {
@@ -41,6 +43,7 @@ const EMPTY: CategoryPageData = {
   brands: [],
   brandSlugsInCategory: new Set(),
   info: null,
+  breadcrumbCategories: [],
 };
 
 /**
@@ -49,7 +52,17 @@ const EMPTY: CategoryPageData = {
  * queries (listProducts, listCategories, listBrands, listBrandSlugsInCategory)
  * plus the old getCategoryInfo() REST call.
  */
-export async function getCategoryPageData(categorySlug: string, first = 20): Promise<CategoryPageData> {
+export async function getCategoryPageData(
+  categorySlug: string,
+  first = 20,
+  ancestorSlugs: string[] = []
+): Promise<CategoryPageData> {
+  // WP stores non-ASCII slugs percent-encoded in lowercase hex, and the
+  // `slug` where-arg matches the stored form — send both spellings.
+  const ancestorQuery = ancestorSlugs.flatMap((s) => [
+    s,
+    encodeURIComponent(s).replace(/%[0-9A-F]{2}/g, (m) => m.toLowerCase()),
+  ]);
   const data = await fetchGraphQLSafe<{
     categoryInfo: CategoryInfo | null;
     categoryProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
@@ -57,10 +70,11 @@ export async function getCategoryPageData(categorySlug: string, first = 20): Pro
       nodes: { productCategories?: { nodes: { slug: string }[] }; allPaBrand?: { nodes: { slug: string }[] } }[];
     };
     allCategories: { nodes: GqlCategoryNode[] };
+    breadcrumbCategories?: { nodes: { name: string; slug: string }[] };
     allBrands: { nodes: GqlBrandNode[] };
   }>(
     GET_CATEGORY_PAGE_DATA,
-    { category: [categorySlug], categorySlug, first },
+    { category: [categorySlug], categorySlug, first, ancestorSlugs: ancestorQuery.length ? ancestorQuery : ["-"] },
     { tags: ["products", "categories", "brands", `category-info:${categorySlug}`], revalidate: 60 }
   );
 
@@ -104,5 +118,6 @@ export async function getCategoryPageData(categorySlug: string, first = 20): Pro
     brands,
     brandSlugsInCategory,
     info: data.categoryInfo,
+    breadcrumbCategories: data.breadcrumbCategories?.nodes ?? [],
   };
 }

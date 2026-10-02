@@ -29,7 +29,7 @@ export function FaqAccordion({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-[#d5d8dc] text-[16px] text-[#242424]"
+        className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-[#d5d8dc] text-[16px] text-black"
       >
         {open ? <Minus className="h-4 w-4" strokeWidth={3} /> : <Plus className="h-4 w-4" strokeWidth={3} />}
         {title}

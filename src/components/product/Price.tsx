@@ -5,7 +5,7 @@ const PRICE_FONT = '"Open Sans Hebrew", sans-serif';
 
 /**
  * Price with the currency symbol at a fixed size; the amount inherits the parent's font size/weight/colour.
- * `symbolSize` (px) and `family` let a place match its reference measurement (e.g. the linked-products slider: 14px, site font).
+ * `symbolSize` (px, or a CSS length such as "0.85em") and `family` let a place match its reference measurement (e.g. the linked-products slider: 14px, site font).
  */
 export function Price({
   value,
@@ -15,7 +15,7 @@ export function Price({
 }: {
   value: string | number;
   currency?: string;
-  symbolSize?: number;
+  symbolSize?: number | string;
   family?: string;
 }) {
   const text = formatPrice(value, currency);

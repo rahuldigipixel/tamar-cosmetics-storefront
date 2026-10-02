@@ -20,6 +20,9 @@ import "./globals.css";
 const openSans = Open_Sans({
   variable: "--font-open-sans",
   subsets: ["hebrew", "latin"],
+  // Drop next/font's auto-generated "Open Sans Fallback" face so the stack
+  // matches the legacy site: "Open Sans", Arial, Helvetica, sans-serif.
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {

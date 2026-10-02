@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation";
 import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
+import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
 
 export const revalidate = 60;
@@ -43,7 +44,8 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  brands,
  brandSlugsInCategory: brandsInCategorySlugs,
  info,
- } = await getCategoryPageData(activeSlug, 20);
+ breadcrumbCategories,
+ } = await getCategoryPageData(activeSlug, 20, slugPath.slice(0, -1).map(normalizeSlug));
  const banner = info?.banner ?? null;
 
  // Sourced from the same full category list that powers the header's
@@ -78,7 +80,15 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  // Prefer the WordPress-rendered description (paragraphs/line breaks
  // applied, as on the reference); the GraphQL list one is raw text.
  const description = info?.description || category?.description || "";
- const categoryBySlug = new Map(allCategories.map((c) => [normalizeSlug(c.slug), c.name]));
+ // Admin HTML saves one line per row and relies on wpautop() — newlines inside <p> (or plain text) become <br>, as on the brand page.
+ const toBr = (t: string) => t.replace(/\r?\n/g, "<br />");
+ const formatHtml = (raw: string) =>
+ /<p\b/i.test(raw) ? raw.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, toBr) : toBr(raw);
+ const readMoreText = formatHtml(info?.readMore ?? "");
+ const extraDescription = formatHtml(info?.extraDescription ?? "");
+ const categoryBySlug = new Map(
+ [...allCategories, ...breadcrumbCategories].map((c) => [normalizeSlug(c.slug), c.name])
+ );
  const breadcrumbSlugs = slugPath.slice(0, -1).map(normalizeSlug);
 
  return (
@@ -97,7 +107,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  aria-label="breadcrumb"
  className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[8px] text-[12px] leading-[19px] text-[#333]"
  >
- <Link href="/" className="text-[#555] transition-colors hover:text-[#333]">
+ <Link href="/" className="text-[#777] transition-colors hover:text-[#333]">
  עמוד הבית
  </Link>
  {breadcrumbSlugs.map((s, i) => (
@@ -105,9 +115,9 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  <span>/</span>
  <Link
  href={`/product-category/${breadcrumbSlugs.slice(0, i + 1).join("/")}/`}
- className="text-[#555] transition-colors hover:text-[#333]"
+ className="text-[#777] transition-colors hover:text-[#333]"
  >
- {categoryBySlug.get(s) ?? decodeURIComponent(s)}
+ {categoryBySlug.get(s) ?? s.replace(/-/g, " ")}
  </Link>
  </span>
  ))}
@@ -115,17 +125,17 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  <span className="font-semibold text-[#333]">{title}</span>
  </nav>
 
- {description ? (
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[40px]">
+ {/* The description is rendered inside the grid component (as `intro`) so on mobile the filter accordion can sit above it. */}
+ <div className={`mx-auto max-w-[1600px] px-[15px] ${description ? "pt-[15px] md:pt-[40px]" : "pt-[15px] md:pt-[30px]"} pb-0 md:pb-12`}>
+ <CategoryProductGrid
+ intro={
+ description ? (
  <div
- className="text-center text-[18px] leading-[1.6] text-[#0c0c0c] md:text-[21px] md:leading-[33.6px] [&_h1]:text-[26px] [&_h1]:font-bold [&_h2]:text-[24px] [&_h2]:font-bold [&_h3]:text-[22px] [&_h3]:font-semibold [&_h4]:text-[22px] [&_h4]:font-semibold [&_img]:mx-auto [&_p]:mb-[20px] [&_strong]:font-bold"
+ className="text-center text-[16px] leading-[26px] text-[#1f2124] md:text-[21px] md:leading-[33.6px] md:text-[#0c0c0c] [&_h1]:text-[26px] [&_h1]:font-bold [&_h2]:text-[24px] [&_h2]:font-bold [&_h3]:text-[22px] [&_h3]:font-semibold [&_h4]:text-[22px] [&_h4]:font-semibold [&_img]:mx-auto [&_p]:mb-[20px] [&_strong]:font-bold"
  dangerouslySetInnerHTML={{ __html: description }}
  />
- </div>
- ) : null}
-
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[30px] pb-12">
- <CategoryProductGrid
+ ) : null
+ }
  categorySlug={activeSlug}
  initialProducts={products}
  initialHasNextPage={hasNextPage}
@@ -134,6 +144,13 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  brands={brandsInCategory}
  />
  </div>
+ {/* Accordions after the product list, same as the brand page: "קרא עוד" above the FAQ one. */}
+ {readMoreText || extraDescription ? (
+ <div className="mx-auto max-w-[1600px] space-y-[9px] px-[15px] pb-12">
+ {readMoreText ? <FaqAccordion title="קרא עוד" html={readMoreText} contentClassName="text-[16px] leading-[26px] text-[#1f2124]" /> : null}
+ {extraDescription ? <FaqAccordion title="שאלות נפוצות" html={extraDescription} /> : null}
+ </div>
+ ) : null}
  </div>
  );
 }

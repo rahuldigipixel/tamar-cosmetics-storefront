@@ -33,9 +33,22 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   const image = product.images[0];
   const hoverImage = product.images[1];
   const discount = discountPercent(product);
+  // Promoted coupon (wp-admin coupon flagged "show in product") — same strip as the product page, sized like the reference.
+  // Full-width row under the price/cart row (simple products) or under the SKU (variable ones).
+  const couponBar = product.coupon ? (
+    <p className="border border-brand-accent p-[1px] text-center text-[9px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px]">
+      <span dir="rtl">השתמש בקוד</span> <strong className="font-bold">{product.coupon.code}</strong>
+      {product.coupon.label ? (
+        <>
+          <span className="mx-[2px] text-black/40 md:mx-[5px]">|</span>
+          <span dir="ltr">{product.coupon.label}</span>
+        </>
+      ) : null}
+    </p>
+  ) : null;
 
   return (
-    <div className={`group relative isolate flex h-full flex-col bg-white ${standalone ? "p-[10px]" : "p-[15px]"} text-right ${standalone ? "" : "border border-black/[.106] -mt-px -ml-px"}`}>
+    <div className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
       {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
       <div className={standalone ? "relative -mx-[10px] -mt-[10px]" : "relative"}>
@@ -64,7 +77,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
       <ProductLabels html={product.labelsHtml?.label} />
 
       {/* Top-right: discount badge, brand logo under it. */}
-      <div className={`pointer-events-none absolute ${standalone ? "top-[6px] right-[6px]" : "top-[21px] right-[15px]"} flex flex-col gap-[5px] [&>*]:ml-auto`}>
+      <div className={`pointer-events-none absolute ${standalone ? "top-[6px] right-[6px]" : "top-[11px] right-[5px] md:top-[16px] md:right-[10px]"} flex flex-col gap-[5px] [&>*]:ml-auto`}>
         {discount ? (
           <span dir="ltr" className="bg-[#d52027] px-[10px] py-[2px] text-[12px] font-semibold leading-[14.4px] text-white">
             -{discount}%
@@ -76,63 +89,67 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             alt={product.brand ?? ""}
             width={100}
             height={24}
-            className="h-auto max-h-[45px] w-auto max-w-[69px] object-contain object-center opacity-90 md:h-[36px] md:max-h-none md:max-w-[120px] md:object-right md:opacity-100"
+            className="h-auto max-h-[45px] w-auto max-w-[69px] object-contain object-center opacity-90"
           />
         ) : null}
       </div>
 
       {/* Quick view + wishlist — shown on hover. */}
-      <ProductHoverActions product={product} className={standalone ? "top-[11px] left-[6px]" : "top-[26px] left-[6px]"} />
+      <ProductHoverActions product={product} className={standalone ? "top-[11px] left-[6px]" : "top-[11px] left-[11px] md:top-[21px] md:left-[21px]"} />
 
       <Link prefetch={false}
         href={`/product/${product.slug}`}
-        className="mt-[12px] line-clamp-3 min-h-[36px] text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
+        className="mt-[8px] md:mt-[12px] line-clamp-3 md:min-h-[36px] text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
       >
         {product.name}
       </Link>
 
-      <div className="mt-auto pt-[1px]">
+      <div className="pt-[15px] md:mt-auto md:pt-[12px]">
         {/* Titles all start on the same line and reserve 2 lines (so 1- and 2-line titles line up); stars + price are pinned to the card bottom. Stars row only renders when there are reviews. */}
-        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mb-[3px] h-[20px]" />
+        <div className="-mt-[5px] mb-[10px] empty:hidden md:mt-0 md:mb-0"><FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="h-[20px] md:mb-[10px]" /></div>
         {product.type === "simple" ? (
-          <div className="flex items-center justify-between gap-1">
-            {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
-            <div className="flex h-10 shrink-0 flex-col justify-between">
-              <div className="flex flex-nowrap items-baseline gap-x-[6px] whitespace-nowrap">
-                {product.onSale && product.salePrice ? (
-                  <>
-                    <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.salePrice} symbolSize={18} family="inherit" /></span>
-                    <span className="relative text-[13px] font-normal leading-[15px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={11} family="inherit" /></span>
-                  </>
-                ) : (
-                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.price} symbolSize={18} family="inherit" /></span>
-                )}
+          <>
+            <div className="flex items-start justify-between gap-1 md:items-center">
+              {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
+              <div className="flex shrink-0 flex-col gap-[2px] md:gap-[6px]">
+                <div className="flex flex-col items-start gap-y-[2px] whitespace-nowrap md:flex-row md:flex-nowrap md:items-baseline md:gap-x-[6px]">
+                  {product.onSale && product.salePrice ? (
+                    <>
+                      <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
+                      <span className="relative text-[14px] font-light leading-[1.1] text-[#535353] md:text-[16px] md:font-normal md:text-[#444] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize="0.85em" family="inherit" /></span>
+                    </>
+                  ) : (
+                    <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
+                  )}
+                </div>
+                {product.sku ? (
+                  <p className="text-[12px] font-semibold leading-[14px] text-[#333]">מק&quot;ט: {product.sku}</p>
+                ) : null}
               </div>
-              {product.sku ? (
-                <p className="text-[12px] font-normal leading-[14px] text-[#0c0c0c]">מק&quot;ט: {product.sku}</p>
-              ) : null}
-            </div>
-            {/* Qty + cart on the left (RTL end) */}
-            <div className="flex min-w-0 items-center gap-1">
-              <QuantityStepper quantity={quantity} onChange={setQuantity} size="row" />
-              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="row" />
-            </div>
-          </div>
+              {/* Qty + cart on the left (RTL end) */}
+              <div className="flex min-w-0 items-center gap-[2px] md:gap-1">
+                <QuantityStepper quantity={quantity} onChange={setQuantity} size="row" />
+                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="row" />
+              </div>
+              </div>
+            {couponBar ? <div className="mt-[8px]">{couponBar}</div> : null}
+          </>
         ) : (
           <>
-            <div className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap">
+            <div className="flex flex-col items-start gap-y-[2px] whitespace-nowrap md:flex-row md:flex-nowrap md:items-baseline md:gap-x-[8px]">
               {product.onSale && product.salePrice ? (
                 <>
-                  <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.salePrice} symbolSize={18} family="inherit" /></span>
-                  <span className="relative text-[13px] font-normal leading-[15px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={11} family="inherit" /></span>
+                  <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
+                  <span className="relative text-[14px] font-light leading-[1.1] text-[#535353] md:text-[16px] md:font-normal md:text-[#444] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize="0.85em" family="inherit" /></span>
                 </>
               ) : (
-                <span className="text-[22px] font-bold leading-[24px] text-[#d52027]"><Price value={product.price} symbolSize={18} family="inherit" /></span>
+                <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
               )}
             </div>
             {product.sku ? (
-              <p className="mt-[4px] text-[16px] font-semibold leading-[20px] text-[#333]">מק&quot;ט: {product.sku}</p>
+              <p className="mt-[4px] text-[12px] font-semibold leading-[14px] text-[#333]">מק&quot;ט: {product.sku}</p>
             ) : null}
+            {couponBar ? <div className="mt-[8px]">{couponBar}</div> : null}
             <Link prefetch={false}
               href={`/product/${product.slug}`}
               className="mt-[8px] block w-full rounded-full border border-black/10 px-6 py-3 text-center text-sm font-semibold text-black/80 transition-colors hover:border-brand-accent hover:text-brand-accent"

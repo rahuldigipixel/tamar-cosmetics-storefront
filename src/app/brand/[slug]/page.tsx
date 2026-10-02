@@ -67,18 +67,18 @@ export default async function BrandPage({ params }: BrandPageProps) {
  </nav>
 
  {/* The description is the rich-text editor HTML from wp-admin (the logo
- image lives inside it), so no separate thumbnail is rendered. */}
- {description ? (
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[30px]">
+ image lives inside it), so no separate thumbnail is rendered. It is passed to
+ the grid as `intro` so on mobile the filter accordion can sit above it. */}
+ <div className="mx-auto max-w-[1600px] px-[15px] pt-[15px] pb-0 md:pb-12 md:pt-[30px]">
+ <CategoryProductGrid
+ intro={
+ description ? (
  <div
- className="w-full text-center text-[18px] font-normal leading-[1.6] text-[#0c0c0c] md:text-[21px] md:leading-[33.6px] [&_img]:mx-auto [&_img]:inline-block [&_p]:mb-[20px] [&_strong]:font-bold"
+ className="w-full text-center font-normal text-[16px] leading-[26px] text-[#1f2124] md:text-[21px] md:leading-[33.6px] md:text-[#0c0c0c] [&_img]:mx-auto [&_img]:inline-block [&_p]:mb-[20px] [&_strong]:font-bold"
  dangerouslySetInnerHTML={{ __html: description }}
  />
- </div>
- ) : null}
-
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[30px] pb-12">
- <CategoryProductGrid
+ ) : null
+ }
  brandSlug={activeSlug}
  initialProducts={products}
  initialHasNextPage={hasNextPage}

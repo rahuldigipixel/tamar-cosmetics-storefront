@@ -11,10 +11,18 @@ import { PRODUCT_LIST_FIELDS } from "./products";
  * 1 REST call. See getCategoryPageData() in lib/wpgraphql/categoryPage.ts.
  */
 export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
-  query GetCategoryPageData($category: [String], $categorySlug: String!, $first: Int = 20) {
+  query GetCategoryPageData($category: [String], $categorySlug: String!, $first: Int = 20, $ancestorSlugs: [String]) {
+    breadcrumbCategories: productCategories(first: 10, where: { slug: $ancestorSlugs, hideEmpty: false }) {
+      nodes {
+        name
+        slug
+      }
+    }
     categoryInfo: tamarCategoryInfo(slug: $categorySlug) {
       name
       description
+      readMore
+      extraDescription
       banner {
         desktop {
           url

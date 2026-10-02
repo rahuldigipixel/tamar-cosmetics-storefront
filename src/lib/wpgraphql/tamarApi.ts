@@ -163,6 +163,10 @@ export interface CategoryInfo {
   /** null = no such category (the only case the page 404s on). */
   name: string | null;
   description: string;
+  /** "קרא עוד" accordion HTML (term meta category_extra_description_text). */
+  readMore?: string | null;
+  /** FAQ accordion HTML (term meta product_cat_extra_desc). */
+  extraDescription?: string | null;
   banner: CategoryBanner;
 }
 

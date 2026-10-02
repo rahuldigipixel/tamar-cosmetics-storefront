@@ -11,7 +11,7 @@ const SIZES = {
   // Linked-products slider stripe: same 36px height as the quantity box and the price block, so they read as one row.
   stripe: { width: "w-9", padding: "h-9", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
   // Product-card slider row: 40px, same height as the quantity box and the price block.
-  row: { width: "w-10", padding: "h-10", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
+  row: { width: "w-9 md:w-10", padding: "h-9 md:h-10", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
   mini: { width: "w-fit", padding: "p-2", text: "text-sm", icon: "h-3.5 w-3.5", gap: "gap-1", showIcon: true, iconOnly: true },
   // Linked-products slider: full-width text button under the quantity box.
   slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },

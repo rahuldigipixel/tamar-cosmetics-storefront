@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Loader2, X } from "lucide-react";
+import { ChevronDown, Loader2, Minus, Plus, X } from "lucide-react";
 import type { Brand, Product, ProductCategory } from "@/types/product";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
 import { fetchCategoryProducts, type CategorySortOption } from "@/lib/wpgraphql/actions";
@@ -170,9 +170,9 @@ function FilterDropdown({
       >
         <span className="shrink-0">{title}</span>
         {value ? (
-          <span className="min-w-0 truncate rounded-[3px] bg-[#f1f1f1] px-[8px] py-[2px] text-[13px] text-[#333]">{value}</span>
+          <span className="ms-auto min-w-0 truncate rounded-[3px] bg-[#f1f1f1] px-[8px] py-[2px] text-[13px] text-[#333]">{value}</span>
         ) : null}
-        <ChevronDown className={`ms-auto h-4 w-4 shrink-0 text-black/40 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`${value ? "" : "ms-auto"} h-4 w-4 shrink-0 text-black/40 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (
@@ -220,6 +220,7 @@ export function CategoryProductGrid({
   brandSlug,
   search,
   hideFilters = false,
+  intro,
   initialProducts,
   initialHasNextPage,
   initialEndCursor,
@@ -233,6 +234,8 @@ export function CategoryProductGrid({
   search?: string;
   /** Search results show the bare grid — no filter bar. */
   hideFilters?: boolean;
+  /** Description block shown above the filters on desktop, below them (filters first) on mobile. */
+  intro?: ReactNode;
   initialProducts: Product[];
   initialHasNextPage: boolean;
   initialEndCursor: string | null;
@@ -248,6 +251,9 @@ export function CategoryProductGrid({
   const [sort, setSort] = useState<CategorySortOption | "DEFAULT">("DEFAULT");
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [selectedBrand, setSelectedBrand] = useState(ALL_BRANDS_VALUE);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Mobile accordion clips while it animates; once fully open it must not clip the dropdown lists.
+  const [filtersSettled, setFiltersSettled] = useState(false);
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const skipNextRefetch = useRef(true);
@@ -354,11 +360,37 @@ export function CategoryProductGrid({
   }
 
   return (
-    <div>
+    <div className="flex flex-col">
+      {intro ? <div className="mb-[30px] max-md:order-2 max-md:mt-[20px] max-md:mb-0 max-md:[&_p:last-child]:mb-0">{intro}</div> : null}
+
       {/* Horizontal filter bar (reference: WoodMart product filters) —
-          one dropdown per filter across the full width, above the grid. */}
+          one dropdown per filter across the full width, above the grid.
+          On mobile it collapses into a "סינון מוצרים" +/− accordion that sits above the description. */}
       {hideFilters ? null : (
-      <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] md:grid-cols-4">
+      <div className="max-md:order-1">
+      <button
+        type="button"
+        aria-expanded={filtersOpen}
+        onClick={() => {
+          setFiltersSettled(false);
+          setFiltersOpen((v) => !v);
+        }}
+        className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-[8px] rounded-[4px] border border-[#d5d8dc] text-[16px] text-black md:hidden"
+      >
+        {filtersOpen ? <Minus className="h-4 w-4" strokeWidth={3} /> : <Plus className="h-4 w-4" strokeWidth={3} />}
+        סינון מוצרים
+      </button>
+      {/* grid-rows 0fr → 1fr: the filters slide open/closed smoothly on mobile; always open on desktop. */}
+      <div
+        className={`grid transition-[grid-template-rows,visibility] duration-300 ease-in-out md:grid-rows-[1fr] ${
+          filtersOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr] max-md:invisible"
+        }`}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && e.propertyName === "grid-template-rows") setFiltersSettled(filtersOpen);
+        }}
+      >
+      <div className={`min-h-0 md:overflow-visible ${filtersSettled ? "" : "overflow-hidden"}`}>
+      <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] max-md:pt-[15px] md:grid-cols-4">
         <FilterDropdown title="מיין לפי" value={sort !== "DEFAULT" ? SORT_OPTIONS.find((o) => o.value === sort)?.label : undefined}>
           {(close) => (
             <OptionList
@@ -422,9 +454,12 @@ export function CategoryProductGrid({
           </FilterDropdown>
         ) : null}
       </div>
+      </div>
+      </div>
+      </div>
       )}
 
-      <div className={hideFilters ? "" : "mt-[35px]"}>
+      <div className={`max-md:order-3 ${hideFilters ? "" : intro ? "mt-[35px] max-md:mt-[20px]" : "mt-[35px]"}`}>
         {activeChips.length > 0 ? (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             {activeChips.map((chip) => (
@@ -460,7 +495,7 @@ export function CategoryProductGrid({
           // Shared 1px grid lines like the reference: each card draws a full
           // border and overlaps its neighbour by 1px (-mt-px/-ml-px), so the
           // container adds the outer top/left edge back.
-          <div className="grid grid-cols-2 pt-px pl-px md:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 pt-px pl-px max-md:-mx-[10px] md:grid-cols-3 lg:grid-cols-5">
             {products.map((product) => (
               <CategoryProductCard key={product.id} product={product} />
             ))}
@@ -468,7 +503,7 @@ export function CategoryProductGrid({
         )}
 
         {/* Infinite-scroll sentinel + the reference's loading pill. */}
-        <div ref={sentinelRef} className="flex justify-center py-[30px]">
+        <div ref={sentinelRef} className="flex justify-center py-[10px] md:py-[30px]">
           {isPending && products.length > 0 ? (
             <span className="flex h-[44px] items-center gap-[8px] rounded-[35px] border-2 border-black/[.106] px-[25px] text-[13px] font-semibold text-[#333]">
               <Loader2 className="h-4 w-4 animate-spin" />

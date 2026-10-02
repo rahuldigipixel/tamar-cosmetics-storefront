@@ -151,7 +151,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  alt={brandName ?? ""}
  width={140}
  height={70}
- className="h-auto w-auto max-w-[88px] object-contain"
+ className="h-auto w-auto max-h-[45px] max-w-[69px] object-contain object-center opacity-90 md:max-h-none md:max-w-[88px] md:opacity-100"
  />
  ) : null;
  // Logo above the title links to the brand's product list.
@@ -165,15 +165,47 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  )
  ) : null;
 
+ const metaBlock = (
+ <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-[#0c0c0c] md:text-[16px]" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
+ {product.sku ? (
+ <p>
+ <span className="text-[#0c0c0c]">מק&quot;ט:</span> {product.sku}
+ </p>
+ ) : null}
+ {show.barcode && product.barcode ? (
+ <p>
+ <span className="text-[#0c0c0c]">ברקוד:</span> {product.barcode}
+ </p>
+ ) : null}
+ {brandName ? (
+ <p>
+ <span className="text-[#0c0c0c]">מותג:</span> {brandName}
+ {brandTipText ? <> <BrandTip text={brandTipText} /></> : null}
+ </p>
+ ) : null}
+ {attributeLines.map((a) => (
+ <p key={a.id}>
+ <span className="text-[#0c0c0c]">{a.label}:</span> {a.value}
+ </p>
+ ))}
+ </div>
+ );
+
+ const shareBlock = show.share ? (
+ <div className="mt-[15px] border-t border-black/10 pt-[15px] md:mt-[20px]">
+ <QuickViewShare url={productUrl} title={product.name} image={product.images[0]?.src} label="שיתוף:" />
+ </div>
+ ) : null;
+
  return (
  <div>
  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[12px] pb-[25px]">
+ <div className="mx-auto max-w-[1600px] px-[8px] pt-[12px] pb-[25px] md:px-[15px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
- <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_356px] xl:gap-x-[15px]">
- <nav className="flex flex-wrap items-center gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
+ <div className="grid gap-x-[80px] gap-y-[4px] md:gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_356px] xl:gap-x-[15px]">
+ <nav className="hidden flex-wrap items-center md:flex gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>
@@ -201,42 +233,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <span className="font-semibold text-[#333]">{product.name}</span>
  </nav>
 
+ {/* Mobile only: title sits above the gallery (desktop keeps it in the details column). */}
+ <div className="md:hidden">
+ <h1 className="text-right text-[24px] leading-[29px] font-bold text-black">{product.name}</h1>
+ <div className="mt-[6px] [&>*]:!mb-0">{brandLogo}</div>
+ </div>
+
  <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
  <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} />
  </div>
 
- <div className="px-[10px] text-right md:col-start-1 md:row-start-2">
- {brandLogo}
+ <div className="px-0 text-right md:px-[10px] md:col-start-1 md:row-start-2">
+ <div className="hidden md:block">{brandLogo}</div>
 
- <h1 className="text-[24px] leading-[29px] font-bold text-black md:text-[34px] md:leading-[41px] md:font-normal">{product.name}</h1>
+ <h1 className="hidden md:block md:text-[34px] md:leading-[41px] md:font-normal text-black">{product.name}</h1>
 
  <FlashyStarRating rating={product.averageRating} count={product.reviewCount} />
 
  {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
 
- <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-[#0c0c0c] md:text-[16px]" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
- {product.sku ? (
- <p>
- <span className="text-[#0c0c0c]">מק&quot;ט:</span> {product.sku}
- </p>
- ) : null}
- {show.barcode && product.barcode ? (
- <p>
- <span className="text-[#0c0c0c]">ברקוד:</span> {product.barcode}
- </p>
- ) : null}
- {brandName ? (
- <p>
- <span className="text-[#0c0c0c]">מותג:</span> {brandName}
- {brandTipText ? <> <BrandTip text={brandTipText} /></> : null}
- </p>
- ) : null}
- {attributeLines.map((a) => (
- <p key={a.id}>
- <span className="text-[#0c0c0c]">{a.label}:</span> {a.value}
- </p>
- ))}
- </div>
+ <div className="hidden md:block">{metaBlock}</div>
 
  <div className="mt-[25px] flex items-center justify-between gap-4">
  <div className="flex flex-wrap items-baseline gap-x-[12px]">
@@ -261,7 +277,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <ProductPurchasePanel productId={product.databaseId} inStock={product.inStock} />
 
  {show.coupon && product.coupon ? (
- <p className="mt-[22px] border-2 border-brand-accent px-[8px] py-[6px] text-center text-[14px] leading-[22px] text-brand-accent">
+ <p className="mt-[15px] border-2 md:mt-[22px] border-brand-accent px-[8px] py-[5px] text-center text-[14px] leading-[22px] font-normal text-brand-accent">
  <span dir="rtl">השתמש בקוד</span> <strong className="font-bold ">{product.coupon.code}</strong>
  {product.coupon.label ? (
  <>
@@ -282,23 +298,22 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <video controls className="mt-6 w-full rounded-lg" src={product.videoUrl} />
  ) : null}
 
- {show.share ? (
- <div className="mt-[20px] border-t border-black/10 pt-[15px]">
- <QuickViewShare url={productUrl} title={product.name} image={product.images[0]?.src} label="שיתוף:" />
- </div>
- ) : null}
+ <div className="hidden md:block">{shareBlock}</div>
  </div>
 
- {showLinked || showTip || showFeatures ? (
- <div className="md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2 xl:px-[10px]">
+ <div className={`max-md:mt-[11px] md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2 xl:px-[10px] ${showLinked || showTip || showFeatures ? "" : "md:hidden"}`}>
  {/* Without a tip the icons start lower, level with the gallery image. */}
  <div className={showLinked || showTip ? "space-y-[18px]" : ""}>
  {showLinked ? <LinkedProductsSlider products={linkedProducts} /> : null}
  {showTip && product.tamarTip ? <TamarTip text={product.tamarTip} /> : null}
- {showFeatures ? <ProductFeatures features={pageSettings.features} /> : null}
+ {/* Mobile only: SKU / barcode / attributes / share sit between the tip and the feature icons. */}
+ <div className="-mb-[3px] md:hidden">
+ {metaBlock}
+ {shareBlock}
+ </div>
+ {showFeatures ? <div className="hidden md:block"><ProductFeatures features={pageSettings.features} /></div> : null}
  </div>
  </div>
- ) : null}
  </div>
 
  <ProductTabs
@@ -308,17 +323,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  aboutBrand={show.aboutBrandTab ? { html: brandAttribute?.optionDescriptions?.[0] ?? "" } : undefined}
  shippingReturnsHtml={show.shippingTab ? pageSettings.shippingReturns : undefined}
  />
+ {/* Mobile only: feature icons sit after the tabs (desktop keeps them in the right column). */}
+ {showFeatures ? <div className="mt-[15px] md:hidden"><ProductFeatures features={pageSettings.features} /></div> : null}
  </div>
 
  {/* Flashy customer reviews for this product (same widget as /reviews, filtered by data-item-id). */}
- <section className="mx-auto w-full max-w-[1400px] px-4 py-[30px] sm:px-6">
+ <section className="mx-auto w-full max-w-[1400px] px-2 pt-[30px] pb-[8px] sm:px-6 md:py-[30px]">
  <FlashyReviewsWidget itemId={product.databaseId} elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
  </section>
 
  {showStrip ? <ProductIconStrip items={pageSettings.iconStrip} /> : null}
 
  {showSliders ? (
- <div className="space-y-[30px] py-[50px]">
+ <div className="space-y-[10px] py-[15px] md:space-y-[30px] md:py-[50px]">
  {show.complementary ? <FlashyProductWidget kind="complementary" productId={product.databaseId} /> : null}
 
  {show.upsells && upsells.length > 0 ? (

@@ -87,8 +87,8 @@ export function ProductTabs({
   const activeSection = sections[Math.min(active, sections.length - 1)];
 
   return (
-    <div className="mx-auto mt-[80px] w-full max-w-[1380px]">
-      <div role="tablist" className="flex justify-between gap-x-[24px] overflow-x-auto overflow-y-hidden border-b border-[#ddd]">
+    <div className="mx-auto mt-[30px] w-full max-w-[1380px] md:mt-[80px]">
+      <div role="tablist" className={`grid ${sections.length <= 3 || sections.length % 3 === 0 ? "grid-cols-3" : "grid-cols-2"} gap-x-[4px] border-b border-[#ddd] md:flex md:justify-between md:gap-x-[24px] md:overflow-x-auto md:overflow-y-hidden`}>
         {sections.map((section, i) => {
           const isActive = section === activeSection;
           return (
@@ -98,7 +98,7 @@ export function ProductTabs({
               role="tab"
               aria-selected={isActive}
               onClick={() => setActive(i)}
-              className={`-mb-px shrink-0 border-b-[3px] px-[6px] py-[14px] text-[16px] leading-[24px] font-bold whitespace-nowrap transition-colors hover:text-black ${
+              className={`-mb-px justify-self-start border-b-[3px] px-0 py-[8px] text-right md:px-[6px] text-[16px] leading-[24px] font-bold md:shrink-0 md:py-[14px] md:whitespace-nowrap transition-colors hover:text-black ${
                 isActive ? "border-brand-accent text-black" : "border-transparent text-[#777]"
               }`}
             >

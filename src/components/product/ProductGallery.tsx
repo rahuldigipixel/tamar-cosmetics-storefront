@@ -96,7 +96,7 @@ export function ProductGallery({
             alt={brandName ?? ""}
             width={100}
             height={93}
-            className={`pointer-events-none absolute ${discount ? "top-[42px]" : "top-3"} left-[15px] z-10 h-auto max-h-[110px] w-auto max-w-[100px] object-contain object-center opacity-90`}
+            className={`pointer-events-none absolute hidden md:block ${discount ? "top-[42px]" : "top-3"} left-[15px] z-10 h-auto max-h-[110px] w-auto max-w-[100px] object-contain object-center opacity-90`}
           />
         ) : null}
 

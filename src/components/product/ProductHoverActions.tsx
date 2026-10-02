@@ -28,21 +28,23 @@ function ActionButton({
   label,
   onClick,
   pressed,
+  hideOnMobile,
   children,
 }: {
   label: string;
   onClick: () => void;
   pressed?: boolean;
+  hideOnMobile?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="group/action relative">
+    <div className={`group/action relative ${hideOnMobile ? "max-md:hidden" : ""}`}>
       <button
         type="button"
         onClick={onClick}
         aria-label={label}
         aria-pressed={pressed}
-        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777]"
+        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777] max-md:h-[32px] max-md:w-[32px] max-md:rounded-full max-md:shadow-[0_0_4px_rgba(0,0,0,.15)]"
       >
         {children}
       </button>
@@ -67,9 +69,9 @@ export function ProductHoverActions({ product, className = "" }: { product: Prod
 
   return (
     <div
-      className={`absolute z-10 flex flex-col bg-white opacity-0 shadow-[0_0_5px_rgba(0,0,0,.15)] transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 ${className}`}
+      className={`absolute z-10 flex flex-col bg-white opacity-0 max-md:bg-transparent max-md:opacity-100 max-md:shadow-none shadow-[0_0_5px_rgba(0,0,0,.15)] transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 ${className}`}
     >
-      <ActionButton label="מבט מהיר" onClick={() => openQuickView(product)}>
+      <ActionButton label="מבט מהיר" hideOnMobile onClick={() => openQuickView(product)}>
         <QuickViewIcon />
       </ActionButton>
       <ActionButton
@@ -77,7 +79,7 @@ export function ProductHoverActions({ product, className = "" }: { product: Prod
         pressed={inWishlist}
         onClick={() => toggleWishlist(product.databaseId)}
       >
-        <Heart className={`h-[20px] w-[20px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
+        <Heart className={`h-[20px] w-[20px] max-md:h-[16px] max-md:w-[16px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
       </ActionButton>
     </div>
   );

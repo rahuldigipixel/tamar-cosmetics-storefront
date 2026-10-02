@@ -658,7 +658,7 @@ export function Header({
                 at 900 resolves to Arial Black (no Hebrew glyphs) and renders
                 garbled — 17px bold reproduces the reference's on-screen
                 size exactly (182×42 / 140×42 pills). */}
-            <div className="flex gap-[75px] px-[40px] pt-[20px] pb-[40px]">
+            <div className="flex gap-[40px] px-[30px] pt-[20px] pb-[40px]">
               <div className="min-w-0 flex-1">
                 <p className="mb-[10px] text-center text-[28px] font-light leading-[30px] text-black">
                   {decodeHtml(panelItem.featuredTitle || panelItem.label)}
@@ -682,7 +682,7 @@ export function Header({
                   className={`grid ${
                     imagesMode
                       ? "grid-cols-7 gap-x-[15px] gap-y-[20px] pt-[20px]"
-                      : `gap-x-[40px] gap-y-[40px] pt-[54px] ${panelFeature ? "grid-cols-3" : "grid-cols-5"}`
+                      : `gap-x-[24px] gap-y-[18px] pt-[40px] ${panelFeature ? "grid-cols-4" : "grid-cols-5"}`
                   }`}
                 >
                   {panelLinkChildren.map((child) =>

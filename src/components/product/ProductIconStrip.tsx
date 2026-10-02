@@ -13,8 +13,8 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-[20px] w-full border-y border-black/10 bg-brand-soft/40">
-      <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-[15px] gap-y-[20px] px-[15px] py-[40px] md:grid-cols-4">
+    <section className="mt-0 w-full md:mt-[20px] border-y border-black/10 bg-brand-soft/40">
+      <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-[8px] gap-y-[12px] px-[8px] py-[16px] md:gap-x-[15px] md:gap-y-[20px] md:px-[15px] md:py-[40px] md:grid-cols-4 max-md:[&_img]:!h-auto max-md:[&_img]:!w-[44px]">
         {items.map(({ image, title, link }, i) => {
           // Icons are uploaded at 2x — show them at half their pixel size, capped at
           // a 70×60 box since some backends report wrong dimensions
@@ -23,6 +23,7 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
           const content = (
             <>
               {image ? (
+                <span className="flex items-center justify-center max-md:h-[50px] md:contents">
                 <Image
                   src={image.url}
                   alt={image.alt || title}
@@ -31,11 +32,12 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
                   style={{ width: (image.width / 2) * scale, height: (image.height / 2) * scale }}
                   className="max-w-full shrink-0 object-contain"
                 />
+                </span>
               ) : null}
-              {title ? <span className="text-[16px] leading-[21px] text-black" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>{title}</span> : null}
+              {title ? <span className="text-[15px] leading-[19px] text-black md:text-[16px] md:leading-[21px]" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>{title}</span> : null}
             </>
           );
-          const cls = "flex flex-col items-center gap-[14px] text-center";
+          const cls = "flex h-full flex-col items-center gap-[8px] text-center md:gap-[14px]";
           return (
             <li key={`${title}-${i}`}>
               {link ? (

@@ -27,7 +27,7 @@ export function ProductSlider({
   if (products.length === 0) return null;
 
   return (
-    <section className={`mx-auto max-w-[1600px] px-[15px] ${compact ? "py-[25px]" : "py-[70px]"}`}>
+    <section className={`mx-auto max-w-[1600px] px-[15px] ${compact ? "py-[12px] md:py-[25px]" : "py-[70px]"}`}>
       {/* Centered heading */}
       <div className="mb-7 text-center">
         <h2
@@ -47,7 +47,7 @@ export function ProductSlider({
         <button
           onClick={() => step(-1)}
           aria-label="הקודם"
-          className="absolute -start-13 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -start-13 max-md:-start-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -61,7 +61,7 @@ export function ProductSlider({
               <div
                 key={`${product.id}-${i}`}
                 ref={(el) => { itemRefs.current[i] = el; }}
-                className="w-1/2 shrink-0 snap-start self-stretch sm:w-1/3 lg:w-1/5 [&:not(:first-child)]:border-s [&:not(:first-child)]:border-black/10"
+                className={`${compact ? "w-full" : "w-1/2"} shrink-0 snap-start self-stretch sm:w-1/3 lg:w-1/5 [&:not(:first-child)]:border-s [&:not(:first-child)]:border-black/10 max-sm:[&:not(:first-child)]:border-s-0`}
               >
                 <CategoryProductCard product={product} standalone />
               </div>
@@ -72,7 +72,7 @@ export function ProductSlider({
         <button
           onClick={() => step(1)}
           aria-label="הבא"
-          className="absolute -end-13 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+          className="absolute -end-13 max-md:-end-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>

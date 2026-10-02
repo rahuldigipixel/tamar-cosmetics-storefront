@@ -76,7 +76,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             alt={product.brand ?? ""}
             width={100}
             height={24}
-            className="h-[36px] w-auto max-w-[120px] object-contain object-right"
+            className="h-auto max-h-[45px] w-auto max-w-[69px] object-contain object-center opacity-90 md:h-[36px] md:max-h-none md:max-w-[120px] md:object-right md:opacity-100"
           />
         ) : null}
       </div>

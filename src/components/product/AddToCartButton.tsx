@@ -17,7 +17,7 @@ const SIZES = {
   slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },
   md: { width: "w-full", padding: "px-6 py-3", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: false },
   // Single product page: legacy-site sizing (arbitrary px on purpose — approved exception to the 18px floor).
-  lg: { width: "w-full", padding: "px-4 h-[40px]", text: "text-[18px]", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },
+  lg: { width: "w-full", padding: "px-2 sm:px-4 h-[40px] whitespace-nowrap", text: "text-[18px] leading-[22px] font-light sm:font-semibold", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },
 } as const;
 
 const PRIMARY_STYLE =
@@ -87,7 +87,7 @@ export function AddToCartButton({
       onClick={handleClick}
       disabled={submitting}
       aria-label={s.iconOnly ? "הוספה לסל" : undefined}
-      className={`flex ${s.width} shrink-0 items-center justify-center ${s.gap} rounded-full ${variant === "soft" ? SOFT_STYLE : PRIMARY_STYLE} ${s.padding} ${s.text} font-semibold transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0`}
+      className={`flex ${s.width} shrink-0 items-center justify-center ${s.gap} rounded-full ${variant === "soft" ? SOFT_STYLE : PRIMARY_STYLE} ${s.padding} ${s.text} ${size === "lg" ? "" : "font-semibold"} transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0`}
     >
       {submitting ? (
         <Loader2 className={`${s.icon} animate-spin`} />

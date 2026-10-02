@@ -10,7 +10,9 @@ import { formatPrice } from "@/lib/utils/formatPrice";
 import { Price } from "@/components/product/Price";
 import type { SliderProduct } from "@/types/product";
 
+// Rows shown per step: 2 on desktop, 1 on mobile.
 const VISIBLE = 2;
+const VISIBLE_MOBILE = 1;
 // Space under each product row (inside the row's own box, so scrolling stays on exact row boundaries).
 const ROW_GAP = 28;
 // First-paint window height until the real rows are measured (legacy-site sizing, approved product-page exception to the 18px floor).
@@ -47,12 +49,12 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         </Link>
       ) : null}
       <div className="min-w-0 flex-1">
-        <Link href={href} className="line-clamp-2 text-[15px] leading-[16px] text-[#000] hover:text-brand-accent">
+        <Link href={href} className="line-clamp-2 text-[14px] leading-[16px] text-[#000] hover:text-brand-accent mb-2">
           {product.name}
         </Link>
         <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mt-[4px]" />
 
-        <div className="mt-[8px] flex items-center justify-between gap-[6px]">
+        <div className="mt-[10px] flex items-center justify-between gap-[6px]">
           {/* RTL: price + SKU on the right, cart controls on the left. */}
           <div className="flex h-9 shrink-0 flex-col justify-between">
             <p className="flex items-baseline gap-[6px] whitespace-nowrap">
@@ -83,7 +85,8 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
 export function LinkedProductsSlider({ products }: { products: SliderProduct[] }) {
   const viewport = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const scrollable = products.length > VISIBLE;
+  const [visible, setVisible] = useState(VISIBLE);
+  const scrollable = products.length > visible;
   // Rows keep their natural height (title lines / reviews / button differ per product) so there is no dead space inside a row.
   // setHeight = one full copy of the list; viewHeight = exactly the two rows currently shown, so no third product ever peeks in.
   const [setHeight, setSetHeight] = useState(0);
@@ -95,7 +98,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   const offsetsOf = (rows: HTMLElement[]) => rows.map((r) => r.offsetTop - rows[0].offsetTop);
   /** Height of the window that shows rows idx .. idx + VISIBLE - 1 (minus the trailing gap). */
   function windowFor(rows: HTMLElement[], offsets: number[], idx: number) {
-    const last = Math.min(idx + Math.min(VISIBLE, products.length), rows.length) - 1;
+    const last = Math.min(idx + Math.min(visible, products.length), rows.length) - 1;
     return offsets[last] + rows[last].offsetHeight - offsets[idx] - ROW_GAP;
   }
   function nearest(offsets: number[], y: number) {
@@ -105,6 +108,14 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     });
     return idx;
   }
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setVisible(mq.matches ? VISIBLE_MOBILE : VISIBLE);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   useLayoutEffect(() => {
     function measure() {
@@ -122,7 +133,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products]);
+  }, [products, visible]);
 
   // Start on the second copy so there is content both above and below (re-anchored if the measurements change).
   useLayoutEffect(() => {
@@ -138,7 +149,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     // Land on a row boundary even if clicks arrive mid-animation, and resize the window to the pair it lands on.
     const rows = rowEls();
     const offsets = offsetsOf(rows);
-    const next = Math.min(Math.max(nearest(offsets, el.scrollTop) + dir * VISIBLE, 0), rows.length - 1);
+    const next = Math.min(Math.max(nearest(offsets, el.scrollTop) + dir * visible, 0), rows.length - 1);
     setViewHeight(windowFor(rows, offsets, next));
     el.scrollTo({ top: offsets[next], behavior: "smooth" });
   }
@@ -148,7 +159,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   const copies = scrollable ? COPIES : 1;
 
   return (
-    <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[10px] pb-[12px] text-right md:mx-0" aria-label="מוצרים קשורים">
+    <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[10px] pb-[12px] text-right max-md:max-w-none md:mx-0" aria-label="מוצרים קשורים">
       <h2 className="text-center text-[21px] leading-[34px] font-semibold text-[#d52027]">מוצרים קשורים</h2>
 
       {scrollable ? (
@@ -157,7 +168,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
         </button>
       ) : null}
 
-      <div ref={viewport} className="mt-[8px] mb-[2px] overflow-hidden transition-[height] duration-300 ease-out" style={{ height: viewHeight }}>
+      <div ref={viewport} className="my-[10px] overflow-hidden transition-[height] duration-300 ease-out" style={{ height: viewHeight }}>
         <ul ref={listRef}>
           {Array.from({ length: copies }, (_, c) =>
             products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} />)

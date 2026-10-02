@@ -15,6 +15,7 @@ export function ProductGallery({
   brandName,
   brandLogoUrl,
   labelsHtml,
+  discount,
 }: {
   images: ProductImage[];
   name: string;
@@ -22,6 +23,8 @@ export function ProductGallery({
   brandLogoUrl?: string;
   /** Rendered Advanced Product Labels for the image (Product.labelsHtml.image). */
   labelsHtml?: string;
+  /** Sale discount percentage, shown as a red badge in the top-left corner above the brand logo. */
+  discount?: number | null;
 }) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
@@ -81,13 +84,19 @@ export function ProductGallery({
           />
         ) : null}
 
+        {discount ? (
+          <span dir="ltr" className="pointer-events-none absolute top-[15px] left-[15px] z-20 bg-[#d52027] px-[8px] text-[12px] leading-[17px] font-bold text-white">
+            -{discount}%
+          </span>
+        ) : null}
+
         {brandLogoUrl ? (
           <Image
             src={brandLogoUrl}
             alt={brandName ?? ""}
             width={100}
             height={93}
-            className="pointer-events-none absolute top-3 left-3 z-10 h-auto max-h-[110px] w-auto max-w-[100px] object-contain object-center opacity-90"
+            className={`pointer-events-none absolute ${discount ? "top-[42px]" : "top-3"} left-[15px] z-10 h-auto max-h-[110px] w-auto max-w-[100px] object-contain object-center opacity-90`}
           />
         ) : null}
 

@@ -11,8 +11,10 @@ import { Price } from "@/components/product/Price";
 import type { SliderProduct } from "@/types/product";
 
 const VISIBLE = 2;
-// Fixed row height so a click moves exactly two products (legacy-site sizing, approved product-page exception to the 18px floor).
-const ROW_HEIGHT = 140;
+// Space between two products. Rows are all measured to the tallest one, so every step moves exactly VISIBLE equal rows.
+const ROW_GAP = 18;
+// First-paint row height until the real one is measured (legacy-site sizing, approved product-page exception to the 18px floor).
+const ROW_FALLBACK = 140;
 // The list is rendered 4× so a 2-row step from anywhere in the second copy never runs off the end.
 const COPIES = 4;
 
@@ -32,13 +34,13 @@ function SliderQuantity({ quantity, onChange }: { quantity: number; onChange: (n
   );
 }
 
-function LinkedProductRow({ product }: { product: SliderProduct }) {
+function LinkedProductRow({ product, rowHeight }: { product: SliderProduct; rowHeight: number }) {
   const [quantity, setQuantity] = useState(1);
   const href = `/product/${product.slug}`;
   const price = product.onSale && product.salePrice ? product.salePrice : product.price;
 
   return (
-    <li className="flex items-start gap-[10px] pt-[4px] pb-[16px] text-right" style={{ height: ROW_HEIGHT }}>
+    <li data-row className="flex items-start gap-[10px] text-right" style={{ height: rowHeight, paddingBottom: ROW_GAP }}>
       {product.image ? (
         <Link href={href} className="shrink-0" aria-label={product.name}>
           <Image src={product.image.url} alt={product.image.alt || product.name} width={80} height={80} className="h-[70px] w-[70px] object-contain" />
@@ -80,10 +82,28 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
 /** "מוצרים קשורים" — endless vertical slider (2 products per step) of the products picked in the product edit screen, shown above the Tamar tip. */
 export function LinkedProductsSlider({ products }: { products: SliderProduct[] }) {
   const viewport = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const scrollable = products.length > VISIBLE;
-  const setHeight = products.length * ROW_HEIGHT;
+  const [rowHeight, setRowHeight] = useState(ROW_FALLBACK);
+  const setHeight = products.length * rowHeight;
 
-  // Start on the second copy so there is content both above and below.
+  // Measure the tallest row (title lines, price lines and the button vary per product) and give every row that height.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    function measure() {
+      const rows = Array.from(list!.querySelectorAll<HTMLElement>("[data-row]"));
+      rows.forEach((r) => (r.style.height = "auto"));
+      const tallest = Math.max(...rows.map((r) => r.offsetHeight));
+      rows.forEach((r) => (r.style.height = ""));
+      if (tallest > 0) setRowHeight(tallest);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [products]);
+
+  // Start on the second copy so there is content both above and below (re-anchored if the row height changes).
   useLayoutEffect(() => {
     if (scrollable && viewport.current) viewport.current.scrollTop = setHeight;
   }, [scrollable, setHeight]);
@@ -94,7 +114,9 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     // Copies are identical, so snapping back into the second one is invisible — that is what makes the loop endless.
     if (el.scrollTop < setHeight) el.scrollTop += setHeight;
     else if (el.scrollTop >= setHeight * 2) el.scrollTop -= setHeight;
-    el.scrollBy({ top: dir * VISIBLE * ROW_HEIGHT, behavior: "smooth" });
+    // Land on a row boundary even if clicks arrive mid-animation.
+    const target = (Math.round(el.scrollTop / rowHeight) + dir * VISIBLE) * rowHeight;
+    el.scrollTo({ top: target, behavior: "smooth" });
   }
 
   // Same box + icon size for the top and bottom arrows.
@@ -111,10 +133,10 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
         </button>
       ) : null}
 
-      <div ref={viewport} className="mt-[8px] mb-[8px] overflow-hidden" style={{ height: ROW_HEIGHT * Math.min(VISIBLE, products.length) }}>
-        <ul>
+      <div ref={viewport} className="mt-[8px] mb-[2px] overflow-hidden" style={{ height: rowHeight * Math.min(VISIBLE, products.length) - ROW_GAP }}>
+        <ul ref={listRef}>
           {Array.from({ length: copies }, (_, c) =>
-            products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} />)
+            products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} rowHeight={rowHeight} />)
           )}
         </ul>
       </div>

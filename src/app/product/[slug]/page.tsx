@@ -140,6 +140,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const brandSlug = brandAttribute?.optionSlugs?.[0] || undefined;
  // pa_term_hint of the brand term → "?" tooltip next to the brand; hidden when empty.
  const brandTipText = show.brandTip ? brandAttribute?.optionHints?.[0]?.trim() || undefined : undefined;
+ const regularNum = Number(product.regularPrice);
+ const saleNum = Number(product.salePrice);
+ const discount = product.onSale && regularNum > 0 && saleNum > 0 && saleNum < regularNum ? Math.round(((regularNum - saleNum) / regularNum) * 100) : null;
  const brandLogoUrl = brandAttribute?.optionNames?.length ? (brandAttribute.optionImages?.[0] ?? undefined) : product.brandLogoUrl;
 
  const brandLogoImage = brandLogoUrl ? (
@@ -148,7 +151,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  alt={brandName ?? ""}
  width={140}
  height={70}
- className="h-[70px] w-auto max-w-[140px] object-contain object-right"
+ className="h-auto w-auto max-w-[88px] object-contain"
  />
  ) : null;
  // Logo above the title links to the brand's product list.
@@ -199,7 +202,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </nav>
 
  <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
- <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} />
+ <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} />
  </div>
 
  <div className="px-[10px] text-right md:col-start-1 md:row-start-2">
@@ -242,8 +245,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <span className="text-[38px] leading-none font-bold text-brand-accent md:text-[48px]">
  <Price value={product.salePrice} currency={product.currency} />
  </span>
- <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">
- {formatPrice(product.regularPrice, product.currency)}
+ <span className="relative text-[30px] font-light leading-[30px] text-[#414141] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#414141] after:content-[''] [unicode-bidi:isolate]">
+ <Price value={product.regularPrice} currency={product.currency} symbolSize={26} />
  </span>
  </>
  ) : (

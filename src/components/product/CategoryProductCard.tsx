@@ -9,7 +9,6 @@ import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
-import { formatPrice } from "@/lib/utils/formatPrice";
 import { Price } from "@/components/product/Price";
 
 function discountPercent(product: Product): number | null {
@@ -36,9 +35,10 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   const discount = discountPercent(product);
 
   return (
-    <div className={`group relative flex h-full flex-col border border-black/[.106] bg-white p-[15px] text-right${standalone ? "" : " -mt-px -ml-px"}`}>
+    <div className={`group relative flex h-full flex-col bg-white p-[15px] text-right ${standalone ? "shadow-[0_1px_6px_rgba(0,0,0,0.04)]" : "border border-black/[.106] -mt-px -ml-px"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
-      <div className="relative">
+      {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card's 15px padding. */}
+      <div className={standalone ? "relative -mx-[15px] -mt-[15px]" : "relative"}>
         <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
           {image ? (
             <Image
@@ -55,7 +55,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
               alt={hoverImage.alt || product.name}
               fill
               sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
-              className="object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              className="bg-white object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             />
           ) : null}
         </Link>
@@ -64,7 +64,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
       <ProductLabels html={product.labelsHtml?.label} />
 
       {/* Top-right: discount badge, brand logo under it. */}
-      <div className="pointer-events-none absolute top-[21px] right-[15px] flex flex-col items-end gap-[5px]">
+      <div className={`pointer-events-none absolute ${standalone ? "top-[6px] right-[6px]" : "top-[21px] right-[15px]"} flex flex-col gap-[5px] [&>*]:ml-auto`}>
         {discount ? (
           <span dir="ltr" className="bg-[#d52027] px-[10px] py-[2px] text-[12px] font-semibold leading-[14.4px] text-white">
             -{discount}%
@@ -76,23 +76,23 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             alt={product.brand ?? ""}
             width={100}
             height={24}
-            className="h-[36px] w-auto max-w-[120px] object-contain"
+            className="h-[36px] w-auto max-w-[120px] object-contain object-right"
           />
         ) : null}
       </div>
 
       {/* Quick view + wishlist — shown on hover. */}
-      <ProductHoverActions product={product} className="top-[26px] left-[6px]" />
+      <ProductHoverActions product={product} className={standalone ? "top-[11px] left-[6px]" : "top-[26px] left-[6px]"} />
 
       <Link prefetch={false}
         href={`/product/${product.slug}`}
-        className="mt-[4px] line-clamp-3 text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
+        className="mt-[12px] line-clamp-3 min-h-[36px] text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
       >
         {product.name}
       </Link>
 
       <div className="mt-auto pt-[6px]">
-        {/* Always reserve the stars row height so all cards align regardless of whether a product has reviews */}
+        {/* Titles all start on the same line and reserve 2 lines (so 1- and 2-line titles line up); stars + price are pinned to the card bottom. Stars row only renders when there are reviews. */}
         <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mb-[8px] h-[22px]" />
         {product.type === "simple" ? (
           <div className="flex items-center justify-between gap-1">
@@ -102,7 +102,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
                 {product.onSale && product.salePrice ? (
                   <>
                     <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
-                    <span className="text-[13px] font-light leading-[14px] text-[#535353] line-through decoration-1 decoration-[#535353] [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                    <span className="relative text-[15px] font-normal leading-[17px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={13} family="inherit" /></span>
                   </>
                 ) : (
                   <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>
@@ -124,7 +124,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
               {product.onSale && product.salePrice ? (
                 <>
                   <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
-                  <span className="text-[13px] font-light leading-[14px] text-[#535353] line-through decoration-1 decoration-[#535353] [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                  <span className="relative text-[15px] font-normal leading-[17px] text-[#535353] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize={13} family="inherit" /></span>
                 </>
               ) : (
                 <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>

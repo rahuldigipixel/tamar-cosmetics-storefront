@@ -52,10 +52,10 @@ export function ProductSlider({
           <ChevronRight className="h-4 w-4" />
         </button>
 
-        <div className="overflow-clip [overflow-clip-margin:2px]">
+        <div className="overflow-clip [overflow-clip-margin:14px]">
           <div
             ref={trackRef}
-            className="flex snap-x snap-mandatory gap-[15px] overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="-mx-[12px] -mt-[12px] flex snap-x snap-mandatory gap-[15px] overflow-x-auto px-[12px] pt-[12px] pb-[16px] [scroll-padding-inline:12px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {looped.map((product, i) => (
               <div

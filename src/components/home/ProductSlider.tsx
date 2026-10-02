@@ -11,6 +11,8 @@ export function ProductSlider({
   products,
   autoplayMs,
   compact = false,
+  sectionPadding = "pb-0 pt-[50px] md:py-[60px]",
+  singleOnMobile = false,
 }: {
   badge?: string;
   badgeIcon?: React.ReactNode;
@@ -21,25 +23,29 @@ export function ProductSlider({
   autoplayMs?: number;
   /** Product-page rails: heading sized like Flashy's own widget heading, tighter padding. */
   compact?: boolean;
+  /** Vertical padding of the (non-compact) section. */
+  sectionPadding?: string;
+  /** Show one product per slide on mobile (default is two). */
+  singleOnMobile?: boolean;
 }) {
   const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({ items: products, autoplayMs });
 
   if (products.length === 0) return null;
 
   return (
-    <section className={`mx-auto max-w-[1600px] px-[15px] ${compact ? "py-[12px] md:py-[25px]" : "py-[70px]"}`}>
+    <section className={`mx-auto max-w-[1600px] px-[15px] ${compact ? "py-[12px] md:py-[25px]" : sectionPadding}`}>
       {/* Centered heading */}
-      <div className="mb-7 text-center">
+      <div className={`text-center ${compact ? "mb-7" : "mb-5"}`}>
         <h2
           className={
             compact
               ? "text-[26px] leading-[1.3] font-bold text-[#000]"
-              : "text-[72px] font-black leading-none tracking-tight text-[#000] sm:text-[72px]"
+              : "text-[38px] font-extrabold leading-[38px] tracking-tight text-[#000] md:text-[72px] md:leading-[60px]"
           }
         >
           {title}
         </h2>
-        {description ? <p className="mt-3 text-[23px] text-black/100">{description}</p> : null}
+        {description ? <p className={`${compact ? "text-[23px] leading-[37px]" : "text-[18px] leading-[18px] md:text-[23px] md:leading-[37px]"} font-normal text-black ${compact ? "mt-3" : "mt-5"}`}>{description}</p> : null}
       </div>
 
       {/* Slider with arrows on left/right sides */}
@@ -61,9 +67,9 @@ export function ProductSlider({
               <div
                 key={`${product.id}-${i}`}
                 ref={(el) => { itemRefs.current[i] = el; }}
-                className={`${compact ? "w-full" : "w-1/2"} shrink-0 snap-start self-stretch sm:w-1/3 lg:w-1/5 [&:not(:first-child)]:border-s [&:not(:first-child)]:border-black/10 max-sm:[&:not(:first-child)]:border-s-0`}
+                className={`${compact || singleOnMobile ? "w-full" : "w-1/2"} shrink-0 snap-start self-stretch sm:w-1/3 lg:w-1/5 [&:not(:first-child)]:border-s [&:not(:first-child)]:border-black/10 max-sm:[&:not(:first-child)]:border-s-0`}
               >
-                <CategoryProductCard product={product} standalone />
+                <CategoryProductCard product={product} standalone wideMobile={compact || singleOnMobile} />
               </div>
             ))}
           </div>

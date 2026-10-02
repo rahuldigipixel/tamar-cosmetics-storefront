@@ -1,6 +1,6 @@
 /**
  * Only what a product card renders (ProductGridCard / ProductCard /
- * SaleShowcase / SaleProductSlider) — list views are 20-60 products per
+ * SaleShowcase) — list views are 20-60 products per
  * page and every node is also serialized into the RSC payload, so
  * description/attributes/variations here used to cost MBs of HTML for
  * fields no card reads. `__typename` gives simple-vs-variable without
@@ -55,9 +55,12 @@ export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
   databaseId
   slug
   name
-  tamarCoupon {
-    code
-    label
+  # related/upsell nodes are a ProductUnion, so the field needs a type condition.
+  ... on Product {
+    tamarCoupon {
+      code
+      label
+    }
   }
   ... on SimpleProduct {
     sku

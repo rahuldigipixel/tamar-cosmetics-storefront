@@ -49,7 +49,7 @@ export function BrandSlider({ brands, heading }: { brands: Brand[]; heading?: st
   const doubled = [...brands, ...brands];
 
   return (
-    <section className="mx-auto max-w-[1500px] px-[15px] py-[70px]">
+    <section className="mx-auto max-w-[1500px] px-[15px] pb-0 pt-[50px] sm:pb-0 sm:pt-[70px]">
       {heading ? (
         <h2 className="mb-8 text-center text-[28px] font-bold text-[#242424] sm:text-[36px]">{heading}</h2>
       ) : null}
@@ -72,7 +72,7 @@ export function BrandSlider({ brands, heading }: { brands: Brand[]; heading?: st
                   alt={brand.name}
                   width={140}
                   height={64}
-                  className="h-full w-full object-contain"
+                  className="h-full w-full object-contain object-center max-md:h-auto max-md:max-h-[45px] max-md:w-auto max-md:max-w-[69px] max-md:opacity-90"
                 />
               ) : (
                 <span className="text-center text-lg font-bold text-black/50">{brand.name}</span>

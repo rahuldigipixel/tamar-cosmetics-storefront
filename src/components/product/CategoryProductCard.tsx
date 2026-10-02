@@ -28,15 +28,37 @@ function discountPercent(product: Product): number | null {
  * a 12px SKU line, then the site's existing quantity stepper + add-to-cart
  * button (unchanged design).
  */
-export function CategoryProductCard({ product, standalone = false }: { product: Product; standalone?: boolean }) {
+export function CategoryProductCard({
+  product,
+  standalone = false,
+  wideMobile = false,
+}: {
+  product: Product;
+  standalone?: boolean;
+  /** One-card-per-row on mobile (SALE / related sliders): 24px price with the struck-through price on the same line. */
+  wideMobile?: boolean;
+}) {
   const [quantity, setQuantity] = useState(1);
+  const priceCls = wideMobile
+    ? "text-[24px] font-bold leading-[26px] text-[#d52027]"
+    : "text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px] md:leading-[26px]";
+  const regularCls = `relative ${
+    wideMobile
+      ? "text-[15px] font-light leading-[17px] text-[#535353]"
+      : "text-[16px] font-normal leading-[1.1] text-[#444] md:text-[15px] md:font-light md:leading-[17px] md:text-[#535353]"
+  } after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/50 after:content-[''] [unicode-bidi:isolate]`;
+  const rowCls = (gap: string) =>
+    // wideMobile: one row (sale price right, struck-through price beside it), bottom-aligned; otherwise stacked on mobile.
+    wideMobile
+      ? "flex flex-row flex-nowrap items-end gap-x-[12px] whitespace-nowrap"
+      : `flex flex-col items-start gap-y-[2px] whitespace-nowrap md:flex-row md:flex-nowrap md:items-baseline ${gap}`;
   const image = product.images[0];
   const hoverImage = product.images[1];
   const discount = discountPercent(product);
   // Promoted coupon (wp-admin coupon flagged "show in product") — same strip as the product page, sized like the reference.
   // Full-width row under the price/cart row (simple products) or under the SKU (variable ones).
   const couponBar = product.coupon ? (
-    <p className="border border-brand-accent p-[1px] text-center text-[9px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px]">
+    <p className="border border-brand-accent p-[2px] text-center text-[11px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px]">
       <span dir="rtl">השתמש בקוד</span> <strong className="font-bold">{product.coupon.code}</strong>
       {product.coupon.label ? (
         <>
@@ -48,7 +70,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   ) : null;
 
   return (
-    <div className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
+    <div className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${wideMobile ? "max-md:pb-[15px] " : ""}${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
       {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
       <div className={standalone ? "relative -mx-[10px] -mt-[10px]" : "relative"}>
@@ -111,15 +133,15 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
           <>
             <div className="flex items-start justify-between gap-1 md:items-center">
               {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
-              <div className="flex shrink-0 flex-col gap-[2px] md:gap-[6px]">
-                <div className="flex flex-col items-start gap-y-[2px] whitespace-nowrap md:flex-row md:flex-nowrap md:items-baseline md:gap-x-[6px]">
+              <div className={`flex shrink-0 flex-col md:gap-[6px] ${wideMobile ? "gap-[6px]" : "gap-[2px]"}`}>
+                <div className={rowCls("md:gap-x-[6px]")}>
                   {product.onSale && product.salePrice ? (
                     <>
-                      <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
-                      <span className="relative text-[14px] font-light leading-[1.1] text-[#535353] md:text-[16px] md:font-normal md:text-[#444] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize="0.85em" family="inherit" /></span>
+                      <span className={priceCls}><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
+                      <span className={regularCls}><Price value={product.regularPrice} symbolSize="1em" family="inherit" /></span>
                     </>
                   ) : (
-                    <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
+                    <span className={priceCls}><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
                   )}
                 </div>
                 {product.sku ? (
@@ -128,22 +150,22 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
               </div>
               {/* Qty + cart on the left (RTL end) */}
               <div className="flex min-w-0 items-center gap-[2px] md:gap-1">
-                <QuantityStepper quantity={quantity} onChange={setQuantity} size="row" />
-                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="row" />
+                <QuantityStepper quantity={quantity} onChange={setQuantity} size={wideMobile ? "rowWide" : "row"} />
+                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
               </div>
               </div>
             {couponBar ? <div className="mt-[8px]">{couponBar}</div> : null}
           </>
         ) : (
           <>
-            <div className="flex flex-col items-start gap-y-[2px] whitespace-nowrap md:flex-row md:flex-nowrap md:items-baseline md:gap-x-[8px]">
+            <div className={rowCls("md:gap-x-[8px]")}>
               {product.onSale && product.salePrice ? (
                 <>
-                  <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
-                  <span className="relative text-[14px] font-light leading-[1.1] text-[#535353] md:text-[16px] md:font-normal md:text-[#444] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/70 after:content-[''] [unicode-bidi:isolate]"><Price value={product.regularPrice} symbolSize="0.85em" family="inherit" /></span>
+                  <span className={priceCls}><Price value={product.salePrice} symbolSize="0.85em" family="inherit" /></span>
+                  <span className={regularCls}><Price value={product.regularPrice} symbolSize="1em" family="inherit" /></span>
                 </>
               ) : (
-                <span className="text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px]"><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
+                <span className={priceCls}><Price value={product.price} symbolSize="0.85em" family="inherit" /></span>
               )}
             </div>
             {product.sku ? (

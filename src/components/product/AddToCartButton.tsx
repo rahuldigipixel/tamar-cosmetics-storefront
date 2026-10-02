@@ -12,6 +12,8 @@ const SIZES = {
   stripe: { width: "w-9", padding: "h-9", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
   // Product-card slider row: 40px, same height as the quantity box and the price block.
   row: { width: "w-9 md:w-10", padding: "h-9 md:h-10", text: "text-sm", icon: "h-4 w-4", gap: "gap-1", showIcon: true, iconOnly: true },
+  // Same row on one-card-per-slide mobile cards (SALE / related): bigger touch target, desktop identical to "row".
+  rowWide: { width: "w-11 md:w-10", padding: "h-11 md:h-10", text: "text-sm", icon: "h-5 w-5 md:h-4 md:w-4", gap: "gap-1", showIcon: true, iconOnly: true },
   mini: { width: "w-fit", padding: "p-2", text: "text-sm", icon: "h-3.5 w-3.5", gap: "gap-1", showIcon: true, iconOnly: true },
   // Linked-products slider: full-width text button under the quantity box.
   slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },

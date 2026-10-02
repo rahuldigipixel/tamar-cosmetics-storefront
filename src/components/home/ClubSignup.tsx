@@ -60,7 +60,7 @@ export function ClubSignup({
       <div className="grid grid-cols-1 lg:grid-cols-[58%_42%] w-full">
         
         {/* Visual Right: Delivery Boxes Image */}
-        <div className="relative min-h-[380px] w-full sm:min-h-[480px] lg:min-h-[640px]">
+        <div className="relative min-h-[250px] w-full sm:min-h-[480px] lg:min-h-[640px]">
           <Image
             src={resolvedBgImage}
             alt="תמר קוסמטיקס - Let the magic of beauty begin"
@@ -72,16 +72,16 @@ export function ClubSignup({
         </div>
 
         {/* Visual Left: Red Form Column */}
-        <div className="flex flex-col items-center justify-center bg-[#d52027] px-6 py-10 sm:px-12 sm:py-14 lg:px-12 lg:py-16 text-white">
-          <div className="w-full max-w-[490px]">
+        <div className="flex flex-col items-center justify-center bg-[#d52027] px-6 py-5 sm:px-12 sm:py-14 lg:px-12 lg:py-16 text-white">
+          <div className="w-full max-w-[445px]">
             
             {/* Title - Single line on desktop matching Image 1 */}
-            <h2 className="mb-2 text-right text-[22px] sm:text-[25px] lg:text-[27px] font-bold leading-tight tracking-tight text-white">
+            <h2 className="text-right text-[28px] font-bold leading-[33.6px] text-white">
               {resolvedHeading}
             </h2>
 
             {/* Subtitle */}
-            <p className="mb-6 text-right text-[13.5px] sm:text-[14.5px] leading-relaxed text-white/90">
+            <p className="mb-3 text-right text-[18px] leading-[28.8px] text-white lg:text-[12px] lg:leading-[19.2px]">
               {resolvedDescription}
             </p>
 
@@ -90,48 +90,48 @@ export function ClubSignup({
                 <p className="text-[20px] font-semibold">נרשמת בהצלחה! ברוכה הבאה למועדון 🎉</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-[10px]">
                 {/* Label above field (not a placeholder) for every field,
                     including the date — consistent, simple markup instead
                     of one-off layouts per field. */}
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="club-name" className="text-[13px] text-white">שם מלא*</label>
+                <div className="flex items-end">
+                  <label htmlFor="club-name" className="w-[70px] shrink-0 whitespace-nowrap pb-[5px] text-[16px] leading-[20px] text-white">*שם מלא</label>
                   <input
                     id="club-name"
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full border-b border-white/70 bg-transparent pb-1 text-[15px] text-white outline-none focus:border-white"
+                    className="h-[40px] min-w-0 flex-1 border-b-2 border-white bg-transparent px-[15px] text-[16px] text-white outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="club-email" className="text-[13px] text-white">אימייל*</label>
+                <div className="flex items-end">
+                  <label htmlFor="club-email" className="w-[70px] shrink-0 whitespace-nowrap pb-[5px] text-[16px] leading-[20px] text-white">*אימייל</label>
                   <input
                     id="club-email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border-b border-white/70 bg-transparent pb-1 text-[15px] text-white outline-none focus:border-white"
+                    className="h-[40px] min-w-0 flex-1 border-b-2 border-white bg-transparent px-[15px] text-[16px] text-white outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="club-phone" className="text-[13px] text-white">טלפון*</label>
+                <div className="flex items-end">
+                  <label htmlFor="club-phone" className="w-[70px] shrink-0 whitespace-nowrap pb-[5px] text-[16px] leading-[20px] text-white">*טלפון</label>
                   <input
                     id="club-phone"
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border-b border-white/70 bg-transparent pb-1 text-[15px] text-white outline-none focus:border-white"
+                    className="h-[40px] min-w-0 flex-1 border-b-2 border-white bg-transparent px-[15px] text-[16px] text-white outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="club-birthday" className="text-[13px] text-white">תאריך לידה לקבלת הטבת יום הולדת</label>
+                <div className="flex items-end">
+                  <label htmlFor="club-birthday" className="w-[144px] shrink-0 pb-[5px] text-[16px] leading-[20px] text-white">תאריך לידה לקבלת הטבת יום הולדת</label>
                   {/* A real, visible date input (not a hidden-overlay trick
                       — that left the native calendar anchored to the
                       invisible input's own box, detached from the page).
@@ -141,43 +141,49 @@ export function ClubSignup({
                       lang="en-CA" makes Chromium browsers render/format
                       this control as yyyy-mm-dd (e.g. 2026-09-29) instead
                       of the locale's dd/mm/yyyy. */}
+                  <div className="relative min-w-0 flex-1">
+                  {/* "לחצי כאן" placeholder shown over the native yyyy-mm-dd text until a date is picked. */}
+                  {!birthday ? (
+                    <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center px-[15px] text-[16px] text-white/60">לחצי כאן</span>
+                  ) : null}
                   <input
                     id="club-birthday"
                     type="date"
                     lang="en-CA"
                     value={birthday}
                     onChange={(e) => setBirthday(e.target.value)}
-                    className="w-full cursor-pointer border-b border-white/70 bg-transparent pb-1 text-[15px] text-white outline-none focus:border-white [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                    className={`relative h-[40px] w-full cursor-pointer border-b-2 border-white bg-transparent px-[15px] text-[16px] text-white outline-none [color-scheme:dark] ${birthday ? "" : "[&::-webkit-datetime-edit]:opacity-0"} [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0`}
                   />
+                  </div>
                 </div>
 
                 {/* Consent Checkbox — rendered as raw HTML so an admin-set
                     privacy-policy link inside the text works, same as the
                     wholesale form's checkbox label. */}
-                <label className="mt-1 flex cursor-pointer items-start gap-2.5 text-right text-[12px] leading-snug text-white  sm:text-[12.5px]">
+                <label className="mt-[10px] flex cursor-pointer items-start gap-[5px] text-right text-[13px] leading-[1.4] text-white">
                   <input
                     type="checkbox"
                     checked={consent}
                     onChange={(e) => setConsent(e.target.checked)}
                     required
-                    className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-white accent-white cursor-pointer"
+                    className="mt-[5px] h-[13px] w-[13px] shrink-0 rounded border-white accent-white cursor-pointer"
                   />
-                  <span className="[&_a]:underline [&_a]:hover:no-underline" dangerouslySetInnerHTML={{ __html: resolvedCheckboxLabel }} />
+                  <span className="[&_a]:border-0 [&_a]:no-underline" dangerouslySetInnerHTML={{ __html: resolvedCheckboxLabel }} />
                 </label>
 
                 {/* Right-aligned (dir="rtl" → justify-start is the right edge) */}
-                <div className="mt-5 flex w-full justify-start">
+                <div className="mt-[12px] flex w-full justify-start">
                   <button
                     type="submit"
                     disabled={status === "loading" || !consent}
-                    className="h-[42px] min-w-[160px] rounded-full bg-white px-8 text-[17px] font-bold text-[#d52027] shadow-sm transition-all duration-200 hover:bg-[#f6f6f6] hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-[40px] w-full rounded-[25px] bg-white px-[20px] text-[16px] font-normal lg:w-[140px] text-[#d52027] shadow-sm transition-all duration-200 hover:bg-[#f6f6f6] hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {status === "loading" ? "נרשמת..." : resolvedButtonLabel}
                   </button>
                 </div>
 
                 {status === "error" && (
-                  <p className="mt-1 text-center text-[13px] text-white">
+                  <p className="mt-1 text-center text-[16px] text-white">
                     משהו השתבש, אנא נסי שוב מאוחר יותר.
                   </p>
                 )}

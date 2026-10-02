@@ -48,7 +48,7 @@ export function FeatureStrip({
         : FEATURES;
 
   return (
-    <section className="my-[50px] border-y border-black/5 bg-brand-soft/30">
+    <section className="my-[25px] border-y border-black/5 bg-brand-soft/30">
       <div
         className={`mx-auto grid max-w-[1600px] grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:px-6 ${
           variant === "compact" ? "md:grid-cols-4" : "md:grid-cols-4 lg:grid-cols-8"
@@ -57,14 +57,14 @@ export function FeatureStrip({
         {features.map(({ icon: Icon, iconImage, title, subtitle, link }) => {
           const content = (
             <>
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-white text-brand-accent ring-1 ring-black/5">
+              <span className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full bg-white text-brand-accent ring-1 ring-black/5 md:h-20 md:w-20">
                 {iconImage ? (
-                  <Image src={iconImage.url} alt={iconImage.alt || title} width={40} height={40} className="h-10 w-10 object-contain" />
+                  <Image src={iconImage.url} alt={iconImage.alt || title} width={40} height={40} className="h-[30px] w-[30px] object-contain md:h-10 md:w-10" />
                 ) : Icon ? (
-                  <Icon className="h-9 w-9" />
+                  <Icon className="h-[27px] w-[27px] md:h-9 md:w-9" />
                 ) : null}
               </span>
-              <p className="max-w-[130px] text-[18px] font-bold leading-[1.2em] text-black">
+              <p className="max-w-[130px] text-[16px] font-bold leading-[19px] text-black md:text-[18px] md:leading-[1.2em]">
                 {title}
                 {subtitle ? <> {subtitle}</> : null}
               </p>

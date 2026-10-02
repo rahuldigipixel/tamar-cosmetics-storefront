@@ -19,9 +19,9 @@ function slideAspect(slide: HomePageSlide) {
 
 function HeroSingleSlide({ slide, aspect }: { slide: HomePageSlide; aspect: number }) {
   return (
-    <div className="relative w-full" style={{ aspectRatio: aspect }}>
+    <div className="relative w-full sm:!aspect-auto sm:h-[570px]" style={{ aspectRatio: aspect }}>
       <Link href={slide.link || "/shop"} className="relative block h-full w-full">
-        <Image src={slide.url} alt={slide.alt} fill priority quality={HERO_IMAGE_QUALITY} sizes="100vw" className="object-cover" />
+        <Image src={slide.url} alt={slide.alt} fill priority quality={HERO_IMAGE_QUALITY} sizes="(min-width: 1600px) 1570px, 100vw" className="object-cover" />
       </Link>
     </div>
   );
@@ -53,7 +53,7 @@ function HeroTrack({ slides }: { slides: HomePageSlide[] }) {
             ref={(el) => {
               itemRefs.current[i] = el;
             }}
-            className="relative w-full shrink-0 snap-start"
+            className="relative w-full shrink-0 snap-start sm:!aspect-auto sm:h-[570px]"
             style={{ aspectRatio: aspect }}
           >
             <Link href={slide.link || "/shop"} className="relative block h-full w-full">
@@ -63,7 +63,7 @@ function HeroTrack({ slides }: { slides: HomePageSlide[] }) {
                 fill
                 priority={i === middleStart}
                 quality={HERO_IMAGE_QUALITY}
-                sizes="100vw"
+                sizes="(min-width: 1600px) 1570px, 100vw"
                 className="object-cover"
               />
             </Link>
@@ -110,7 +110,7 @@ export function HeroCarousel({
   const mobile = hasMobile ? mobileSlides! : desktop;
 
   return (
-    <section className="relative bg-brand-soft/20">
+    <section className="relative mx-auto w-full max-w-[1600px] px-[15px]">
       <div className="hidden sm:block">
         <HeroTrack slides={desktop} />
       </div>

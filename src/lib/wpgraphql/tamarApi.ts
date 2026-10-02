@@ -199,10 +199,53 @@ export interface HeaderBar {
   serviceIcons: HeaderServiceIcon[];
 }
 
+export interface FooterLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export interface FooterColumn {
+  id: string;
+  title: string;
+  links: FooterLink[];
+}
+
+/** Managed from wp-admin → הגדרות תמר → פוטר (Footer) — see includes/class-footer.php. */
+export interface FooterData {
+  description: string;
+  /** `type` is one of Tamar_Footer::SOCIAL_CHOICES — see SOCIAL_ICON_MAP in Footer.tsx. */
+  social: { id: string; type: string; url: string }[];
+  newsletter: { enabled: boolean; title: string; subtitle: string; placeholder: string };
+  columns: FooterColumn[];
+  contact: {
+    enabled: boolean;
+    title: string;
+    phone: string;
+    phoneHours: string;
+    address: string;
+    addressHours: string;
+    whatsappLabel: string;
+  };
+  app: {
+    enabled: boolean;
+    title: string;
+    ratingText: string;
+    ratingStars: number;
+    iosUrl: string;
+    androidUrl: string;
+    /** Optional store-badge images uploaded in wp-admin (עמודת האפליקציה); null = built-in badge. */
+    iosImage?: { url: string; width: number; height: number; alt: string } | null;
+    androidImage?: { url: string; width: number; height: number; alt: string } | null;
+  };
+  bottom: { copyright: string; legalLinks: FooterLink[]; sslText: string };
+}
+
 export interface GlobalData {
   menu: HeaderMenuItem[];
   settings: SiteSettings | null;
   headerBar: HeaderBar | null;
+  footer?: FooterData | null;
   /** Stylesheet for the Advanced Product Labels HTML on products (`Product.labelsHtml`). */
   labelsCss?: string;
 }

@@ -7,7 +7,6 @@ import { CategorySlider } from "@/components/home/CategorySlider";
 import { BrandSlider } from "@/components/home/BrandSlider";
 import { FeatureStrip } from "@/components/home/FeatureStrip";
 import { ProductSlider } from "@/components/home/ProductSlider";
-import { SaleProductSlider } from "@/components/home/SaleProductSlider";
 import { ClubSignup } from "@/components/home/ClubSignup";
 import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 import { RichContent } from "@/components/ui/RichContent";
@@ -20,6 +19,15 @@ const DEFAULT_ABOUT_HTML =
   "<p>המרכז הארצי לייבוא ושיווק מוצרים לקוסמטיקאיות באונליין</p>" +
   "<p>חנות למוצרי ציפורניים ולק ג&apos;ל, מבחר ענק של מקצועי למניקור, פדיקור וקוסמטיקה.</p>" +
   "<p>תמר קוסמטיקס מייבאת ומשווקת את המותגים האיכותיים והמתקדמים ביותר המחויבים לספק תוצאות. המותגים הללו ידועים בשל האמינות והיכולת לעזור לעצור ולקוחות להשיג את המראה והאפקט הרצויים, תוך שמירה על בריאות העור והציפורניים.</p>";
+
+// Legacy-site typography for the admin-authored about copy: h1 like the title (32px/600, 10px shadow); h2/h4 27px/500 with the 6px shadow
+// (h4 is one block of <br>-separated lines, so its 50px line height gives the live site's 50px line pitch); h3 is the bold 22px/600 strapline.
+// "!" because RichContent sets its own h2/h3 size, weight and margins.
+const ABOUT_CONTENT_CLASS =
+  "mx-auto max-w-[1400px] text-center !text-black max-md:!leading-[29px] [&>br:first-child]:hidden " +
+  "[&_h1]:!my-0 [&_h1]:!text-[30px] md:[&_h1]:!text-[32px] [&_h1]:!font-semibold [&_h1]:!leading-[30px] [&_h1]:!text-black [&_h1]:[text-shadow:9px_4px_10px_rgba(0,0,0,0.3)] " +
+  "[&_:is(h2,h4)]:!my-0 [&_:is(h2,h4)]:!text-[26px] md:[&_:is(h2,h4)]:!text-[27px] [&_:is(h2,h4)]:!font-medium [&_:is(h2,h4)]:!leading-[30px] md:[&_:is(h2,h4)]:!leading-[50px] [&_:is(h2,h4)]:!text-black [&_:is(h2,h4)]:[text-shadow:9px_4px_6px_rgba(0,0,0,0.3)] [&_:is(h2,h4)]:[-webkit-text-stroke-color:#000] " +
+  "[&_h3]:!mb-5 [&_h3]:!mt-0 [&_h3]:!text-[22px] [&_h3]:!font-semibold [&_h3]:!leading-[30.8px] [&_h3]:!text-black";
 
 /** Admin-selected slugs, in the admin's chosen order; falls back to the top `limit` by product count when none are selected. */
 function pickBySlugOrTopCount<T extends { slug: string; count: number }>(
@@ -98,14 +106,6 @@ export default async function HomePage() {
         autoplayMs={6000}
       />
 
-      <SaleProductSlider
-        badge="SALE"
-        badgeIcon={<Percent className="h-3.5 w-3.5" />}
-        title={settings?.sale.title || "המבצעים שלנו"}
-        description={settings?.sale.description}
-        products={saleSectionProducts}
-      />
-
       <ProductSlider
         badge="SALE"
         badgeIcon={<Percent className="h-3.5 w-3.5" />}
@@ -113,16 +113,18 @@ export default async function HomePage() {
         description={settings?.sale.description}
         products={saleSectionProducts}
         headerVariant="modern"
+        sectionPadding="pb-0 pt-[50px] md:py-[30px]"
+        singleOnMobile
       />
 
       <FeatureStrip features={settings?.features} />
 
-      <section className="mx-auto max-w-[1600px] px-[15px] py-10 text-center sm:py-[50px]">
-        <h2 className="mb-4 text-[28px] font-bold text-[#242424] sm:text-[36px]">{aboutTitle}</h2>
-        <RichContent html={aboutHtml} className="mx-auto max-w-3xl text-center" />
+      <section className="mx-auto max-w-[1600px] px-[15px] py-[25px] text-center">
+        <h2 className="mb-4 text-[30px] font-semibold leading-[30px] md:text-[32px] text-black [text-shadow:9px_4px_10px_rgba(0,0,0,0.3)]">{aboutTitle}</h2>
+        <RichContent html={aboutHtml} className={ABOUT_CONTENT_CLASS} />
       </section>
 
-      <section className="w-full bg-white py-8 sm:py-[50px]">
+      <section className="w-full bg-white py-[25px]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <FlashyReviewsWidget elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
         </div>

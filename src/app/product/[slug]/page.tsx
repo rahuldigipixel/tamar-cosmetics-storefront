@@ -45,10 +45,12 @@ function humanizeOption(value: string) {
 // share one request instead of firing two GraphQL queries with different
 // slug encodings.
 function normalizeSlug(slug: string) {
+ // WordPress stores non-ASCII slugs percent-encoded in lowercase hex, and
+ // WPGraphQL's SLUG lookup only matches that exact form — not decoded Hebrew.
  try {
- return decodeURIComponent(slug);
+ return encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
  } catch {
- return slug;
+ return slug.toLowerCase();
  }
 }
 

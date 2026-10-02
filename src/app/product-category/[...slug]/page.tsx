@@ -97,7 +97,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  aria-label="breadcrumb"
  className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[8px] text-[12px] leading-[19px] text-[#333]"
  >
- <Link href="/" className="text-[#777] transition-colors hover:text-[#333]">
+ <Link href="/" className="text-[#555] transition-colors hover:text-[#333]">
  עמוד הבית
  </Link>
  {breadcrumbSlugs.map((s, i) => (
@@ -105,14 +105,14 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  <span>/</span>
  <Link
  href={`/product-category/${breadcrumbSlugs.slice(0, i + 1).join("/")}/`}
- className="text-[#777] transition-colors hover:text-[#333]"
+ className="text-[#555] transition-colors hover:text-[#333]"
  >
  {categoryBySlug.get(s) ?? decodeURIComponent(s)}
  </Link>
  </span>
  ))}
  <span>/</span>
- <span>{title}</span>
+ <span className="font-semibold text-[#333]">{title}</span>
  </nav>
 
  {description ? (

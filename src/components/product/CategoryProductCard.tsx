@@ -10,6 +10,7 @@ import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
+import { Price } from "@/components/product/Price";
 
 function discountPercent(product: Product): number | null {
   if (!product.onSale || !product.salePrice) return null;
@@ -100,15 +101,15 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
               <div className="flex flex-nowrap items-baseline gap-x-[6px] whitespace-nowrap">
                 {product.onSale && product.salePrice ? (
                   <>
-                    <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
-                    <span className="text-[15px] font-[600] leading-[17px] text-[#333] line-through decoration-1 decoration-black/70 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                    <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
+                    <span className="text-[13px] font-light leading-[14px] text-[#535353] line-through decoration-1 decoration-[#535353] [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
                   </>
                 ) : (
-                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.price)}</span>
+                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>
                 )}
               </div>
               {product.sku ? (
-                <p className="mt-[4px] text-[12px] font-semibold leading-[15px] text-[#333]">מק&quot;ט: {product.sku}</p>
+                <p className="mt-[4px] text-[12px] font-normal leading-[15px] text-[#0c0c0c]">מק&quot;ט: {product.sku}</p>
               ) : null}
             </div>
             {/* Qty + cart on the left (RTL end) */}
@@ -122,11 +123,11 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
             <div className="flex flex-nowrap items-baseline gap-x-[8px] whitespace-nowrap">
               {product.onSale && product.salePrice ? (
                 <>
-                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.salePrice)}</span>
-                  <span className="text-[15px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                  <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.salePrice} symbolSize={20} family="inherit" /></span>
+                  <span className="text-[13px] font-light leading-[14px] text-[#535353] line-through decoration-1 decoration-[#535353] [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
                 </>
               ) : (
-                <span className="text-[24px] font-bold leading-[26px] text-[#d52027]">{formatPrice(product.price)}</span>
+                <span className="text-[24px] font-bold leading-[26px] text-[#d52027]"><Price value={product.price} symbolSize={20} family="inherit" /></span>
               )}
             </div>
             {product.sku ? (

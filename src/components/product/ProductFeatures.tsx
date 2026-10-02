@@ -28,7 +28,7 @@ export function ProductFeatures({ features }: { features: HomePageFeature[] }) {
             ) : (
               <Icon className="h-[42px] w-[42px] text-brand-accent" strokeWidth={1.25} />
             )}
-            <span className="max-w-[140px] text-[15px] leading-[20px] font-bold text-black">
+            <span className="max-w-[140px] text-[15px] leading-[20px] font-bold text-black" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
               {title}
               {subtitle ? <> {subtitle}</> : null}
             </span>

@@ -59,11 +59,11 @@ export default async function BrandPage({ params }: BrandPageProps) {
  aria-label="breadcrumb"
  className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[8px] text-[12px] font-normal leading-[19px] text-[#333]"
  >
- <Link href="/" className="text-[#777] transition-colors hover:text-[#333]">
+ <Link href="/" className="text-[#555] transition-colors hover:text-[#333]">
  עמוד הבית
  </Link>
  <span>/</span>
- <span className="font-[500] text-black">{brand.name}</span>
+ <span className="font-semibold text-[#333]">{brand.name}</span>
  </nav>
 
  {/* The description is the rich-text editor HTML from wp-admin (the logo

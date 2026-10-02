@@ -445,7 +445,8 @@ export function Header({
                         <Icon className="h-full w-full stroke-[1.25]" />
                       )}
                     </span>
-                    <span>
+                    {/* Legacy site computes this stack on the service texts (approved per-place exception to the one-font rule). */}
+                    <span style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
                       <span className="mb-[2px] block text-[12px] font-normal leading-[1.2em]">{item.title}</span>
                       {item.subtitle ? (
                         <span className="block text-[12px] font-bold leading-[16px]">{item.subtitle}</span>

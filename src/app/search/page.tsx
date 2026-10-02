@@ -30,15 +30,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         aria-label="breadcrumb"
         className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[8px] text-[12px] leading-[19px] text-[#333]"
       >
-        <Link href="/" className="text-[#777] transition-colors hover:text-[#333]">
+        <Link href="/" className="text-[#555] transition-colors hover:text-[#333]">
           עמוד הבית
         </Link>
         <span>/</span>
-        <Link href="/shop" className="text-[#777] transition-colors hover:text-[#333]">
+        <Link href="/shop" className="text-[#555] transition-colors hover:text-[#333]">
           חנות
         </Link>
         <span>/</span>
-        <span>תוצאות חיפוש עבור “{term}”</span>
+        <span className="font-semibold text-[#333]">תוצאות חיפוש עבור “{term}”</span>
       </nav>
 
       <div className="mx-auto max-w-[1600px] px-[15px] pt-[30px] pb-12">

@@ -22,6 +22,7 @@ import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { resolveIntegrations } from "@/lib/integrations";
 import { ProductSlider } from "@/components/home/ProductSlider";
 import { formatPrice } from "@/lib/utils/formatPrice";
+import { Price } from "@/components/product/Price";
 import { getUnitPrice } from "@/lib/utils/unitPrice";
 
 export const revalidate = 60;
@@ -168,7 +169,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
  <div className="mx-auto max-w-[1600px] px-[15px] pt-[12px] pb-[25px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
- <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_350px] xl:gap-x-[15px]">
+ <div className="grid gap-x-[80px] gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_356px] xl:gap-x-[15px]">
  <nav className="flex flex-wrap items-center gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
@@ -210,26 +211,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
 
- <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-black md:text-[16px]">
+ <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-[#0c0c0c] md:text-[16px]" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
  {product.sku ? (
  <p>
- <span className="text-[#555]">מק&quot;ט:</span> {product.sku}
+ <span className="text-[#0c0c0c]">מק&quot;ט:</span> {product.sku}
  </p>
  ) : null}
  {show.barcode && product.barcode ? (
  <p>
- <span className="text-[#555]">ברקוד:</span> {product.barcode}
+ <span className="text-[#0c0c0c]">ברקוד:</span> {product.barcode}
  </p>
  ) : null}
  {brandName ? (
  <p>
- <span className="text-[#555]">מותג:</span> {brandName}
+ <span className="text-[#0c0c0c]">מותג:</span> {brandName}
  {brandTipText ? <> <BrandTip text={brandTipText} /></> : null}
  </p>
  ) : null}
  {attributeLines.map((a) => (
  <p key={a.id}>
- <span className="text-[#555]">{a.label}:</span> {a.value}
+ <span className="text-[#0c0c0c]">{a.label}:</span> {a.value}
  </p>
  ))}
  </div>
@@ -239,7 +240,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {product.onSale && product.salePrice ? (
  <>
  <span className="text-[38px] leading-none font-bold text-brand-accent md:text-[48px]">
- {formatPrice(product.salePrice, product.currency)}
+ <Price value={product.salePrice} currency={product.currency} />
  </span>
  <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">
  {formatPrice(product.regularPrice, product.currency)}
@@ -247,7 +248,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </>
  ) : (
  <span className="text-[38px] leading-none font-bold text-black md:text-[48px]">
- {formatPrice(product.price, product.currency)}
+ <Price value={product.price} currency={product.currency} />
  </span>
  )}
  </div>

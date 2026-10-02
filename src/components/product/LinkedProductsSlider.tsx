@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { formatPrice } from "@/lib/utils/formatPrice";
+import { Price } from "@/components/product/Price";
 import type { SliderProduct } from "@/types/product";
 
 const VISIBLE = 2;
@@ -37,7 +38,7 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
   const price = product.onSale && product.salePrice ? product.salePrice : product.price;
 
   return (
-    <li className="flex items-start gap-[10px] py-[4px] text-right" style={{ height: ROW_HEIGHT }}>
+    <li className="flex items-start gap-[10px] pt-[4px] pb-[16px] text-right" style={{ height: ROW_HEIGHT }}>
       {product.image ? (
         <Link href={href} className="shrink-0" aria-label={product.name}>
           <Image src={product.image.url} alt={product.image.alt || product.name} width={80} height={80} className="h-[70px] w-[70px] object-contain" />
@@ -53,9 +54,9 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
           {/* RTL: price + SKU on the right, cart controls on the left. */}
           <div className="shrink-0">
             <p className="flex flex-col whitespace-nowrap leading-[22px]">
-              <span className="text-[17px] font-bold text-brand-accent">{formatPrice(price)}</span>
+              <span className="text-[17px] leading-[19px] font-bold text-[#d52027]"><Price value={price} symbolSize={14} family="inherit" /></span>
               {product.onSale && product.salePrice ? (
-                <span className="text-[15px] font-bold leading-[18px] text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                <span className="text-[12px] font-bold leading-[18px] text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               ) : null}
             </p>
             {product.sku ? <p className="mt-[4px] text-[12px] leading-[18px] text-black">מק&quot;ט: {product.sku}</p> : null}
@@ -96,20 +97,21 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     el.scrollBy({ top: dir * VISIBLE * ROW_HEIGHT, behavior: "smooth" });
   }
 
+  // Same box + icon size for the top and bottom arrows.
   const chevron = "mx-auto flex h-[32px] w-[48px] items-center justify-center text-black transition-colors hover:text-brand-accent";
   const copies = scrollable ? COPIES : 1;
 
   return (
-    <section className="mx-auto w-full max-w-[335px] rounded-[20px] border border-[#f1c1c9] bg-white px-[20px] py-[10px] text-right md:mx-0" aria-label="מוצרים קשורים">
+    <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[10px] pb-0 text-right md:mx-0" aria-label="מוצרים קשורים">
       <h2 className="text-center text-[21px] leading-[34px] font-semibold text-[#d52027]">מוצרים קשורים</h2>
 
       {scrollable ? (
-        <button type="button" onClick={() => step(-1)} aria-label="הקודם" className={`${chevron} mt-[8px]`}>
-          <ChevronUp className="h-6 w-6" strokeWidth={3} />
+        <button type="button" onClick={() => step(-1)} aria-label="הקודם" className={chevron}>
+          <ChevronUp className="h-8 w-8" strokeWidth={3} />
         </button>
       ) : null}
 
-      <div ref={viewport} className="mt-[6px] overflow-hidden" style={{ height: ROW_HEIGHT * Math.min(VISIBLE, products.length) }}>
+      <div ref={viewport} className="mt-[8px] mb-[8px] overflow-hidden" style={{ height: ROW_HEIGHT * Math.min(VISIBLE, products.length) }}>
         <ul>
           {Array.from({ length: copies }, (_, c) =>
             products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} />)
@@ -119,7 +121,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
 
       {scrollable ? (
         <button type="button" onClick={() => step(1)} aria-label="הבא" className={chevron}>
-          <ChevronDown className="h-6 w-6" strokeWidth={3} />
+          <ChevronDown className="h-8 w-8" strokeWidth={3} />
         </button>
       ) : null}
     </section>

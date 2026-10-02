@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ProductStripItem } from "@/lib/wpgraphql/products";
 
-const MAX_W = 95;
-const MAX_H = 80;
+const MAX_W = 70;
+const MAX_H = 60;
 
 /**
  * Full-width icon strip under the product tabs — managed in wp-admin → הגדרות
@@ -17,7 +17,7 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
       <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-[15px] gap-y-[30px] px-[15px] py-[45px] md:grid-cols-4">
         {items.map(({ image, title, link }, i) => {
           // Icons are uploaded at 2x — show them at half their pixel size, capped at
-          // the legacy box (95×80) since some backends report wrong dimensions
+          // a 70×60 box since some backends report wrong dimensions
           // (e.g. 300×300 for a 71px file), which would blow the icons up.
           const scale = image ? Math.min(1, MAX_W / (image.width / 2), MAX_H / (image.height / 2)) : 1;
           const content = (
@@ -32,7 +32,7 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
                   className="max-w-full shrink-0 object-contain"
                 />
               ) : null}
-              {title ? <span className="text-[15px] leading-[22px] text-black md:text-[16px]">{title}</span> : null}
+              {title ? <span className="text-[16px] leading-[21px] text-black" style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>{title}</span> : null}
             </>
           );
           const cls = "flex flex-col items-center gap-[14px] text-center";

@@ -32,8 +32,8 @@ export function ProductShortDescription({ html }: { html: string }) {
       <div className="relative">
         <div
           ref={contentRef}
-          style={{ maxHeight: expanded || !overflowing ? fullHeight : COLLAPSED_HEIGHT }}
-          className="max-w-none overflow-hidden text-right font-[Arial,Helvetica,sans-serif] text-[15px] leading-[21px] text-[#0c0c0c] md:text-[16px] transition-[max-height] duration-500 ease-in-out [&_p]:mb-0"
+          style={{ maxHeight: expanded || !overflowing ? fullHeight : COLLAPSED_HEIGHT, fontFamily: '"Open Sans Hebrew", sans-serif' }}
+          className="max-w-none overflow-hidden text-right text-[15px] leading-[21px] text-[#0c0c0c] md:text-[16px] transition-[max-height] duration-500 ease-in-out [&_p]:mb-0"
           dangerouslySetInnerHTML={{ __html: html }}
         />
         {overflowing ? (

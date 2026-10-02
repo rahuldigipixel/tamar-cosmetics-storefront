@@ -60,7 +60,7 @@ export async function listPosts(params: { first?: number; after?: string | null 
     { tags: ["posts"], revalidate: 300 }
   );
 
-  if (!data) return { posts: [], hasNextPage: false, endCursor: null };
+  if (!data?.posts) return { posts: [], hasNextPage: false, endCursor: null };
 
   return {
     posts: data.posts.nodes.map(toSummary),
@@ -81,7 +81,7 @@ export async function listPostsByCategory(
     { tags: ["posts", `category:${categorySlug}`], revalidate: 300 }
   );
 
-  if (!data) return { posts: [], hasNextPage: false, endCursor: null };
+  if (!data?.posts) return { posts: [], hasNextPage: false, endCursor: null };
 
   return {
     posts: data.posts.nodes.map(toSummary),
@@ -165,7 +165,7 @@ export async function getAdjacentPosts(currentSlug: string): Promise<AdjacentPos
     { tags: ["posts"], revalidate: 300 }
   );
 
-  const list = data?.posts.nodes ?? [];
+  const list = data?.posts?.nodes ?? [];
   // currentSlug arrives already normalized the same way as getPostBySlug's
   // queryableSlug (lowercase percent-encoded) — GraphQL's own `slug` field
   // is plain decoded text, so compare against the decoded form.

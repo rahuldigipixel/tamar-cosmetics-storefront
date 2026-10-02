@@ -81,12 +81,17 @@ export default async function RootLayout({
         <Script id="flashy-init" strategy="lazyOnload">
           {`(function (a, b, c) {
             if (!a.flashy) {
+              // thunder.js reuses its cached popup list for 10 min, and on that path it never fills the product-page
+              // recommendation containers (first visit works, repeat visits stay empty). Dropping the cache timestamp
+              // makes it fetch the list again, so injection runs exactly like a first visit.
+              try { localStorage.removeItem("flashy_popups_cache_time"); } catch (err) {}
               a.flashy = function () { a.flashy.event && a.flashy.event(arguments), a.flashy.queue.push(arguments) };
               a.flashy.queue = [];
               var d = document.getElementsByTagName(b)[0], e = document.createElement(b);
               e.src = c; e.async = true; d.parentNode.insertBefore(e, d);
             }
           })(window, "script", "https://js.flashyapp.com/thunder.js");
+          window.__flashyAccountId = ${integrations.flashyAccountId};
           flashy("init", ${integrations.flashyAccountId});
           (window.__flashyPending || []).forEach(function (p) { flashy.apply(null, p); });
           window.__flashyPending = [];`}

@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Percent } from "lucide-react";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
+import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -173,6 +174,8 @@ function SaleProductCard({ product, cardRef }: { product: Product; cardRef: (el:
         >
           {product.name}
         </Link>
+
+        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="h-[22px]" />
 
         <span className="text-xs text-black/60">{product.sku ? `מק"ט: ${product.sku}` : " "}</span>
 

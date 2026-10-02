@@ -6,8 +6,6 @@ const SIZES = {
   xs: { height: "h-8", buttonWidth: "w-5", numberWidth: "w-4", icon: "h-2.5 w-2.5", text: "text-sm" },
   // Linked-products slider on the product page: legacy-site sizing (arbitrary px on purpose — approved exception to the 18px floor).
   mini: { height: "h-7", buttonWidth: "w-5", numberWidth: "w-5", icon: "h-2.5 w-2.5", text: "text-[14px] leading-none" },
-  // Linked-products slider: standard-height stepper stacked above the add-to-cart button in its narrow card.
-  slider: { width: "w-full justify-between", height: "h-8", buttonWidth: "w-8", numberWidth: "w-6", icon: "h-3.5 w-3.5", text: "text-sm" },
   sm: { height: "h-10", buttonWidth: "w-8", numberWidth: "w-6", icon: "h-3.5 w-3.5", text: "text-sm" },
   md: { height: "h-14", buttonWidth: "w-12", numberWidth: "w-8", icon: "h-4 w-4", text: "text-lg" },
 } as const;

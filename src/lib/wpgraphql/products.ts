@@ -78,6 +78,8 @@ export interface GqlProductNode {
         onSale?: boolean | null;
         inStock?: boolean | null;
         purchasable?: boolean | null;
+        averageRating?: number | null;
+        reviewCount?: number | null;
         image?: { url: string; width?: number | null; height?: number | null; alt?: string | null } | null;
       }[]
     | null;
@@ -151,6 +153,8 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
       onSale: Boolean(p.onSale),
       inStock: p.inStock !== false,
       purchasable: p.purchasable !== false,
+      averageRating: p.averageRating ?? 0,
+      reviewCount: p.reviewCount ?? 0,
       image: p.image ? { url: p.image.url, width: p.image.width ?? 150, height: p.image.height ?? 150, alt: p.image.alt ?? "" } : undefined,
     })),
     type: node.__typename === "VariableProduct" || variations.length > 0 ? "variable" : "simple",

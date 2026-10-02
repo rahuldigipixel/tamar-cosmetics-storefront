@@ -15,6 +15,8 @@
 // would work unconditionally, but duplicating them into each `... on`
 // fragment keeps one query shape that's valid in both places.
 const PRODUCT_CARD_SHARED_FIELDS = /* GraphQL */ `
+  averageRating
+  reviewCount
   image {
     id
     sourceUrl
@@ -98,6 +100,8 @@ const DETAIL_BARCODE_AND_ATTRIBUTES = /* GraphQL */ `
     onSale
     inStock
     purchasable
+    averageRating
+    reviewCount
     image {
       url
       width

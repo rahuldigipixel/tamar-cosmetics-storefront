@@ -38,6 +38,7 @@ The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamar
 
 - [ ] Reuse existing design tokens/colors (light theme, brand-soft/accent — see memory: avoid dark/black section backgrounds).
 - [ ] New primary CTA buttons use the gradient + hover-lift style from `AddToCartButton`, not a flat color.
+- [ ] **Reference first: always match the reference site and reference images, same to same.** When a reference URL or screenshot exists, measure its computed font sizes, weights and icon sizes (Playwright, desktop + mobile widths) and set ours to exactly those values — never eyeball or "round to something nicer". Where the reference is below the 18px floor, the reference wins on the pages already approved as exceptions (see `AGENTS.md`).
 - [ ] Minimum font size 18px site-wide — no `text-[Npx]` arbitrary values under the floor (see `AGENTS.md`).
 - [ ] Responsive at mobile + desktop for every new section, not styled for one viewport only.
 - [ ] New horizontally-scrolling carousels/sliders use `src/lib/utils/useInfiniteCarousel.ts` and the `calc((100% - Nrem)/count)` card-width pattern from `CategorySlider.tsx`/`BestSellers.tsx` — no bespoke scroll logic.

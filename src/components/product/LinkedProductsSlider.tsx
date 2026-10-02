@@ -3,10 +3,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
-import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import type { SliderProduct } from "@/types/product";
 
@@ -15,6 +14,22 @@ const VISIBLE = 2;
 const ROW_HEIGHT = 140;
 // The list is rendered 4× so a 2-row step from anywhere in the second copy never runs off the end.
 const COPIES = 4;
+
+/** Slider-only quantity box: squarish (small radius) with vertical partition lines between − / number / +. */
+function SliderQuantity({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
+  const btn = "flex h-full w-8 items-center justify-center text-black/60 transition-colors hover:text-brand-accent";
+  return (
+    <div className="flex h-8 w-full items-center divide-x divide-black/15 overflow-hidden rounded-[6px] border border-black/15">
+      <button type="button" onClick={() => onChange(Math.max(1, quantity - 1))} aria-label="הפחת כמות" className={btn}>
+        <Minus className="h-3.5 w-3.5" />
+      </button>
+      <span className="flex h-full flex-1 items-center justify-center text-[14px] leading-none font-semibold tabular-nums">{quantity}</span>
+      <button type="button" onClick={() => onChange(Math.min(99, quantity + 1))} aria-label="הוסף כמות" className={btn}>
+        <Plus className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
 
 function LinkedProductRow({ product }: { product: SliderProduct }) {
   const [quantity, setQuantity] = useState(1);
@@ -32,22 +47,22 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         <Link href={href} className="line-clamp-2 text-[15px] leading-[16px] text-[#000] hover:text-brand-accent">
           {product.name}
         </Link>
-        <FlashyStarRating productId={product.databaseId} className="mt-[4px] min-h-[20px]" />
+        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mt-[4px] min-h-[22px]" />
 
         <div className="mt-[8px] flex items-center justify-between gap-[4px]">
           {/* RTL: price + SKU on the right, cart controls on the left. */}
           <div className="shrink-0">
             <p className="flex flex-col whitespace-nowrap leading-[22px]">
-              <span className="text-[18px] font-bold text-brand-accent">{formatPrice(price)}</span>
+              <span className="text-[17px] font-bold text-brand-accent">{formatPrice(price)}</span>
               {product.onSale && product.salePrice ? (
                 <span className="text-[15px] font-bold leading-[18px] text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               ) : null}
             </p>
-            {product.sku ? <p className="mt-[4px] text-[13px] leading-[18px] text-black">מק&quot;ט: {product.sku}</p> : null}
+            {product.sku ? <p className="mt-[4px] text-[12px] leading-[18px] text-black">מק&quot;ט: {product.sku}</p> : null}
           </div>
           {product.purchasable ? (
             <div className="flex w-[100px] shrink-0 flex-col items-center gap-[4px]">
-              {product.inStock ? <QuantityStepper quantity={quantity} onChange={setQuantity} size="slider" /> : null}
+              {product.inStock ? <SliderQuantity quantity={quantity} onChange={setQuantity} /> : null}
               <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="slider" />
             </div>
           ) : (

@@ -213,8 +213,8 @@ export function Footer({ logo = null, whatsappNumber }: { logo?: SiteLogo | null
                 </svg>
               </span>
               <span className="min-w-0 flex-1 text-right leading-tight">
-                <span className="block text-[10px] text-white/60">הורידו מ-</span>
-                <span className="block truncate text-sm font-semibold">App Store</span>
+                <span className="block text-[13px] text-white/60">הורידו מ-</span>
+                <span className="block truncate text-[15px] font-semibold">App Store</span>
               </span>
             </a>
             <a
@@ -230,8 +230,8 @@ export function Footer({ logo = null, whatsappNumber }: { logo?: SiteLogo | null
                 </svg>
               </span>
               <span className="min-w-0 flex-1 text-right leading-tight">
-                <span className="block text-[10px] text-white/60">זמין ב-</span>
-                <span className="block truncate text-sm font-semibold">Google Play</span>
+                <span className="block text-[13px] text-white/60">זמין ב-</span>
+                <span className="block truncate text-[15px] font-semibold">Google Play</span>
               </span>
             </a>
           </div>

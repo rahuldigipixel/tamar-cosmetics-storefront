@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
+import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -16,14 +17,6 @@ function discountPercent(product: Product): number | null {
   const sale = Number(product.salePrice);
   if (!regular || !sale || sale >= regular) return null;
   return Math.round(((regular - sale) / regular) * 100);
-}
-
-// Deterministic fake review so the same product always shows the same stars
-// across renders. ~60% of products get stars, rest show none.
-function fakeReview(id: number): { rating: number; count: number } | null {
-  const h = ((id * 2654435761) >>> 0);
-  if (h % 10 < 4) return null;
-  return { rating: 3 + (h % 3), count: 5 + (h % 96) };
 }
 
 /**
@@ -40,11 +33,6 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
   const image = product.images[0];
   const hoverImage = product.images[1];
   const discount = discountPercent(product);
-  const review =
-    (product.reviewCount ?? 0) > 0
-      ? { rating: Math.round(product.averageRating ?? 0), count: product.reviewCount! }
-      : fakeReview(product.databaseId);
-
 
   return (
     <div className={`group relative flex h-full flex-col border border-black/[.106] bg-white p-[15px] text-right${standalone ? "" : " -mt-px -ml-px"}`}>
@@ -104,18 +92,7 @@ export function CategoryProductCard({ product, standalone = false }: { product: 
 
       <div className="mt-auto pt-[6px]">
         {/* Always reserve the stars row height so all cards align regardless of whether a product has reviews */}
-        <div className="mb-[8px] flex h-[22px] items-center gap-[2px]" aria-label={review ? `דירוג ${review.rating} מתוך 5` : undefined}>
-          {review ? (
-            <>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <span key={n} className="text-[16px] leading-[22px] text-[#d52027]">
-                  {n <= review.rating ? "★" : "☆"}
-                </span>
-              ))}
-              <span className="ms-[2px] text-[13px] text-[#666]">({review.count})</span>
-            </>
-          ) : null}
-        </div>
+        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mb-[8px] h-[22px]" />
         {product.type === "simple" ? (
           <div className="flex items-center justify-between gap-1">
             {/* Prices (one line) with SKU underneath, on the right (RTL start) */}

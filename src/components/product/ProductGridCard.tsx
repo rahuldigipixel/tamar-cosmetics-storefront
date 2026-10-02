@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
+import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -87,6 +88,8 @@ export function ProductGridCard({
         >
           {product.name}
         </Link>
+
+        <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="h-[22px]" />
 
         {product.type === "simple" ? (
           <div className="mt-auto flex flex-wrap items-end justify-between gap-x-1 gap-y-2 pt-2">

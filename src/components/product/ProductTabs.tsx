@@ -98,7 +98,7 @@ export function ProductTabs({
               role="tab"
               aria-selected={isActive}
               onClick={() => setActive(i)}
-              className={`-mb-px shrink-0 border-b-[3px] px-[6px] py-[14px] text-[17px] leading-[24px] font-bold whitespace-nowrap transition-colors hover:text-black ${
+              className={`-mb-px shrink-0 border-b-[3px] px-[6px] py-[14px] text-[16px] leading-[24px] font-bold whitespace-nowrap transition-colors hover:text-black ${
                 isActive ? "border-brand-accent text-black" : "border-transparent text-[#777]"
               }`}
             >

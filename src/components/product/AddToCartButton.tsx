@@ -13,7 +13,7 @@ const SIZES = {
   slider: { width: "w-full", padding: "px-2 h-8 whitespace-nowrap", text: "text-[14px] leading-none", icon: "h-4 w-4", gap: "gap-1.5", showIcon: false, iconOnly: false },
   md: { width: "w-full", padding: "px-6 py-3", text: "text-sm", icon: "h-4 w-4", gap: "gap-2", showIcon: true, iconOnly: false },
   // Single product page: legacy-site sizing (arbitrary px on purpose — approved exception to the 18px floor).
-  lg: { width: "w-full", padding: "px-4 h-[40px]", text: "text-[16px]", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },
+  lg: { width: "w-full", padding: "px-4 h-[40px]", text: "text-[18px]", icon: "h-4 w-4", gap: "gap-2", showIcon: false, iconOnly: false },
 } as const;
 
 const PRIMARY_STYLE =
@@ -103,7 +103,7 @@ export function AddToCartButton({
   return (
     <div className="group/cart relative inline-flex shrink-0">
       {button}
-      <span className="pointer-events-none absolute -top-9 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-sm text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
+      <span className="pointer-events-none absolute -top-8 left-5.5 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
         הוספה לסל
       </span>
     </div>

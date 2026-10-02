@@ -32,7 +32,7 @@ export function ProductIconStrip({ items }: { items: ProductStripItem[] }) {
                   className="max-w-full shrink-0 object-contain"
                 />
               ) : null}
-              {title ? <span className="text-[15px] leading-[22px] text-black">{title}</span> : null}
+              {title ? <span className="text-[15px] leading-[22px] text-black md:text-[16px]">{title}</span> : null}
             </>
           );
           const cls = "flex flex-col items-center gap-[14px] text-center";

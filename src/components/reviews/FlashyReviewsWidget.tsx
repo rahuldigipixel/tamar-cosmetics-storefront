@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { rescanFlashyIfEmpty } from "@/components/layout/FlashyTracker";
+
 function rewriteLegacyLinks(container: HTMLElement, legacyOrigin: string) {
   const links = container.querySelectorAll<HTMLAnchorElement>("a[href]");
   links.forEach((link) => {
@@ -59,7 +61,11 @@ export function FlashyReviewsWidget({
     rewriteLegacyLinks(el, legacyOrigin);
     const observer = new MutationObserver(() => rewriteLegacyLinks(el, legacyOrigin));
     observer.observe(el, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    const stopRescan = rescanFlashyIfEmpty(el);
+    return () => {
+      observer.disconnect();
+      stopRescan();
+    };
   }, [mounted, legacyOrigin]);
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {

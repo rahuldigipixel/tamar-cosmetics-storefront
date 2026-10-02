@@ -47,7 +47,7 @@ export function QuickViewShare({
   return (
     <div className="flex items-center gap-[14px]" dir="rtl">
       {label ? (
-        <span className="text-[18px] leading-none font-normal text-[#333]">{label}</span>
+        <span className="text-[16px] leading-none font-normal text-[#333]">{label}</span>
       ) : (
         <span dir="ltr" className="text-[22px] leading-none font-bold text-[#333]">
           Share:
@@ -62,7 +62,7 @@ export function QuickViewShare({
           aria-label={label}
           className="text-[#777] transition-colors hover:text-[#333]"
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="h-[16px] w-[16px]" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="currentColor" className="h-[14px] w-[14px]" aria-hidden>
             <path d={ICON_PATHS[key]} />
           </svg>
         </a>

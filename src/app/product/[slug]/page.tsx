@@ -204,13 +204,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="px-[10px] text-right md:col-start-1 md:row-start-2">
  {brandLogo}
 
- <h1 className="text-[34px] leading-[41px] font-normal text-black">{product.name}</h1>
+ <h1 className="text-[24px] leading-[29px] font-bold text-black md:text-[34px] md:leading-[41px] md:font-normal">{product.name}</h1>
 
- <FlashyStarRating productId={product.databaseId} />
+ <FlashyStarRating rating={product.averageRating} count={product.reviewCount} />
 
  {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
 
- <div className="mt-[20px] space-y-[7px] text-[16px] leading-[24px] text-black">
+ <div className="mt-[20px] space-y-[7px] text-[15px] leading-[24px] text-black md:text-[16px]">
  {product.sku ? (
  <p>
  <span className="text-[#555]">מק&quot;ט:</span> {product.sku}
@@ -238,7 +238,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="flex flex-wrap items-baseline gap-x-[12px]">
  {product.onSale && product.salePrice ? (
  <>
- <span className="text-[44px] leading-none font-bold text-brand-accent">
+ <span className="text-[38px] leading-none font-bold text-brand-accent md:text-[48px]">
  {formatPrice(product.salePrice, product.currency)}
  </span>
  <span className="text-[18px] font-bold text-[#333] line-through decoration-1 decoration-black/40 [unicode-bidi:isolate]">
@@ -246,7 +246,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </span>
  </>
  ) : (
- <span className="text-[44px] leading-none font-bold text-black">
+ <span className="text-[38px] leading-none font-bold text-black md:text-[48px]">
  {formatPrice(product.price, product.currency)}
  </span>
  )}

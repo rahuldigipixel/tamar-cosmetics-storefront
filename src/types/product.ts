@@ -52,6 +52,8 @@ export interface SliderProduct {
   inStock: boolean;
   /** False for variable products — they can't be added without choosing an option. */
   purchasable: boolean;
+  averageRating?: number;
+  reviewCount?: number;
   image?: { url: string; width: number; height: number; alt: string };
 }
 

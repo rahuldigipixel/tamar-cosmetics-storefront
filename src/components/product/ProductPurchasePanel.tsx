@@ -55,7 +55,7 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
       type="button"
       onClick={handleClick}
       disabled={submitting}
-      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 rounded-full border border-brand-accent bg-white px-4 text-[16px] font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0"
+      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 rounded-full border border-brand-accent bg-white px-4 text-[18px] font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0"
     >
       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "קנה עכשיו"}
     </button>

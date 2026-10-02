@@ -15,7 +15,7 @@ export function TamarTip({ text }: { text: string }) {
         &ldquo;
       </span>
       <p className="text-[18px] leading-[26px] font-bold text-brand-accent">הטיפ של תמר</p>
-      <p className="mt-[2px] text-[14px] leading-[18px] whitespace-pre-line text-black">{text}</p>
+      <p className="mt-[2px] text-[15px] leading-[18px] whitespace-pre-line text-black">{text}</p>
     </aside>
   );
 }

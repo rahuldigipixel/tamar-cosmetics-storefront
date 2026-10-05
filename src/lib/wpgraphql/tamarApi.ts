@@ -199,46 +199,48 @@ export interface HeaderBar {
   serviceIcons: HeaderServiceIcon[];
 }
 
-export interface FooterLink {
-  id: string;
-  label: string;
+export interface FooterImage {
   url: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+export interface FooterItem {
+  /** link = label+url, text = small HTML, image = clickable image, social = social-network button. */
+  kind: "link" | "text" | "image" | "social";
+  /** Extra space above the item in px (wp-admin "מרווח מעל הפריט"). */
+  gap: number;
+  url?: string;
+  newTab?: boolean;
+  label?: string;
+  /** Already sanitized on the WP side (only <a>, <br>, <strong>, <b>). */
+  html?: string;
+  /** One of Tamar_Footer::SOCIAL_CHOICES — see SOCIAL in Footer.tsx. */
+  social?: string;
+  image?: FooterImage;
+  imagePos?: "none" | "start" | "end" | "above";
 }
 
 export interface FooterColumn {
   id: string;
   title: string;
-  links: FooterLink[];
+  /** Optional heading used instead of `title` on mobile. */
+  mobileTitle: string;
+  /** Side-by-side sub-lists; most columns have exactly one. */
+  groups: FooterItem[][];
 }
 
 /** Managed from wp-admin → הגדרות תמר → פוטר (Footer) — see includes/class-footer.php. */
 export interface FooterData {
-  description: string;
-  /** `type` is one of Tamar_Footer::SOCIAL_CHOICES — see SOCIAL_ICON_MAP in Footer.tsx. */
-  social: { id: string; type: string; url: string }[];
-  newsletter: { enabled: boolean; title: string; subtitle: string; placeholder: string };
+  background: FooterImage | null;
+  /** Payment-logos strip, shown on mobile only. */
+  paymentsImage: FooterImage | null;
+  brand: {
+    social: { id: string; type: string; url: string }[];
+    badge: { url: string; textImage: FooterImage | null; iconImage: FooterImage | null } | null;
+  };
   columns: FooterColumn[];
-  contact: {
-    enabled: boolean;
-    title: string;
-    phone: string;
-    phoneHours: string;
-    address: string;
-    addressHours: string;
-    whatsappLabel: string;
-  };
-  app: {
-    enabled: boolean;
-    title: string;
-    ratingText: string;
-    ratingStars: number;
-    iosUrl: string;
-    androidUrl: string;
-    /** Optional store-badge images uploaded in wp-admin (עמודת האפליקציה); null = built-in badge. */
-    iosImage?: { url: string; width: number; height: number; alt: string } | null;
-    androidImage?: { url: string; width: number; height: number; alt: string } | null;
-  };
-  bottom: { copyright: string; legalLinks: FooterLink[]; sslText: string };
 }
 
 export interface GlobalData {

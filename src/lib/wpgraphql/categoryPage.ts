@@ -35,17 +35,6 @@ export interface CategoryPageData {
   breadcrumbCategories: { name: string; slug: string }[];
 }
 
-const EMPTY: CategoryPageData = {
-  products: [],
-  hasNextPage: false,
-  endCursor: null,
-  categories: [],
-  brands: [],
-  brandSlugsInCategory: new Set(),
-  info: null,
-  breadcrumbCategories: [],
-};
-
 /**
  * All data the product-category page needs, in one combined GraphQL request
  * — see GET_CATEGORY_PAGE_DATA for why this replaces 4 separate GraphQL
@@ -78,7 +67,9 @@ export async function getCategoryPageData(
     { tags: ["products", "categories", "brands", `category-info:${categorySlug}`], revalidate: 60 }
   );
 
-  if (!data) return EMPTY;
+  // Backend unreachable/timed out: throw so the route shows its error state
+  // instead of an empty page that looks like a real "category not found" 404.
+  if (!data) throw new Error("Category page data request failed (backend unreachable or timed out).");
 
   const products = await mapProductListNodes(data.categoryProducts.nodes);
 

@@ -284,10 +284,14 @@ export function Header({
       // Dim is anchored to the document (absolute under the nav), so it
       // always starts right after the header and runs to the page bottom,
       // whatever the scroll position.
+      // It must end exactly at the footer's bottom edge: any extra height
+      // (e.g. a min of one viewport) lengthens the document and leaves blank
+      // scroll space after the footer. The footer is measured instead of
+      // scrollHeight, which would include this overlay's own previous height.
       const navBottomInDoc = navRect.bottom + window.scrollY;
-      setOverlayHeight(
-        Math.max(document.documentElement.scrollHeight - navBottomInDoc, btnRect.bottom - navRect.top + 10 + 570, window.innerHeight)
-      );
+      const footerEl = document.querySelector("footer");
+      const docBottom = footerEl ? footerEl.getBoundingClientRect().bottom + window.scrollY : document.documentElement.scrollHeight;
+      setOverlayHeight(Math.max(0, docBottom - navBottomInDoc));
     }
     // Compact header is `fixed`, so a tall panel could never be scrolled
     // into view. While the menu is open, anchor the header at the current

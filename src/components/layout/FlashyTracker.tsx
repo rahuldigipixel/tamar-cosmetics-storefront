@@ -23,6 +23,17 @@ export function rescanFlashyIfEmpty(el: HTMLElement | null, delayMs = 3000): () 
     // Filled, or Flashy hasn't even been loaded yet (its own init will find the container).
     if (el.childElementCount > 0 || !w.flashy || !w.__flashyAccountId) return;
     delete w.flashy;
+    // The second thunder.js load re-registers its custom elements (`flashy-popup`, ...), which throws
+    // "name has already been used" and aborts the script ("Cannot access 'Popup' before initialization").
+    // Make duplicate registrations a no-op, once.
+    const registry = window.customElements as CustomElementRegistry & { __flashyGuarded?: boolean };
+    if (!registry.__flashyGuarded) {
+      registry.__flashyGuarded = true;
+      const define = registry.define.bind(registry);
+      registry.define = (name, ctor, options) => {
+        if (!registry.get(name)) define(name, ctor, options);
+      };
+    }
     // Cached popup list → containers aren't filled (see the flashy-init script in layout.tsx); force a fresh fetch.
     try {
       localStorage.removeItem("flashy_popups_cache_time");

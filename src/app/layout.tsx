@@ -72,7 +72,7 @@ export default async function RootLayout({
         {labelsCss ? <style dangerouslySetInnerHTML={{ __html: labelsCss }} /> : null}
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">{children}</main>
-        <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} whatsappNumber={integrations.whatsappNumber} />
+        <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} />
         <FlashyTracker />
         <CookieConsent />
         <CartDrawer />

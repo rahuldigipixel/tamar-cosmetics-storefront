@@ -334,7 +334,9 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
         | null;
     } | null;
   }>(GET_PRODUCT_BY_SLUG, { slug, relatedFirst: 13 }, { tags: [`product:${slug}`, "product-page"], revalidate: 60 });
-  if (!data?.product) return null;
+  // null = request failed/timed out (not "no such product") — throw so the page errors instead of showing a false 404.
+  if (!data) throw new Error(`Product request for "${slug}" failed (backend unreachable or timed out).`);
+  if (!data.product) return null;
 
   const [product, related, upsells] = await Promise.all([
     withCustomFields(fromGraphqlProduct(data.product)),

@@ -12,6 +12,7 @@ import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import "./globals.css";
@@ -81,6 +82,7 @@ export default async function RootLayout({
         <LogoutOverlay />
         <FloatingActions whatsappNumber={integrations.whatsappNumber} />
         <AccessibilityWidget />
+        <MobileBottomNav />
         <Script id="flashy-init" strategy="lazyOnload">
           {`(function (a, b, c) {
             if (!a.flashy) {

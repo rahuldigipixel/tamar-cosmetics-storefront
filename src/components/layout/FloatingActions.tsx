@@ -34,7 +34,7 @@ export function FloatingActions({ whatsappNumber }: { whatsappNumber: string }) 
         target="_blank"
         rel="noopener noreferrer"
         aria-label="שוחחו איתנו בוואטסאפ"
-        className="group fixed bottom-[80px] left-5 z-[80] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_-6px_rgba(37,211,102,0.6)] transition-transform duration-300 hover:scale-110 sm:bottom-[84px] sm:left-6"
+        className="group fixed bottom-[80px] left-5 z-[80] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_-6px_rgba(37,211,102,0.6)] transition-transform duration-300 hover:scale-110 sm:left-6 lg:bottom-[84px]"
       >
         <WhatsAppIcon className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
       </a>
@@ -43,7 +43,7 @@ export function FloatingActions({ whatsappNumber }: { whatsappNumber: string }) 
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         aria-label="חזרה לראש העמוד"
-        className={`fixed bottom-5 left-5 z-[80] flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-brand-accent sm:bottom-6 sm:left-6 ${
+        className={`fixed bottom-[136px] left-5 z-[80] flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-brand-accent sm:left-6 lg:bottom-6 ${
           showScrollTop ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
         }`}
       >

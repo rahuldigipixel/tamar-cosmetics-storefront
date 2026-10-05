@@ -11,7 +11,7 @@ export function ProductSlider({
   products,
   autoplayMs,
   compact = false,
-  sectionPadding = "pb-0 pt-[50px] md:py-[60px]",
+  sectionPadding = "pb-0 pt-[50px] md:pt-[60px]",
   singleOnMobile = false,
 }: {
   badge?: string;

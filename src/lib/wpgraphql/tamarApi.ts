@@ -236,6 +236,8 @@ export interface FooterData {
   background: FooterImage | null;
   /** Payment-logos strip, shown on mobile only. */
   paymentsImage: FooterImage | null;
+  /** Mobile-only copyright line + links (sanitized HTML: a / br / strong). */
+  copyrightHtml?: string;
   brand: {
     social: { id: string; type: string; url: string }[];
     badge: { url: string; textImage: FooterImage | null; iconImage: FooterImage | null } | null;

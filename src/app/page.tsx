@@ -113,18 +113,20 @@ export default async function HomePage() {
         description={settings?.sale.description}
         products={saleSectionProducts}
         headerVariant="modern"
-        sectionPadding="pb-0 pt-[50px] md:py-[30px]"
         singleOnMobile
       />
 
-      <FeatureStrip features={settings?.features} />
+      {/* Margins collapse with FeatureStrip's own my-[25px], so the wrapper sets the full 50/60px gap above; the about section's pt tops up the 25px below. */}
+      <div className="mt-[50px] md:mt-[60px]">
+        <FeatureStrip features={settings?.features} />
+      </div>
 
-      <section className="mx-auto max-w-[1600px] px-[15px] py-[25px] text-center">
+      <section className="mx-auto max-w-[1600px] px-[15px] pb-0 pt-[25px] text-center md:pt-[35px]">
         <h2 className="mb-4 text-[30px] font-semibold leading-[30px] md:text-[32px] text-black [text-shadow:9px_4px_10px_rgba(0,0,0,0.3)]">{aboutTitle}</h2>
         <RichContent html={aboutHtml} className={ABOUT_CONTENT_CLASS} />
       </section>
 
-      <section className="w-full bg-white py-[25px]">
+      <section className="w-full bg-white pb-0 pt-[50px] md:pt-[60px]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <FlashyReviewsWidget elementId={integrations.flashyReviewsElementId} legacyOrigin={integrations.flashyLegacySiteOrigin} />
         </div>

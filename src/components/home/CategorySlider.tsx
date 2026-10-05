@@ -37,7 +37,7 @@ export function CategorySlider({ categories, heading }: { categories: ProductCat
   if (categories.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1550px] px-[15px] pb-0 pt-[50px] sm:pb-0 sm:pt-[70px]">
+    <section className="mx-auto max-w-[1550px] px-[15px] pb-0 pt-[50px] md:pt-[60px]">
       {heading ? (
         <h2 className="mb-8 text-center text-[28px] font-bold text-[#242424] sm:text-[36px]">{heading}</h2>
       ) : null}

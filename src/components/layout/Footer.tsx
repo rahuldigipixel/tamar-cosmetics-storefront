@@ -97,7 +97,7 @@ function Img({ image, className }: { image: FooterImage; className?: string }) {
       width={w}
       height={h}
       unoptimized={isUnoptimized(image.url)}
-      className={className}
+      className={`block ${className ?? ""}`}
       style={{ width: w, height: h, maxWidth: "none" }}
     />
   );
@@ -110,7 +110,7 @@ function ItemBlock({ item }: { item: FooterItem }) {
     if (!image) return null;
     const img = <Img image={image} />;
     return item.url ? (
-      <Anchor href={item.url} newTab={item.newTab} className="inline-block w-fit">
+      <Anchor href={item.url} newTab={item.newTab} className="block w-fit">
         {img}
       </Anchor>
     ) : (
@@ -175,6 +175,8 @@ function Group({ items }: { items: FooterItem[] }) {
           {run.map((s, k) => {
             const icon = SOCIAL[s.social ?? ""];
             if (!icon || !s.url) return null;
+            // Instagram is not shown in the mobile button row (it stays in the logo column's icons).
+            const hideOnMobile = s.social === "instagram";
             return (
               <a
                 key={k}
@@ -183,7 +185,7 @@ function Group({ items }: { items: FooterItem[] }) {
                 rel="noopener noreferrer"
                 aria-label={icon.label}
                 style={{ backgroundColor: icon.brand }}
-                className="flex h-[48px] w-[48px] items-center justify-center rounded-[10px] text-white transition-opacity hover:opacity-85"
+                className={`${hideOnMobile ? "hidden md:flex" : "flex"} h-[48px] w-[48px] items-center justify-center rounded-[10px] text-white transition-opacity hover:opacity-85`}
               >
                 <svg viewBox={icon.viewBox} fill="currentColor" className="h-[22px] w-[22px]" aria-hidden="true">
                   <path d={icon.path} />
@@ -215,11 +217,11 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
 
   return (
     <footer
-      className="mt-8 bg-white bg-[position:0%_100%] bg-no-repeat sm:mt-15"
-      style={footer.background ? { backgroundImage: `url(${footer.background.url})`, backgroundSize: "cover" } : undefined}
+      className="mt-8 bg-white bg-cover bg-[position:50%_100%] bg-no-repeat sm:mt-15 md:bg-[position:0%_100%]"
+      style={footer.background ? { backgroundImage: `url(${footer.background.url})` } : undefined}
     >
       <div
-        className="mx-auto grid max-w-[1642px] grid-cols-1 gap-x-5 gap-y-8 px-[15px] pb-10 pt-5 md:grid-cols-2 md:pt-[10px] xl:[grid-template-columns:var(--footer-cols)] xl:gap-y-0 xl:pb-[7px] xl:ps-[27px] xl:pe-1"
+        className="mx-auto grid max-w-[1642px] grid-cols-1 gap-x-5 gap-y-8 px-[15px] pb-[14px] pt-[52px] md:grid-cols-2 md:pt-[62px] xl:[grid-template-columns:var(--footer-cols)] xl:gap-y-0 xl:ps-[27px] xl:pe-1"
         style={{ "--footer-cols": gridCols } as React.CSSProperties}
       >
         {/* Logo + social + round service badge */}
@@ -235,7 +237,7 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
             />
           ) : null}
           {social.length ? (
-            <div className="mt-[20px] hidden items-center md:flex">
+            <div className="mt-[20px] flex items-center">
               {social.map((s) => {
                 const icon = SOCIAL[s.type];
                 return (
@@ -300,10 +302,25 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
           </div>
         ))}
 
+        {/* Copyright + legal links — mobile only */}
+        {footer.copyrightHtml ? (
+          <p
+            className={`${TEXT} order-[99] px-1 text-center text-[#6b6b6b] md:hidden [&_a]:whitespace-nowrap [&_a]:text-[#242424] [&_a:hover]:text-brand-accent`}
+            dangerouslySetInnerHTML={{ __html: footer.copyrightHtml }}
+          />
+        ) : null}
+
         {/* Payment logos — mobile only (hidden on desktop in the legacy footer) */}
         {payments ? (
           <div className="order-[100] flex justify-center md:hidden">
-            <Img image={payments} />
+            <Image
+              src={payments.url}
+              alt={payments.alt}
+              width={300}
+              height={40}
+              unoptimized={isUnoptimized(payments.url)}
+              className="block h-auto w-full max-w-[300px]"
+            />
           </div>
         ) : null}
       </div>

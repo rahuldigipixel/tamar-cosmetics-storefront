@@ -55,7 +55,7 @@ export function ClubSignup({
   }
 
   return (
-    <section className="w-full overflow-hidden" dir="rtl">
+    <section className="mt-[50px] w-full overflow-hidden md:mt-[60px]" dir="rtl">
       {/* Split: Visual Right (58% Image) / Visual Left (42% Red Form) */}
       <div className="grid grid-cols-1 lg:grid-cols-[58%_42%] w-full">
         

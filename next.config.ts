@@ -42,6 +42,10 @@ const nextConfig: NextConfig = {
       // live site's own URL exactly.
       { source: "/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%95%D7%AA-%D7%9C%D7%A7%D7%95%D7%97%D7%95%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/reviews" },
       { source: "/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%95%D7%AA-%D7%9C%D7%A7%D7%95%D7%97%D7%95%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/reviews" },
+      // "/שיטת-שילוח-תמר-קוסמטיקס" (shipping method page) — matches the live
+      // site's own URL; the page itself lives at the ASCII route.
+      { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/tamar-cosmetics-shipping-method" },
+      { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/tamar-cosmetics-shipping-method" },
       // "/הנבחרת-הסודית" (secret club page) — same non-ASCII-directory
       // limitation as the brand list rewrite above.
       { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA", destination: "/secret-club" },

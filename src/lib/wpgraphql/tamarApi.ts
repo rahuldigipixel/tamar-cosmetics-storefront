@@ -565,3 +565,20 @@ export interface ShippingCity {
 export function getShippingCities() {
   return tamarFetch<ShippingCity[]>(`/shipping-cities`, { revalidate: 86400, tags: ["shipping-cities"] });
 }
+
+export interface ShippingMethodPage {
+  heading: string;
+  contentHtml: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → שיטת שילוח תמר קוסמטיקס
+ * (includes/class-shipping-method-page.php). `cache()`-wrapped so
+ * generateMetadata() and the page body share one request.
+ */
+export const getShippingMethodPage = cache(function getShippingMethodPage() {
+  return tamarFetch<ShippingMethodPage>(`/shipping-method-page`, {
+    tags: ["shipping-method-page"],
+    revalidate: 300,
+  });
+});

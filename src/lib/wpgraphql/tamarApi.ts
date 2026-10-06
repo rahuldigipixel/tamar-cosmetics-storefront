@@ -99,6 +99,8 @@ export interface SiteSettings {
   brandPageTitle: string;
   brandPageDescription: string;
   /** Third-party IDs from wp-admin → הגדרות תמר → הגדרות כלליות; each is "" when unset (use resolveIntegrations() for defaults). */
+  /** Free-shipping progress bar target + messages (wp-admin → הגדרות כלליות); use resolveFreeShipping() for defaults. */
+  freeShipping?: Partial<import("@/lib/utils/freeShipping").FreeShippingConfig>;
   integrations?: {
     flashyAccountId: string;
     flashyReviewsElementId: string;

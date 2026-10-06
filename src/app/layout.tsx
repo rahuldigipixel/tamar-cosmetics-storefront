@@ -7,6 +7,8 @@ import { Footer } from "@/components/layout/Footer";
 import { FlashyTracker } from "@/components/layout/FlashyTracker";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { FreeShippingProvider } from "@/components/cart/FreeShippingProvider";
+import { resolveFreeShipping } from "@/lib/utils/freeShipping";
 import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
@@ -57,6 +59,7 @@ export default async function RootLayout({
   const siteSettings = global?.settings ?? null;
   const bar = global?.headerBar ?? null;
   const integrations = resolveIntegrations(siteSettings);
+  const freeShipping = resolveFreeShipping(siteSettings?.freeShipping);
   const labelsCss = global?.labelsCss?.replace(/<\/style/gi, "") ?? "";
 
   return (
@@ -72,11 +75,15 @@ export default async function RootLayout({
         {/* Product label styles (wp-admin → BeRocket → Advanced Labels), from the same /global-data call as the menu. */}
         {labelsCss ? <style dangerouslySetInnerHTML={{ __html: labelsCss }} /> : null}
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <FreeShippingProvider config={freeShipping}>{children}</FreeShippingProvider>
+        </main>
         <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} />
         <FlashyTracker />
         <CookieConsent />
-        <CartDrawer />
+        <FreeShippingProvider config={freeShipping}>
+          <CartDrawer />
+        </FreeShippingProvider>
         <LoginDrawer />
         <QuickViewHost />
         <LogoutOverlay />

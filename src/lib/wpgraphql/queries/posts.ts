@@ -1,4 +1,6 @@
-export const GET_POSTS = /* GraphQL */ `
+import { PRODUCT_LIST_FIELDS } from "./products";
+
+export const GET_POSTS =/* GraphQL */ `
   query GetPosts($first: Int!, $after: String) {
     posts(first: $first, after: $after, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
       pageInfo {
@@ -89,9 +91,14 @@ export const GET_POST_NAV_LIST = /* GraphQL */ `
   }
 `;
 
+// tamarPostProducts = products picked in the post edit screen (plugin class-blog.php), folded into this one query.
 export const GET_POST_BY_SLUG = /* GraphQL */ `
   query GetPostBySlug($slug: ID!) {
     post(id: $slug, idType: SLUG) {
+      tamarPostProductsTitle
+      tamarPostProducts {
+        ${PRODUCT_LIST_FIELDS}
+      }
       id
       databaseId
       title

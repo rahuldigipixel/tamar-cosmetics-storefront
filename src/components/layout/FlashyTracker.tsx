@@ -16,12 +16,25 @@ type FlashyWindow = Window & {
  * (verified: no duplicated popups), so widgets call this when their container
  * is still empty a few seconds after mounting. Returns a cleanup function.
  */
-export function rescanFlashyIfEmpty(el: HTMLElement | null, delayMs = 3000): () => void {
+export function rescanFlashyIfEmpty(el: HTMLElement | null, delayMs = 2000): () => void {
   if (!el) return () => {};
-  const timer = window.setTimeout(() => {
+  let timer = 0;
+  let reloads = 0;
+  let ticks = 0;
+  const MAX_TICKS = 8;
+  const tick = () => {
+    ticks++;
     const w = window as FlashyWindow & { __flashyAccountId?: number };
-    // Filled, or Flashy hasn't even been loaded yet (its own init will find the container).
-    if (el.childElementCount > 0 || !w.flashy || !w.__flashyAccountId) return;
+    if (el.childElementCount > 0 || !el.isConnected) return; // filled (or unmounted): done
+    // Flashy's lazy-loaded init hasn't run yet (slow load). Its own init will find the container, but keep
+    // checking: a one-shot check used to give up for good and leave the widget empty on slow loads.
+    if (!w.flashy || !w.__flashyAccountId) {
+      if (ticks < MAX_TICKS) timer = window.setTimeout(tick, delayMs);
+      return;
+    }
+    // Initialised yet still empty: thunder.js scanned before this container mounted. Reload it (max twice).
+    if (reloads >= 2) return;
+    reloads++;
     delete w.flashy;
     // The second thunder.js load re-registers its custom elements (`flashy-popup`, ...), which throws
     // "name has already been used" and aborts the script ("Cannot access 'Popup' before initialization").
@@ -50,7 +63,9 @@ export function rescanFlashyIfEmpty(el: HTMLElement | null, delayMs = 3000): () 
     stub.queue = [];
     w.flashy = stub;
     w.flashy("init", w.__flashyAccountId);
-  }, delayMs);
+    timer = window.setTimeout(tick, delayMs + 1000); // verify the reload filled it, else retry once more
+  };
+  timer = window.setTimeout(tick, delayMs);
   return () => window.clearTimeout(timer);
 }
 

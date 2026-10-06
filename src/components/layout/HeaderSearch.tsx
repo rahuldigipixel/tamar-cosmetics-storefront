@@ -108,11 +108,14 @@ export function HeaderSearch({
 
   const allResultsHref = `/?s=${encodeURIComponent(trimmed)}&post_type=product`;
 
+  // A lone match for the current query goes straight to its product page.
+  const single = active && !loading && results.length === 1 ? results[0] : null;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setOpen(false);
     (document.activeElement as HTMLElement | null)?.blur();
-    router.push(trimmed ? allResultsHref : "/shop");
+    router.push(single ? `/product/${single.slug}` : trimmed ? allResultsHref : "/shop");
   }
 
   return (
@@ -182,14 +185,16 @@ export function HeaderSearch({
                   </Link>
                 ))}
               </div>
-              <Link
-                href={allResultsHref}
-                onClick={() => setOpen(false)}
-                className="flex h-[50px] items-center justify-center gap-[6px] text-[21px] font-semibold leading-[50px] text-[#333] transition-colors hover:bg-[#f4c5cd]"
-              >
-                צפייה בכל התוצאות
-                <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
-              </Link>
+              {results.length > 1 ? (
+                <Link
+                  href={allResultsHref}
+                  onClick={() => setOpen(false)}
+                  className="flex h-[50px] items-center justify-center gap-[6px] text-[21px] font-semibold leading-[50px] text-[#333] transition-colors hover:bg-[#f4c5cd]"
+                >
+                  צפייה בכל התוצאות
+                  <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
+                </Link>
+              ) : null}
             </div>
           )}
         </div>

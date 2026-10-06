@@ -47,6 +47,8 @@ export interface GqlProductNode {
   image?: GqlImage | null;
   /** Rendered Advanced Product Labels HTML by placement; null when no label applies to the product. */
   tamarLabels?: { image?: string | null; label?: string | null } | null;
+  /** Unit price after YITH Dynamic Pricing rules (GraphQL `tamarDynamicPrice`); null when no rule applies. */
+  tamarDynamicPrice?: string | null;
   galleryImages?: { nodes: GqlImage[] };
   /** Only requested on list queries (first gallery image only) — a lighter alternative to `galleryImages` for the hover-swap thumbnail. */
   galleryFirstImage?: { nodes: GqlImage[] };
@@ -160,10 +162,11 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     type: node.__typename === "VariableProduct" || variations.length > 0 ? "variable" : "simple",
     shortDescription: node.shortDescription,
     description: node.description,
-    price: node.price ?? "0",
+    // A YITH dynamic-pricing rule becomes the sale price; the base price stays as the struck-through regular price.
+    price: node.tamarDynamicPrice ?? node.price ?? "0",
     regularPrice: node.regularPrice ?? node.price ?? "0",
-    salePrice: node.salePrice,
-    onSale: Boolean(node.onSale),
+    salePrice: node.tamarDynamicPrice ?? node.salePrice,
+    onSale: Boolean(node.onSale) || Boolean(node.tamarDynamicPrice),
     inStock: node.stockStatus !== "OUT_OF_STOCK",
     currency: "ILS",
     images,

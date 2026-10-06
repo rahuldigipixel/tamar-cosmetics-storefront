@@ -143,6 +143,8 @@ export default function CartPage() {
             <tbody className="block min-[769px]:table-row-group">
               {cart.items.map((item) => {
                 const unitPrice = item.quantity > 0 ? Number(item.subtotal) / item.quantity : 0;
+                const regularPrice = Number(item.regularPrice);
+                const onSale = Number.isFinite(regularPrice) && regularPrice > unitPrice + 0.001;
                 const href = `/product/${item.product.slug}`;
                 const shownQty = pendingQty[item.key] ?? item.quantity;
                 return (
@@ -189,7 +191,10 @@ export default function CartPage() {
                       {item.product.sku ?? ""}
                     </td>
                     <td data-title="מחיר" className={`${TD} ${MOBILE_ROW} text-left min-[769px]:text-right`}>
-                      <span className="text-[#777]">{formatPrice(unitPrice)}</span>
+                      <span className={onSale ? "font-semibold text-brand-accent" : "text-[#777]"}>{formatPrice(unitPrice)}</span>
+                      {onSale ? (
+                        <span className="mx-[6px] inline-block text-[#777] line-through">{formatPrice(item.regularPrice!)}</span>
+                      ) : null}
                     </td>
                     <td data-title="כמות" className={`${TD} ${MOBILE_ROW} text-left min-[769px]:text-right`}>
                       {/* Controls sit at the top-left of a 45px box, as in the original */}

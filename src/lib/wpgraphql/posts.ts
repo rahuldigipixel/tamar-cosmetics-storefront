@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { wpEnv } from "./env";
 import { fetchGraphQLSafe } from "./client";
+import { mapProductListNodes, type GqlProductNode } from "./products";
+import type { Product } from "@/types/product";
 import { GET_CATEGORY_BY_SLUG, GET_POSTS, GET_POSTS_BY_CATEGORY, GET_POST_BY_SLUG, GET_POST_NAV_LIST } from "./queries/posts";
 
 export interface BlogPostSummary {
@@ -18,6 +20,10 @@ export interface BlogPostSummary {
 export interface BlogPost extends BlogPostSummary {
   contentHtml: string;
   authorName: string | null;
+  /** Products picked in the post's wp-admin edit screen, in the admin's order (empty when none). */
+  products: Product[];
+  /** Heading above the products slider; empty = no heading. */
+  productsTitle: string;
 }
 
 interface GqlPostNode {
@@ -127,7 +133,14 @@ export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null
   const queryableSlug = encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
 
   const data = await fetchGraphQLSafe<{
-    post: (GqlPostNode & { content: string; author?: { node: { name: string } } | null }) | null;
+    post:
+      | (GqlPostNode & {
+          content: string;
+          author?: { node: { name: string } } | null;
+          tamarPostProducts?: GqlProductNode[] | null;
+          tamarPostProductsTitle?: string | null;
+        })
+      | null;
   }>(GET_POST_BY_SLUG, { slug: queryableSlug }, { tags: ["posts", `post:${slug}`], revalidate: 300 });
 
   if (!data?.post) return null;
@@ -136,6 +149,8 @@ export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null
     ...toSummary(data.post),
     contentHtml: data.post.content,
     authorName: data.post.author?.node.name ?? null,
+    productsTitle: data.post.tamarPostProductsTitle?.trim() ?? "",
+    products: await mapProductListNodes(data.post.tamarPostProducts ?? []),
   };
 });
 

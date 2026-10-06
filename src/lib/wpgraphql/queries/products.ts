@@ -47,6 +47,8 @@ const PRODUCT_CARD_SHARED_FIELDS = /* GraphQL */ `
     image
     label
   }
+  # Unit price after YITH Dynamic Pricing rules (null when none applies).
+  tamarDynamicPrice
 `;
 
 export const PRODUCT_LIST_FIELDS = /* GraphQL */ `
@@ -185,6 +187,7 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
     image
     label
   }
+  tamarDynamicPrice
   galleryImages {
     nodes {
       id

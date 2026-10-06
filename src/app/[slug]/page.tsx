@@ -7,6 +7,7 @@ import { getAdjacentPosts, getPostBySlug, getPostComments } from "@/lib/wpgraphq
 import { RichContent } from "@/components/ui/RichContent";
 import { BlogShare } from "@/components/blog/BlogShare";
 import { BlogComments } from "@/components/blog/BlogComments";
+import { ProductSlider } from "@/components/home/ProductSlider";
 import { wpEnv } from "@/lib/wpgraphql/env";
 
 export const revalidate = 300;
@@ -57,6 +58,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
  ) : null}
 
  <RichContent html={post.contentHtml} className="mt-8" />
+
+ {post.products.length > 0 ? (
+ // Top gap from the post text; side padding keeps the arrows inside the content width.
+ <div className="mt-10 md:mt-14 md:px-[45px]">
+ <ProductSlider title={post.productsTitle} products={post.products} compact titleWeight="font-normal" />
+ </div>
+ ) : null}
 
  <div className="mt-10 flex justify-center border-t border-black/10 pt-8">
  <BlogShare url={shareUrl} title={post.title} />

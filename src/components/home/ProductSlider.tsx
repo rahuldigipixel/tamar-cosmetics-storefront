@@ -16,7 +16,10 @@ export function ProductSlider({
   compact = false,
   sectionPadding = "pb-0 pt-[50px] md:pt-[60px]",
   singleOnMobile = false,
+  titleWeight = "font-bold",
 }: {
+  /** Font-weight class of the compact heading. */
+  titleWeight?: string;
   badge?: string;
   badgeIcon?: React.ReactNode;
   title: string;
@@ -59,18 +62,20 @@ export function ProductSlider({
   return (
     <section className={`mx-auto max-w-[1600px] px-[15px] ${compact ? "py-[12px] md:py-[25px]" : sectionPadding}`}>
       {/* Centered heading */}
+      {title || description ? (
       <div className={`text-center ${compact ? "mb-7" : "mb-5"}`}>
-        <h2
+        {title ? <h2
           className={
             compact
-              ? "text-[26px] leading-[1.3] font-bold text-[#000]"
+              ? `text-[26px] leading-[1.3] ${titleWeight} text-[#000]`
               : "text-[38px] font-extrabold leading-[38px] tracking-tight text-[#000] md:text-[72px] md:leading-[60px]"
           }
         >
           {title}
-        </h2>
-        {description ? <p className={`${compact ? "text-[23px] leading-[37px]" : "text-[18px] leading-[18px] md:text-[23px] md:leading-[37px]"} font-normal text-black ${compact ? "mt-3" : "mt-5"}`}>{description}</p> : null}
+        </h2> : null}
+        {description ? <p className={`${compact ? "text-[23px] leading-[37px]" : "text-[18px] leading-[18px] md:text-[23px] md:leading-[37px]"} font-normal text-black ${title ? (compact ? "mt-3" : "mt-5") : ""}`}>{description}</p> : null}
       </div>
+      ) : null}
 
       {/* Slider with arrows on left/right sides */}
       <div className="relative">

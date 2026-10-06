@@ -55,12 +55,12 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
         <FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="mt-[4px]" />
 
         <div className="mt-[10px] flex items-center justify-between gap-[6px]">
-          {/* RTL: price + SKU on the right, cart controls on the left. */}
-          <div className="flex h-9 shrink-0 flex-col justify-between">
-            <p className="flex items-baseline gap-[6px] whitespace-nowrap">
+          {/* RTL: price + SKU on the right, cart controls on the left. Sale: regular price on top, sale price right below it. */}
+          <div className="flex min-h-9 min-w-0 shrink flex-col justify-between">
+            <p className="flex flex-col items-start whitespace-nowrap">
               <span className="text-[17px] leading-[19px] font-bold text-[#d52027]"><Price value={price} symbolSize={14} family="inherit" /></span>
               {product.onSale && product.salePrice ? (
-                <span className="text-[12px]  leading-[19px] text-[#646464] line-through decoration-1 decoration-black/20 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
+                <span className="text-[12px] leading-[19px] text-[#646464] line-through decoration-1 decoration-black/20 [unicode-bidi:isolate]">{formatPrice(product.regularPrice)}</span>
               ) : null}
             </p>
             {product.sku ? <p className="text-[12px] leading-[14px] text-black">מק&quot;ט: {product.sku}</p> : null}
@@ -86,7 +86,9 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   const viewport = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [visible, setVisible] = useState(VISIBLE);
-  const scrollable = products.length > visible;
+  // Arrows + endless loop are always on. When every product already fits in the window, step one row at a time so the loop still visibly moves.
+  const scrollable = products.length > 0;
+  const stepRows = products.length > visible ? visible : 1;
   // Rows keep their natural height (title lines / reviews / button differ per product) so there is no dead space inside a row.
   // setHeight = one full copy of the list; viewHeight = exactly the two rows currently shown, so no third product ever peeks in.
   const [setHeight, setSetHeight] = useState(0);
@@ -149,7 +151,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
     // Land on a row boundary even if clicks arrive mid-animation, and resize the window to the pair it lands on.
     const rows = rowEls();
     const offsets = offsetsOf(rows);
-    const next = Math.min(Math.max(nearest(offsets, el.scrollTop) + dir * visible, 0), rows.length - 1);
+    const next = Math.min(Math.max(nearest(offsets, el.scrollTop) + dir * stepRows, 0), rows.length - 1);
     setViewHeight(windowFor(rows, offsets, next));
     el.scrollTo({ top: offsets[next], behavior: "smooth" });
   }
@@ -159,11 +161,11 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   const copies = scrollable ? COPIES : 1;
 
   return (
-    <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[10px] pb-[12px] text-right max-md:max-w-none md:mx-0" aria-label="מוצרים קשורים">
+    <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[20px] pb-[20px] text-right max-md:max-w-none md:mx-0" aria-label="מוצרים קשורים">
       <h2 className="text-center text-[21px] leading-[34px] font-semibold text-[#d52027]">מוצרים קשורים</h2>
 
       {scrollable ? (
-        <button type="button" onClick={() => step(-1)} aria-label="הקודם" className={chevron}>
+        <button type="button" onClick={() => step(-1)} aria-label="הקודם" className={`${chevron} mt-[10px]`}>
           <ChevronUp className="h-8 w-8" strokeWidth={3} />
         </button>
       ) : null}

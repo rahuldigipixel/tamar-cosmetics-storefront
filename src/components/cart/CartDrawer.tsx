@@ -7,7 +7,7 @@ import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
-import { FREE_SHIPPING_THRESHOLD } from "@/lib/utils/freeShipping";
+import { renderShippingMessage, useFreeShipping } from "@/components/cart/FreeShippingProvider";
 
 export function CartDrawer() {
   const isOpen = useCartStore((s) => s.isDrawerOpen);
@@ -18,8 +18,9 @@ export function CartDrawer() {
 
   // Items value only — coupon discount and shipping belong to the cart/checkout totals, not the side cart.
   const cartTotal = Number(cart.subtotal) || 0;
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
-  const progress = Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100);
+  const { threshold, msgRemaining, msgReachedDrawer } = useFreeShipping();
+  const remaining = Math.max(0, threshold - cartTotal);
+  const progress = Math.min(100, (cartTotal / threshold) * 100);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -160,14 +161,9 @@ export function CartDrawer() {
               </div>
               <div className="border-t border-black/10 p-[15px]">
                 <p className="text-center text-[16px] leading-[22px] text-[#0c0c0c]">
-                  {remaining > 0 ? (
-                    <>
-                      נותר לך עוד <span className="font-bold text-brand-accent">{formatPrice(remaining.toFixed(2))}</span>{" "}
-                      למשלוח חינם !
-                    </>
-                  ) : (
-                    "יפה ! מגיע לך משלוח חינם"
-                  )}
+                  {remaining > 0
+                    ? renderShippingMessage(msgRemaining, formatPrice(remaining.toFixed(2)), "font-bold text-brand-accent")
+                    : msgReachedDrawer}
                 </p>
                 <div className="mt-[10px] h-[7px] w-full bg-black/[0.06]">
                   <div

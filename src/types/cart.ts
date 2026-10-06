@@ -3,6 +3,8 @@ export interface CartItem {
   quantity: number;
   total: string;
   subtotal: string;
+  /** Unit regular (pre-sale) price, raw number string. */
+  regularPrice?: string;
   product: {
     id: string;
     databaseId: number;
@@ -23,6 +25,20 @@ export interface ShippingRate {
   id: string;
   label: string;
   cost: string;
+}
+
+export interface ShippingAddress {
+  /** WooCommerce state code — for Israel this is the city code (e.g. "IL3000"), which drives shipping-zone rules. */
+  state: string;
+  city: string;
+}
+
+/** An enabled WooCommerce payment gateway (title/description/logo exactly as set in wp-admin). */
+export interface PaymentGateway {
+  id: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
 }
 
 export interface Cart {

@@ -148,11 +148,11 @@ export function HeaderSearch({
           {!loading && results.length === 0 ? (
             <p className="px-[15px] py-[25px] text-center text-[14px] text-[#777]">לא נמצאו מוצרים</p>
           ) : (
-            <div className={loading ? "opacity-60 transition-opacity" : "transition-opacity"}>
+            <div className={`${loading ? "opacity-60" : ""} transition-opacity ${columns === "row" ? "pb-[20px]" : ""}`}>
               <div
                 className={
                   columns === "row"
-                    ? "grid grid-cols-5 gap-x-[20px] px-[30px] pt-[30px] pb-[15px]"
+                    ? "grid grid-cols-5 px-[15px] pt-[15px]"
                     : "flex flex-col divide-y divide-black/5 px-[15px] py-[5px]"
                 }
               >
@@ -161,7 +161,7 @@ export function HeaderSearch({
                     key={r.id}
                     href={`/product/${r.slug}`}
                     onClick={() => setOpen(false)}
-                    className={`flex items-start gap-[15px] text-[#333] transition-opacity hover:opacity-80 ${columns === "list" ? "py-[10px]" : ""}`}
+                    className={`flex items-start gap-[15px] text-black transition-colors hover:bg-[#f5f5f5] ${columns === "list" ? "px-[5px] py-[10px]" : "p-[15px]"}`}
                   >
                     <span className="relative h-[60px] w-[60px] shrink-0">
                       {r.image ? (
@@ -169,12 +169,12 @@ export function HeaderSearch({
                       ) : null}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="line-clamp-3 text-[15px] leading-[1.35]">
+                      <span className="line-clamp-3 text-[14px] font-normal leading-[20px]">
                         <Highlight text={r.name} query={trimmed} />
                       </span>
-                      {r.sku ? <span className="mt-[6px] block text-[13px]">SKU: {r.sku}</span> : null}
+                      {r.sku ? <span className="mt-[5px] block text-[14px] leading-[20px]">SKU: {r.sku}</span> : null}
                       {r.price !== null ? (
-                        <span className="mt-[4px] block text-[22px] font-bold leading-[1.2] text-[#d52027]">
+                        <span className="mt-[8px] block text-[24px] font-bold leading-[26px] text-[#d52027]">
                           {formatPrice(r.price)}
                         </span>
                       ) : null}
@@ -185,7 +185,7 @@ export function HeaderSearch({
               <Link
                 href={allResultsHref}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-[6px] py-[18px] text-[22px] font-bold text-[#333] transition-colors hover:text-[#d52027]"
+                className="flex h-[50px] items-center justify-center gap-[6px] text-[21px] font-semibold leading-[50px] text-[#333] transition-colors hover:bg-[#f4c5cd]"
               >
                 צפייה בכל התוצאות
                 <ChevronLeft className="h-5 w-5 stroke-[2.5]" />

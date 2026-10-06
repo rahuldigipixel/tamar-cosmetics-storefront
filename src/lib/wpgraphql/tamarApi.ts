@@ -555,3 +555,13 @@ export async function accountRequest<T>(
     clearTimeout(timer);
   }
 }
+
+export interface ShippingCity {
+  code: string;
+  name: string;
+}
+
+/** Cities WooCommerce matches shipping zones against (plugin: class-shipping-cities.php). */
+export function getShippingCities() {
+  return tamarFetch<ShippingCity[]>(`/shipping-cities`, { revalidate: 86400, tags: ["shipping-cities"] });
+}

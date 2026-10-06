@@ -15,6 +15,7 @@ export const CHECKOUT = /* GraphQL */ `
     $shipping: CustomerAddressInput!
     $paymentMethod: String!
     $customerNote: String
+    $metaData: [MetaDataInput]
   ) {
     checkout(
       input: {
@@ -22,6 +23,7 @@ export const CHECKOUT = /* GraphQL */ `
         shipping: $shipping
         paymentMethod: $paymentMethod
         customerNote: $customerNote
+        metaData: $metaData
         isPaid: false
       }
     ) {

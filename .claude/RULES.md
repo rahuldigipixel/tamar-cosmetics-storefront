@@ -22,7 +22,7 @@ Every task (old code touched, or new code added) must leave the site **as fast o
 
 ### API requests (backend = WP plugin `tamar-headless-api`)
 
-The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamarcosmetics_react\wp-content\plugins\tamar-headless-api`. When a lean response or batch endpoint is needed, change it there rather than working around it in React.
+The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamarcosmetics\wp-content\plugins\tamar-headless-api` (site: `http://192.168.0.107/tamarcosmetics/`). When a lean response or batch endpoint is needed, change it there rather than working around it in React.
 
 - [ ] **Hard cap: no more than 2-3 API calls total per page load.** Split: (1) header/menu/footer/global site data — one shared call, fetched once and reused across pages, never refetched per page. (2) page-specific content (page data, WooCommerce products/categories) — one call that returns everything that page needs. A 3rd call is the max allowed exception, not the default budget.
 - [ ] **No duplicate requests per page.** Check every page for the same data fetched twice (layout + page, `generateMetadata` + page, several components). Dedupe with React `cache()` / a shared loader / the Next fetch cache.

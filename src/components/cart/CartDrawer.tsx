@@ -7,12 +7,28 @@ import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/utils/freeShipping";
+
 export function CartDrawer() {
   const isOpen = useCartStore((s) => s.isDrawerOpen);
   const closeDrawer = useCartStore((s) => s.closeDrawer);
   const cart = useCartStore((s) => s.cart);
   const updateItemQuantity = useCartStore((s) => s.updateItemQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
+
+  // Items value only — coupon discount and shipping belong to the cart/checkout totals, not the side cart.
+  const cartTotal = Number(cart.subtotal) || 0;
+  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
+  const progress = Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDrawer();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, closeDrawer]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -31,21 +47,22 @@ export function CartDrawer() {
       />
 
       <aside
-        className={`fixed inset-y-0 end-0 z-[95] flex w-[90%] max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 end-0 z-[95] flex w-[90%] max-w-[400px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
         }`}
         role="dialog"
         aria-modal="true"
         aria-label="עגלת קניות"
       >
-        <div className="flex items-center justify-between border-b border-black/5 px-5 py-4">
-          <h2 className="text-lg font-bold">עגלת הקניות שלי</h2>
+        <div className="flex items-center justify-between border-b border-black/10 px-[15px] py-5">
+          <h2 className="text-[20.8px] font-bold leading-[29px] text-[#0c0c0c]">עגלת קניות</h2>
           <button
             onClick={closeDrawer}
             aria-label="סגירה"
-            className="rounded-full p-2 text-black/60 hover:bg-black/5 hover:text-brand-accent"
+            className="flex items-center gap-1 text-[16px] font-semibold leading-none text-[#333] hover:text-brand-accent"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" strokeWidth={1.5} />
+            <span>לסגירה</span>
           </button>
         </div>
 
@@ -63,81 +80,116 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
-            <ul className="thin-scrollbar flex-1 divide-y divide-black/5 overflow-y-auto px-5">
-              {cart.items.map((item) => (
-                <li key={item.key} className="flex gap-3 py-3">
-                  {item.product.image ? (
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-brand-soft/30">
-                      <Image
-                        src={item.product.image.src}
-                        alt={item.product.image.alt || item.product.name}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : null}
+            <ul className="thin-scrollbar flex-1 overflow-y-auto">
+              {cart.items.map((item) => {
+                const unit = item.quantity > 0 ? Number(item.subtotal) / item.quantity : 0;
+                const regular = Number(item.regularPrice);
+                const onSale = Number.isFinite(regular) && regular > unit + 0.001;
+                return (
+                  <li key={item.key} className="relative flex gap-[15px] border-b border-black/5 p-[15px] transition-colors hover:bg-black/[0.04]">
+                    {item.product.image ? (
+                      <div className="relative h-[65px] w-[65px] shrink-0">
+                        <Image
+                          src={item.product.image.src}
+                          alt={item.product.image.alt || item.product.name}
+                          fill
+                          sizes="65px"
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : null}
 
-                  <div className="min-w-0 flex-1 text-right">
-                    <p className="line-clamp-2 text-sm font-medium leading-snug">{item.product.name}</p>
-                    {item.variation ? <p className="mt-0.5 text-xs text-black/50">{item.variation.name}</p> : null}
+                    <div className="min-w-0 flex-1 pe-5 text-start">
+                      <p className="mb-2 line-clamp-3 text-[16px] leading-[1.4] text-black">{item.product.name}</p>
+                      {item.variation ? (
+                        <p className="text-[14.4px] leading-5 text-[#0c0c0c]">{item.variation.name}</p>
+                      ) : null}
+                      {item.product.sku ? (
+                        <p className="mb-[5px] text-[14px] leading-5 text-[#0c0c0c]">
+                          <span className="font-bold text-[#333]">מק&quot;ט:</span> {item.product.sku}
+                        </p>
+                      ) : null}
 
-                    <div className="mt-2 flex items-center justify-between gap-2">
-                      <div className="flex h-8 items-center rounded-full border border-black/10">
+                      <div className="mb-2 flex h-8 w-fit items-center rounded-full border border-black/10 text-[13px] text-[#0c0c0c]">
                         <button
                           type="button"
                           onClick={() => updateItemQuantity(item.key, item.quantity - 1)}
                           disabled={item.quantity <= 1}
                           aria-label="הפחת כמות"
-                          className="flex h-full w-8 items-center justify-center text-black/60 disabled:opacity-30"
+                          className="flex h-full w-8 items-center justify-center text-black/60 hover:text-brand-accent disabled:opacity-30"
                         >
-                          <Minus className="h-3.5 w-3.5" />
+                          <Minus className="h-3 w-3" />
                         </button>
-                        <span className="w-6 text-center text-xs font-semibold tabular-nums">{item.quantity}</span>
+                        <span className="w-7 text-center font-semibold tabular-nums">{item.quantity}</span>
                         <button
                           type="button"
                           onClick={() => updateItemQuantity(item.key, item.quantity + 1)}
                           aria-label="הוסף כמות"
-                          className="flex h-full w-8 items-center justify-center text-black/60 disabled:opacity-30"
+                          className="flex h-full w-8 items-center justify-center text-black/60 hover:text-brand-accent"
                         >
-                          <Plus className="h-3.5 w-3.5" />
+                          <Plus className="h-3 w-3" />
                         </button>
                       </div>
-                      <span className="text-sm font-semibold text-brand-accent">{formatPrice(item.total)}</span>
-                    </div>
-                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => removeItem(item.key)}
-                    aria-label="הסרה"
-                    className="h-fit shrink-0 rounded-full p-1.5 text-black/30 hover:bg-black/5 hover:text-brand-accent"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
+                      <p className="flex flex-wrap items-baseline gap-x-1.5 text-[14px] leading-6 text-[#bbb]">
+                        <span>{item.quantity} ×</span>
+                        {onSale ? <span className="line-through">{formatPrice(item.regularPrice!)}</span> : null}
+                        <span className={`text-[14px] ${onSale ? "font-bold text-brand-accent" : "text-[#0c0c0c]"}`}>
+                          {formatPrice(unit.toFixed(2))}
+                        </span>
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.key)}
+                      aria-label="הסרה"
+                      className="absolute left-[10px] top-[13px] flex h-5 w-5 items-center justify-center rounded-full text-[#333] hover:bg-brand-accent/10"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
 
-            <div className="border-t border-black/5 px-5 py-4">
-              <div className="mb-4 flex items-center justify-between text-lg font-bold">
-                <span>סה&quot;כ</span>
-                <span className="text-brand-accent">{formatPrice(cart.total)}</span>
+            <div className="border-t border-black/10 pb-[15px]">
+              <div className="flex items-center justify-between p-[15px] text-[20.8px] font-semibold leading-[29px] text-[#242424]">
+                <span>סכום ביניים:</span>
+                <span className="text-brand-accent font-bold">{formatPrice(cart.subtotal)}</span>
               </div>
-              <div className="flex gap-2">
+              <div className="border-t border-black/10 p-[15px]">
+                <p className="text-center text-[16px] leading-[22px] text-[#0c0c0c]">
+                  {remaining > 0 ? (
+                    <>
+                      נותר לך עוד <span className="font-bold text-brand-accent">{formatPrice(remaining.toFixed(2))}</span>{" "}
+                      למשלוח חינם !
+                    </>
+                  ) : (
+                    "יפה ! מגיע לך משלוח חינם"
+                  )}
+                </p>
+                <div className="mt-[10px] h-[7px] w-full bg-black/[0.06]">
+                  <div
+                    className="h-full bg-[repeating-linear-gradient(45deg,var(--color-brand-accent)_0_8px,#ff6b72_8px_16px)] transition-[width] duration-300"
+                    style={{ width: progress + "%" }}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-[10px] px-[15px]">
                 <Link
                   href="/cart"
                   onClick={closeDrawer}
-                  className="flex-1 rounded-full border-2 border-black py-3 text-center text-sm font-semibold text-black transition-colors hover:bg-black hover:text-white"
+                  className="flex h-[42px] items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 text-[21px] font-semibold leading-[25px] text-white transition-transform hover:-translate-y-0.5"
                 >
-                  לצפייה בעגלה
+                  מעבר לסל הקניות
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={closeDrawer}
-                  className="flex-1 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] py-3 text-center text-sm font-semibold text-white"
+                  className="flex h-[42px] items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 text-[21px] font-semibold leading-[25px] text-white transition-transform hover:-translate-y-0.5"
                 >
-                  מעבר לתשלום
+                  תשלום
                 </Link>
               </div>
             </div>

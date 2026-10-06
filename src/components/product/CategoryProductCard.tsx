@@ -70,7 +70,7 @@ export function CategoryProductCard({
   ) : null;
 
   return (
-    <div className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${wideMobile ? "max-md:pb-[15px] " : ""}${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
+    <div data-tip-bounds className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${wideMobile ? "max-md:pb-[15px] " : ""}${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
       {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
       <div className={standalone ? "relative -mx-[10px] -mt-[10px]" : "relative"}>

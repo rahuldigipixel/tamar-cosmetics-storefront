@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 
@@ -28,6 +29,48 @@ const PRIMARY_STYLE =
 const SOFT_STYLE =
   "bg-[#f3c3cc] text-[#333] hover:bg-[#eeb0bb] hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.35)]";
 
+// Tooltip rendered in a portal with fixed positioning so carousel overflow can't clip it;
+// clamped to the viewport so it never runs off either edge.
+function IconTip({ label, children }: { label: string; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  function show() {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    // Keep the tooltip inside its product card (falls back to the viewport).
+    const box = ref.current?.closest("[data-tip-bounds]")?.getBoundingClientRect();
+    const half = 45;
+    const min = Math.max(box?.left ?? 0, 0) + half + 4;
+    const max = Math.min(box?.right ?? window.innerWidth, window.innerWidth) - half - 4;
+    const x = Math.min(Math.max(r.left + r.width / 2, min), Math.max(min, max));
+    setPos({ x, y: r.top - 6 });
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="relative inline-flex shrink-0"
+      onMouseEnter={show}
+      onMouseLeave={() => setPos(null)}
+    >
+      {children}
+      {pos
+        ? createPortal(
+            <span
+              role="tooltip"
+              style={{ left: pos.x, top: pos.y }}
+              className="pointer-events-none fixed z-[100] -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-black/85 px-2 py-0.5 text-[14px] leading-[18px] text-white shadow-md"
+            >
+              {label}
+            </span>,
+            document.body,
+          )
+        : null}
+    </div>
+  );
+}
+
 export function AddToCartButton({
   productId,
   inStock,
@@ -50,7 +93,7 @@ export function AddToCartButton({
   if (!inStock) {
     if (s.iconOnly) {
       return (
-        <div className="group/cart relative inline-flex shrink-0">
+        <IconTip label="אזל מהמלאי">
           <button
             disabled
             aria-label="אזל מהמלאי"
@@ -58,10 +101,7 @@ export function AddToCartButton({
           >
             <ShoppingBag className={s.icon} />
           </button>
-          <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] leading-[18px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
-            אזל מהמלאי
-          </span>
-        </div>
+        </IconTip>
       );
     }
     return (
@@ -107,11 +147,6 @@ export function AddToCartButton({
   if (!s.iconOnly) return button;
 
   return (
-    <div className="group/cart relative inline-flex shrink-0">
-      {button}
-      <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[12px] leading-[18px] text-white opacity-0 transition-opacity duration-150 group-hover/cart:opacity-100">
-        הוספה לסל
-      </span>
-    </div>
+    <IconTip label="הוספה לסל">{button}</IconTip>
   );
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applyCoupon, removeCoupon } from "@/lib/wpgraphql/cart";
+import { decodeWcMessage } from "@/lib/utils/decodeWcMessage";
 
 export async function POST(request: NextRequest) {
   const sessionToken = request.headers.get("X-Cart-Session");
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { cart, sessionToken: nextToken } = await applyCoupon(code, sessionToken);
     return NextResponse.json({ cart, sessionToken: nextToken });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    return NextResponse.json({ error: decodeWcMessage((error as Error).message) }, { status: 400 });
   }
 }
 
@@ -21,6 +22,6 @@ export async function DELETE(request: NextRequest) {
     const { cart, sessionToken: nextToken } = await removeCoupon([code], sessionToken);
     return NextResponse.json({ cart, sessionToken: nextToken });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    return NextResponse.json({ error: decodeWcMessage((error as Error).message) }, { status: 400 });
   }
 }

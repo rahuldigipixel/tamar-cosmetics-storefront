@@ -70,8 +70,8 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 828, 1200, 1920],
     imageSizes: [128, 256, 384],
     remotePatterns: [
-      // Local backend
-      { protocol: "http", hostname: "192.168.0.107", pathname: "/tamarcosmetics_react/wp-content/uploads/**" },
+      // Local backend      
+      { protocol: "http", hostname: "192.168.0.107", pathname: "/tamarcosmetics/wp-content/uploads/**" },
       // Live/staging WordPress backend
       { protocol: "https", hostname: "digipixeldemo.com", pathname: "/tamarcosmetics/wp-content/uploads/**" },
       // upress dev WordPress backend (both schemes, so switching to https needs no code change)

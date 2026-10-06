@@ -111,6 +111,12 @@ export interface ProductCategory {
   parentId?: string;
 }
 
+/** One option of the "ארץ ייצור" (pa_country) filter. */
+export interface CountryOption {
+  name: string;
+  slug: string;
+}
+
 export interface Brand {
   id: string;
   databaseId: number;

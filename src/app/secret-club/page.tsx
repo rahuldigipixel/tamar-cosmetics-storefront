@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: page?.heading || "הנבחרת הסודית" };
 }
 
-// Public path is the Hebrew "/הנבחרת-הסודית" (see the rewrite in
+// Public path is the Hebrew "/הנבחרת-הסודית-תמר-קוסמטיקס" (see the rewrite in
 // next.config.ts) — same reason /brand-list exists for "/מותג/".
 export default async function SecretClubPage() {
   const page = await getSecretClubPage();
@@ -28,11 +28,11 @@ export default async function SecretClubPage() {
     <div>
       <div className="border-b border-black/5 bg-gradient-to-br from-brand-soft/60 via-brand-soft/20 to-white">
         <div className="mx-auto max-w-[1600px] px-[15px] py-6 text-center sm:py-6">
-          <h1 className="text-3xl font-extrabold tracking-tight text-brand-accent sm:text-5xl lg:text-[50px] lg:leading-[50px]">{heading}</h1>
+          <h1 className="text-[40px] font-extrabold leading-[44px] text-[#d52027] lg:text-[72px] lg:leading-[72px]">{heading}</h1>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1600px] px-[15px] py-10">
+      <div className="mx-auto max-w-[1600px] px-[15px] py-10 font-[family-name:Arial,Helvetica,sans-serif]">
         {/* Reference site: Open Sans 400, 21px/34px, rgb(12,12,12). */}
         {contentHtml ? (
           <RichContent
@@ -48,7 +48,7 @@ export default async function SecretClubPage() {
                 each column. Reference site: both are Open Sans Hebrew 400,
                 19px/30px (not bold). */}
             {columns.map((col, i) => {
-              const colorClass = i % 2 === 0 ? "text-brand-accent" : "text-black";
+              const colorClass = i % 2 === 0 ? "text-[#d52027]" : "text-black";
               return (
                 <div key={i} className="text-center sm:text-start">
                   {col.title ? <h3 className={`mb-2 text-[19px] font-normal leading-[30px] ${colorClass}`}>{col.title}</h3> : null}

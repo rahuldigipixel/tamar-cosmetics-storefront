@@ -217,6 +217,8 @@ async function withLabels(product: Product): Promise<Product> {
 export interface ListProductsParams {
   category?: string;
   brand?: string;
+  /** pa_country (ארץ ייצור) term slug. */
+  country?: string;
   search?: string;
   first?: number;
   after?: string;
@@ -247,6 +249,7 @@ export async function listProducts(params: ListProductsParams = {}): Promise<Lis
       after: params.after,
       category: params.category ? [params.category] : undefined,
       brand: params.brand ? [params.brand] : undefined,
+      country: params.country ? [params.country] : undefined,
       search: params.search,
       orderby: params.orderby,
       minPrice: params.minPrice,

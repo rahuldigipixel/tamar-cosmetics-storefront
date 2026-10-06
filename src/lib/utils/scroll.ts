@@ -21,3 +21,25 @@ export function scrollItemIntoRow(container: HTMLElement, item: HTMLElement) {
   const delta = isRtl ? itemRect.right - containerRect.right : itemRect.left - containerRect.left;
   container.scrollBy({ left: delta, behavior: "smooth" });
 }
+
+const inFlight = new WeakMap<HTMLElement, number>();
+
+/**
+ * Eased horizontal scroll over a fixed duration — the browser's own
+ * `behavior: "smooth"` finishes small moves in ~150ms, which reads as
+ * instant. A new call cancels the one still running on the same container.
+ */
+export function animateScrollBy(container: HTMLElement, delta: number, durationMs: number) {
+  const running = inFlight.get(container);
+  if (running) cancelAnimationFrame(running);
+  const start = container.scrollLeft;
+  const t0 = performance.now();
+  const tick = (now: number) => {
+    const t = Math.min(1, (now - t0) / durationMs);
+    const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // easeInOutQuad
+    container.scrollLeft = start + delta * eased;
+    if (t < 1) inFlight.set(container, requestAnimationFrame(tick));
+    else inFlight.delete(container);
+  };
+  inFlight.set(container, requestAnimationFrame(tick));
+}

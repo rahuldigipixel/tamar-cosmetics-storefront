@@ -1,53 +1,53 @@
-﻿import type { Metadata } from "next";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
-import { resolveIntegrations } from "@/lib/integrations";
+import type { Metadata } from "next";
+import { PAGE_BOTTOM } from "@/lib/pageSpacing";
+import { getContactPage } from "@/lib/wpgraphql/tamarApi";
+import { PageLeadForm } from "@/components/ui/PageLeadForm";
+import { ContactInfoRows } from "@/components/ui/ContactInfoRows";
 
-export const metadata: Metadata = {
-  title: "צור קשר",
-};
+export const revalidate = 300;
 
+const FALLBACK_TITLE = "שירות לקוחות - תמר קוסמטיקס";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getContactPage();
+  return { title: page?.heading || FALLBACK_TITLE };
+}
+
+// Sizes measured from the legacy /contact page: pink band + 72px/35px 800
+// title, 21px centered description, 420px form column (right), 16px/20.8px
+// side column (left). Form comes first in the DOM, so on mobile it sits above
+// the side rows and in RTL desktop it is the right-hand column.
 export default async function ContactPage() {
-  const { whatsappNumber } = resolveIntegrations((await getGlobalData())?.settings);
-  return (
-    <div className="mx-auto max-w-3xl px-[15px] py-16 text-right ">
-      <h1 className="mb-2 text-3xl font-bold">צור קשר</h1>
-      <p className="mb-8 text-black/60">נשמח לעזור — פנו אלינו באחת מהדרכים הבאות.</p>
+  const page = await getContactPage();
+  const items = page?.items ?? [];
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <a
-          href="tel:0545405470"
-          className="flex flex-col items-center gap-2 rounded-xl border border-black/10 p-6 text-center transition-colors hover:border-brand-accent"
-        >
-          <Phone className="h-6 w-6 text-brand-accent" />
-          <span className="font-medium">טלפון</span>
-          <span dir="ltr" className="text-sm text-black/60">
-            054-5405470
-          </span>
-        </a>
-        <a
-          href="mailto:info@tamarcosmetics.co.il"
-          className="flex flex-col items-center gap-2 rounded-xl border border-black/10 p-6 text-center transition-colors hover:border-brand-accent"
-        >
-          <Mail className="h-6 w-6 text-brand-accent" />
-          <span className="font-medium">דוא&quot;ל</span>
-          <span className="text-sm text-black/60">info@tamarcosmetics.co.il</span>
-        </a>
-        <a
-          href={`https://wa.me/${whatsappNumber}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex flex-col items-center gap-2 rounded-xl border border-black/10 p-6 text-center transition-colors hover:border-brand-accent"
-        >
-          <MapPin className="h-6 w-6 text-brand-accent" />
-          <span className="font-medium">WhatsApp</span>
-          <span className="text-sm text-black/60">בין השעות 08:00-20:00</span>
-        </a>
+  return (
+    <div className={`font-[family-name:Arial,Helvetica,sans-serif] ${PAGE_BOTTOM}`}>
+      <div className="bg-[#fde7eb]">
+        <div className="mx-auto max-w-[1600px] px-[10px] py-5 text-center sm:px-[15px]">
+          <h1 className="font-[family-name:'Times_New_Roman',serif] text-[35px] font-extrabold leading-[35px] text-black lg:text-[72px] lg:leading-[72px]">
+            {page?.heading || FALLBACK_TITLE}
+          </h1>
+        </div>
       </div>
 
-      <div className="mt-10 rounded-xl bg-brand-soft/40 p-6 text-sm text-black/70">
-        <p className="font-medium">שד&apos; משה דיין 113, ירושלים (מרכז פסגת זאב)</p>
-        <p className="mt-1">שעות פתיחה: א&apos;-ה&apos; 08:00-17:00 | ו&apos; 09:00-13:00</p>
+      {page?.description ? (
+        <p className="mx-auto mt-0 max-w-[1550px] whitespace-pre-line px-[25px] lg:mt-[10px] sm:px-[15px] text-center text-[21px] leading-[33.6px] text-[#0c0c0c]">
+          {page.description}
+        </p>
+      ) : null}
+
+      <div className="mx-auto mt-[75px] grid max-w-[1180px] gap-y-10 lg:mt-[55px] px-[20px] lg:grid-cols-[420px_1fr] lg:gap-x-[clamp(40px,21.6vw,415px)]">
+        <PageLeadForm
+          form="contact"
+          accentFirstWord
+          heading={page?.form.heading ?? ""}
+          checkboxLabel={page?.form.checkboxLabel ?? ""}
+          buttonLabel={page?.form.buttonLabel ?? ""}
+        />
+
+        {/* wp-admin rows (see ContactInfoRows). */}
+        <ContactInfoRows items={items} className="text-right text-[15px] leading-[19.5px] lg:pt-[38px] lg:text-[16px] lg:leading-[20.8px]" />
       </div>
     </div>
   );

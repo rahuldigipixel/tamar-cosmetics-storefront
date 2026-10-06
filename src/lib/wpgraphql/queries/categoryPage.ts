@@ -23,6 +23,16 @@ export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
       description
       readMore
       extraDescription
+      carousel {
+        title
+        link
+        image {
+          url
+          width
+          height
+          alt
+        }
+      }
       banner {
         desktop {
           url
@@ -56,6 +66,12 @@ export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
         }
         allPaBrand {
           nodes {
+            slug
+          }
+        }
+        allPaCountry {
+          nodes {
+            name
             slug
           }
         }

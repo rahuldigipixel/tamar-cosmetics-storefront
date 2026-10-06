@@ -2,12 +2,12 @@ import { fetchGraphQLSafe } from "./client";
 import { GET_BRANDS, GET_BRAND_BY_SLUG } from "./queries/brands";
 import type { Brand } from "@/types/product";
 
-interface GqlBrandNode {
+export interface GqlBrandNode {
   id: string;
   databaseId: number;
   name: string;
   slug: string;
-  count: number | null;
+  count?: number | null;
   description?: string | null;
   thumbnailUrl?: string | null;
   desktopBannerUrl?: string | null;
@@ -20,7 +20,7 @@ interface GqlBrandNode {
   categoryExtraDescriptionText?: string | null;
 }
 
-function fromGraphqlBrand(node: GqlBrandNode): Brand {
+export function fromGraphqlBrand(node: GqlBrandNode): Brand {
   return {
     id: node.id,
     databaseId: node.databaseId,

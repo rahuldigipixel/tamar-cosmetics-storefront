@@ -168,6 +168,15 @@ export interface CategoryInfo {
   /** FAQ accordion HTML (term meta product_cat_extra_desc). */
   extraDescription?: string | null;
   banner: CategoryBanner;
+  /** Empty unless "Enable Category Carousel" is ticked in the category's wp-admin settings. */
+  carousel?: CategoryCarouselItem[] | null;
+}
+
+export interface CategoryCarouselItem {
+  title: string;
+  /** Relative path for this/the live site (decoded), absolute URL otherwise, "" = no link. */
+  link: string;
+  image: HeaderMenuImage | null;
 }
 
 // The REST route (GET /category-info) behind this data still exists on the
@@ -453,6 +462,47 @@ export const getSecretClubPage = cache(function getSecretClubPage() {
   });
 });
 
+export interface AppPageImage {
+  url: string;
+  /** 0 when the image is a legacy-site default (size unknown). */
+  width: number;
+  height: number;
+}
+
+export interface AppPage {
+  heroImage: AppPageImage | null;
+  /** Line breaks = separate title lines. */
+  heroTitle: string;
+  heroText: string;
+  downloadTitle: string;
+  appStoreUrl: string;
+  appStoreImage: AppPageImage | null;
+  googlePlayUrl: string;
+  googlePlayImage: AppPageImage | null;
+  featuresTitle: string;
+  featuresImage: AppPageImage | null;
+  /** Up to 4 numbered benefits (blank ones are dropped server-side). */
+  features: { title: string; text: string }[];
+  couponText: string;
+  couponCode: string;
+  couponLabel: string;
+  videoTitle: string;
+  videoUrl: string;
+  videoPoster: AppPageImage | null;
+  videoDownloadLabel: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → אפליקציית תמר (includes/class-app-page-settings.php).
+ * `cache()`-wrapped so generateMetadata() and the page body share one request.
+ */
+export const getAppPage = cache(function getAppPage() {
+  return tamarFetch<AppPage>(`/app-page`, {
+    tags: ["app-page"],
+    revalidate: 300,
+  });
+});
+
 export interface OrderSummary {
   id: number;
   number: string;
@@ -581,4 +631,178 @@ export const getShippingMethodPage = cache(function getShippingMethodPage() {
     tags: ["shipping-method-page"],
     revalidate: 300,
   });
+});
+
+export interface ReturnPolicyPage {
+  heading: string;
+  contentHtml: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → מדיניות – החזר מוצר
+ * (includes/class-return-policy-page.php). `cache()`-wrapped so
+ * generateMetadata() and the page body share one request.
+ */
+export const getReturnPolicyPage = cache(function getReturnPolicyPage() {
+  return tamarFetch<ReturnPolicyPage>(`/return-policy-page`, {
+    tags: ["return-policy-page"],
+    revalidate: 300,
+  });
+});
+
+export interface FaqPage {
+  heading: string;
+  contentHtml: string;
+  banner: { url: string; width: number; height: number; alt: string } | null;
+  /** Image shown under the text box (second upload field on the FAQ settings screen). */
+  bottomImage: { url: string; width: number; height: number; alt: string } | null;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → שאלות נפוצות
+ * (includes/class-simple-pages.php). `cache()`-wrapped so generateMetadata()
+ * and the page body share one request.
+ */
+export const getFaqPage = cache(function getFaqPage() {
+  return tamarFetch<FaqPage>(`/faq-page`, { tags: ["faq-page"], revalidate: 300 });
+});
+
+export interface OrderCancellationPage {
+  heading: string;
+  contentHtml: string;
+  form: { heading: string; checkboxLabel: string; buttonLabel: string };
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → ביטול עסקה
+ * (includes/class-simple-pages.php). `cache()`-wrapped so generateMetadata()
+ * and the page body share one request.
+ */
+export const getOrderCancellationPage = cache(function getOrderCancellationPage() {
+  return tamarFetch<OrderCancellationPage>(`/order-cancellation-page`, {
+    tags: ["order-cancellation-page"],
+    revalidate: 300,
+  });
+});
+
+/** POST target of a wp-admin "simple page" form (includes/class-simple-pages.php) — `route` is the plugin's form route. */
+export function submitPageLead(route: string, input: WholesaleLeadInput) {
+  return tamarFetch<{ success: boolean }>(`/${route}`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export interface ContactPage {
+  heading: string;
+  description: string;
+  /** Left-column rows from the wp-admin "add more" list: text/links HTML + optional icon. */
+  items: { html: string; tight: boolean; muted: boolean; icon: { url: string; size: number; alt: string } | null }[];
+  form: { heading: string; checkboxLabel: string; buttonLabel: string };
+}
+
+export interface SuppliersPage {
+  heading: string;
+  subheading: string;
+  description: string;
+  highlight: string;
+  items: ContactPage["items"];
+  form: { heading: string; checkboxLabel: string; buttonLabel: string; nameLabel: string };
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → ספקים
+ * (includes/class-simple-pages.php). `cache()`-wrapped so generateMetadata()
+ * and the page body share one request.
+ */
+export const getSuppliersPage = cache(function getSuppliersPage() {
+  return tamarFetch<SuppliersPage>(`/suppliers-page`, { tags: ["suppliers-page"], revalidate: 300 });
+});
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → צור קשר
+ * (includes/class-simple-pages.php). `cache()`-wrapped so
+ * generateMetadata() and the page body share one request.
+ */
+export const getContactPage = cache(function getContactPage() {
+  return tamarFetch<ContactPage>(`/contact-page`, { tags: ["contact-page"], revalidate: 300 });
+});
+
+export interface TermsPage {
+  heading: string;
+  contentHtml: string;
+}
+
+/**
+ * Managed from wp-admin → הגדרות תמר → עמודים → תקנון האתר
+ * (includes/class-simple-pages.php). `cache()`-wrapped so
+ * generateMetadata() and the page body share one request.
+ */
+export const getTermsPage = cache(function getTermsPage() {
+  return tamarFetch<TermsPage>(`/terms-page`, { tags: ["terms-page"], revalidate: 300 });
+});
+
+export interface ContentPageData {
+  heading: string;
+  contentHtml: string;
+}
+
+/**
+ * Any "heading + editor" page managed from wp-admin → הגדרות תמר → עמודים
+ * (includes/class-simple-pages.php), by its REST route. `cache()`-wrapped per
+ * route so generateMetadata() and the page body share one request.
+ */
+export const getContentPage = cache(function getContentPage(route: string) {
+  return tamarFetch<ContentPageData>(`/${route}`, { tags: [route], revalidate: 300 });
+});
+
+export interface AboutImage {
+  url: string;
+  /** Original-size image for the lightbox (same as url when there is no separate one). */
+  full: string;
+  alt: string;
+}
+
+export interface AboutPageData {
+  heading: string;
+  contentHtml: string;
+  videoUrl: string;
+  slider: AboutImage[];
+  certTitle: string;
+  certText: string;
+  gallery: AboutImage[];
+  teamTitle: string;
+  cards: { title: string; text: string }[];
+}
+
+/**
+ * wp-admin → הגדרות תמר → עמודים → אודות החברה (includes/class-simple-pages.php):
+ * video, text, 3-up slider, certificates title/text, lightbox gallery, team cards.
+ */
+export const getAboutPage = cache(function getAboutPage() {
+  return tamarFetch<AboutPageData>(`/about-company-page`, { tags: ["about-company-page"], revalidate: 300 });
+});
+
+export interface FlagshipPageData {
+  heading: string;
+  /** Centered intro (title lines + paragraph) above the first row. */
+  contentHtml: string;
+  /** Row 1, right column: paragraph + bullet list. */
+  productsHtml: string;
+  /** Row 1, left column: Google Maps place/address text, or a full embed URL. */
+  mapQuery: string;
+  /** Row 2, right column: YouTube link, then `hoursHtml` under it. */
+  videoUrl: string;
+  hoursHtml: string;
+  /** Row 2, left column. */
+  visitHtml: string;
+  slider: AboutImage[];
+}
+
+/**
+ * wp-admin → הגדרות תמר → עמודים → סניף הדגל ירושלים (includes/class-simple-pages.php):
+ * intro, products text + map, video + hours + visit text, 3-up photo slider.
+ */
+export const getFlagshipPage = cache(function getFlagshipPage() {
+  return tamarFetch<FlagshipPageData>(`/flagship-branch-page`, { tags: ["flagship-branch-page"], revalidate: 300 });
 });

@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useInfiniteCarousel } from "@/lib/utils/useInfiniteCarousel";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
+
+const COMPACT_AUTOPLAY_MS = 4000;
 
 export function ProductSlider({
   title,
@@ -28,7 +31,28 @@ export function ProductSlider({
   /** Show one product per slide on mobile (default is two). */
   singleOnMobile?: boolean;
 }) {
-  const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({ items: products, autoplayMs });
+  // Product-page rails keep their original card widths (5 / 3 / 1 per view) but
+  // auto-advance, sliding 4 cards per step on desktop (3 on tablet, 1 on mobile).
+  const [pageSize, setPageSize] = useState(1);
+  useEffect(() => {
+    if (!compact) return;
+    const lg = window.matchMedia("(min-width: 1024px)");
+    const sm = window.matchMedia("(min-width: 640px)");
+    const update = () => setPageSize(lg.matches ? 4 : sm.matches ? 3 : 1);
+    update();
+    lg.addEventListener("change", update);
+    sm.addEventListener("change", update);
+    return () => {
+      lg.removeEventListener("change", update);
+      sm.removeEventListener("change", update);
+    };
+  }, [compact]);
+  const effectiveAutoplay = compact ? (products.length > (pageSize === 4 ? 5 : pageSize) ? COMPACT_AUTOPLAY_MS : undefined) : autoplayMs;
+  const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<Product, HTMLDivElement>({
+    items: products,
+    stepSize: compact ? pageSize : 1,
+    autoplayMs: effectiveAutoplay,
+  });
 
   if (products.length === 0) return null;
 

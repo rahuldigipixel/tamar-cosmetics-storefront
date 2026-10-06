@@ -1,8 +1,7 @@
 ﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
-import { listProducts } from "@/lib/wpgraphql/products";
-import { getBrandBySlug } from "@/lib/wpgraphql/brands";
+import { getBrandPageData } from "@/lib/wpgraphql/brandPage";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 
@@ -16,10 +15,8 @@ export default async function BrandPage({ params }: BrandPageProps) {
  const { slug } = await params;
  const activeSlug = decodeURIComponent(slug).normalize("NFC");
 
- const [brand, { products, hasNextPage, endCursor }] = await Promise.all([
- getBrandBySlug(activeSlug),
- listProducts({ brand: activeSlug, first: 20 }),
- ]);
+ // Brand + first page of products + the filter-bar options, in one GraphQL request.
+ const { brand, products, hasNextPage, endCursor, categories, brands, countries } = await getBrandPageData(activeSlug, 20);
 
  if (!brand) notFound();
 
@@ -83,6 +80,9 @@ export default async function BrandPage({ params }: BrandPageProps) {
  initialProducts={products}
  initialHasNextPage={hasNextPage}
  initialEndCursor={endCursor}
+ categories={categories}
+ brands={brands}
+ countries={countries}
  />
  </div>
 

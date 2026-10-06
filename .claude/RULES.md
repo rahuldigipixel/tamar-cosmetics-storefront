@@ -64,3 +64,13 @@ The backend API is the custom WordPress plugin at `\\192.168.0.107\eds-www\tamar
 - [ ] **Check rendered HTML size, not just API calls.** `curl` the page and inspect: target well under ~1 MB uncompressed. Causes found: `useInfiniteCarousel` `COPIES` (now 3 — every extra copy re-renders every card), `images.deviceSizes/imageSizes` in `next.config.ts` (trimmed so each `<img srcSet>` stays short), per-card inline SVG icons.
 - [ ] **Verify call counts in production mode** (`npm run build` + `npm run start`), not only `next dev` — prefetch behaviour only shows up there. Count lines in the plugin's `logs/api-YYYY-MM-DD.log` per page load.
 - [ ] **Read the plugin log for every task**: `logs/api-YYYY-MM-DD.log` now shows duration as `0.752s (752ms)` and the real uncompressed response size (e.g. `57.5KB`). Any call over ~0.5s or ~50 KB needs a look. API JSON is gzipped by the plugin (`class-api-logger.php`). Anything inlined into every page's header (menu, header bar) must stay lean: no repeated width/height/alt, no percent-encoded Hebrew URLs (decode with `rawurldecode`).
+
+## 6. Content-page spacing standard (updated 2026-10-06 — all wp-admin "simple pages")
+
+One shared top/bottom spacing for every page we built on `Tamar_Simple_Pages` (return policy, shipping, order cancellation, terms, FAQ, contact, suppliers and the 10 legacy-copy pages). The 95px/90px values used earlier were too large (user feedback) and were replaced.
+
+- [ ] **Top:** 40px between the pink title band and the first content block (`PAGE_TOP`). Layout pages with their own legacy-measured start (contact, suppliers, FAQ, credit-card) keep it.
+- [ ] **Bottom:** 40px visible between the last content block and the footer (`PAGE_BOTTOM` = `mb-[8px] lg:-mb-[20px]`; the site footer adds ~60px desktop / ~32px mobile on its own).
+- [ ] Both live in **`src/lib/pageSpacing.ts`** — import them, never hard-code numbers per page; change them there to change every page.
+- [ ] `RichContent` strips empty `<p>&nbsp;</p>` at the start/end of editor content (they add ~40px of blank space).
+- [ ] Per-page font sizes still come from the legacy measurements (`src/lib/contentPageProfiles.ts`); the 10 legacy-copy pages' defaults live in the plugin's `includes/defaults/*.html` and are meant to be deleted once the admin saved them.

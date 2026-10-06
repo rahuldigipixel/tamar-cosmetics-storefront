@@ -8,7 +8,7 @@ const BRAND_LIST_FIELDS = /* GraphQL */ `
 `;
 
 /** Everything the single brand page renders (banners, extra description). */
-const BRAND_DETAIL_FIELDS = /* GraphQL */ `
+export const BRAND_DETAIL_FIELDS = /* GraphQL */ `
   ${BRAND_LIST_FIELDS}
   count
   description

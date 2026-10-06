@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { getWholesalePage } from "@/lib/wpgraphql/tamarApi";
 import { RichContent } from "@/components/ui/RichContent";
+import { TitleBand } from "@/components/ui/ContentPageView";
 import { WholesaleImageSlider } from "@/components/wholesale/WholesaleImageSlider";
 import { WholesaleLeadForm } from "@/components/wholesale/WholesaleLeadForm";
 
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
  return { title: page?.heading };
 }
 
-// Public path is the Hebrew "/מכירה-סיטונאית" (see the rewrite in
+// Public path is the Hebrew "/מכירה-סיטונאית-תמר-קוסמטיקס" (see the rewrite in
 // next.config.ts) — a literal non-ASCII directory under src/app breaks
 // static prerendering, same reason /brand-list exists for "/מותג/".
 export default async function WholesalePage() {
@@ -30,11 +31,7 @@ export default async function WholesalePage() {
 
  return (
  <div>
- <div className="border-b border-black/5 bg-gradient-to-br from-brand-soft/60 via-brand-soft/20 to-white">
- <div className="mx-auto max-w-[1600px] px-[15px] py-6 text-center sm:py-6">
- <h1 className="text-3xl font-extrabold tracking-tight text-brand-accent sm:text-5xl lg:text-[50px] lg:leading-[50px]">{heading}</h1>
- </div>
- </div>
+ <TitleBand heading={heading} />
 
  <div className="mx-auto max-w-[1600px] px-[15px] py-10">
  <RichContent html={contentHtml} className="max-w-none" />

@@ -224,6 +224,7 @@ export const GET_PRODUCTS = /* GraphQL */ `
     $after: String
     $category: [String]
     $brand: [String]
+    $country: [String]
     $search: String
     $orderby: [ProductsOrderbyInput]
     $minPrice: Float
@@ -235,7 +236,7 @@ export const GET_PRODUCTS = /* GraphQL */ `
       after: $after
       where: {
         categoryIn: $category
-        taxonomyFilter: { filters: [{ taxonomy: PA_BRAND, terms: $brand }] }
+        taxonomyFilter: { filters: [{ taxonomy: PA_BRAND, terms: $brand }, { taxonomy: PA_COUNTRY, terms: $country }] }
         search: $search
         status: "publish"
         orderby: $orderby

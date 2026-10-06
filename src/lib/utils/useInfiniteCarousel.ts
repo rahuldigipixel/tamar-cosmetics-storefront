@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { scrollItemIntoRow } from "./scroll";
+import { animateScrollBy, scrollItemIntoRow } from "./scroll";
 
 const COPIES = 3; // odd count so there's a true middle copy to rest in; fewer copies = less DOM/HTML
-const RECENTER_DELAY_MS = 500; // must clear the smooth-scroll animation before jumping
+const RECENTER_DELAY_MS = 500; // must clear the smooth-scroll animation before jumping (or durationMs + 50, if longer)
 
 /**
  * Drives a horizontally-scrolling carousel that loops in both directions
@@ -25,10 +25,13 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
   items,
   stepSize = 1,
   autoplayMs,
+  durationMs,
 }: {
   items: Item[];
   stepSize?: number;
   autoplayMs?: number;
+  /** Animate each step over this many ms (eased) instead of the browser's short native smooth scroll. */
+  durationMs?: number;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(El | null)[]>([]);
@@ -44,7 +47,14 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
     const item = itemRefs.current[target];
     if (!container || !item) return;
     if (smooth) {
-      scrollItemIntoRow(container, item);
+      if (durationMs) {
+        const isRtl = getComputedStyle(container).direction === "rtl";
+        const cr = container.getBoundingClientRect();
+        const ir = item.getBoundingClientRect();
+        animateScrollBy(container, isRtl ? ir.right - cr.right : ir.left - cr.left, durationMs);
+      } else {
+        scrollItemIntoRow(container, item);
+      }
       return;
     }
     const isRtl = getComputedStyle(container).direction === "rtl";
@@ -66,7 +76,7 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
         const recentered = middleStart + (((next - middleStart) % count) + count) % count;
         setPosition(recentered);
         scrollTo(recentered, false);
-      }, RECENTER_DELAY_MS);
+      }, Math.max(RECENTER_DELAY_MS, (durationMs ?? 0) + 50));
     }
   }
 
@@ -102,5 +112,5 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position, autoplayMs]);
 
-  return { trackRef, itemRefs, looped, step, middleStart };
+  return { trackRef, itemRefs, looped, step, middleStart, position };
 }

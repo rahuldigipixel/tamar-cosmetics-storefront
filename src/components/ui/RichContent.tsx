@@ -5,7 +5,13 @@
  * long className. No @tailwindcss/typography plugin is installed, so the
  * element styling is spelled out here via arbitrary-variant selectors.
  */
-export function RichContent({ html, className = "" }: { html: string; className?: string }) {
+// <p>&nbsp;</p> / <p><br></p> left at the edges of editor content render as blank space.
+const EMPTY_P = "<p[^>]*>(?:\\s|&nbsp;|\\u00a0|<br\\s*/?>)*</p>";
+const LEADING_EMPTY = new RegExp(`^(?:\\s*${EMPTY_P})+`, "i");
+const TRAILING_EMPTY = new RegExp(`(?:${EMPTY_P}\\s*)+$`, "i");
+
+export function RichContent({ html: rawHtml, className = "" }: { html: string; className?: string }) {
+  const html = rawHtml.replace(LEADING_EMPTY, "").replace(TRAILING_EMPTY, "");
   if (!html) return null;
 
   return (

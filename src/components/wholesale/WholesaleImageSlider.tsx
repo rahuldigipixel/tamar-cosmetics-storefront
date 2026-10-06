@@ -19,50 +19,50 @@ export function WholesaleImageSlider({ images }: { images: WholesaleImage[] }) {
 
   return (
     <div className="relative">
-      <div
-        ref={trackRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {looped.map((image, i) => (
-          <div
-            key={`${image.id}-${i}`}
-            ref={(el) => {
-              itemRefs.current[i] = el;
-            }}
-            className="relative aspect-[4/3] w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-brand-soft/30 shadow-sm sm:w-[calc((100%-1rem)/2)] lg:w-[calc((100%-2rem)/3)]"
-          >
-            <Image
-              src={image.url}
-              alt={image.alt}
-              fill
-              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 85vw"
-              className="object-cover"
-            />
-          </div>
-        ))}
+      {images.length > 1 ? (
+        // Same side arrows as the ProductSlider rails (home / product pages).
+        <button
+          onClick={() => step(-1)}
+          aria-label="הקודם"
+          className="absolute -start-13 max-md:-start-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      ) : null}
+
+      <div className="overflow-clip [overflow-clip-margin:2px]">
+        <div
+          ref={trackRef}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {looped.map((image, i) => (
+            <div
+              key={`${image.id}-${i}`}
+              ref={(el) => {
+                itemRefs.current[i] = el;
+              }}
+              className="relative aspect-square w-[calc((100%-1rem)/2)] shrink-0 snap-start overflow-hidden rounded-2xl bg-brand-soft/30 sm:w-[calc((100%-2rem)/3)]"
+            >
+              <Image
+                src={image.url}
+                alt={image.alt}
+                fill
+                sizes="(min-width: 640px) 33vw, 50vw"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       {images.length > 1 ? (
-        // Same button styling as the home page's ProductSlider (white bg,
-        // border, shadow) — positioned centered below the strip here
-        // instead of ProductSlider's absolute left/right sides, matching
-        // the reference site's layout for this slider.
-        <div className="mt-4 flex justify-center gap-2">
-          <button
-            onClick={() => step(-1)}
-            aria-label="הקודם"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => step(1)}
-            aria-label="הבא"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-        </div>
+        <button
+          onClick={() => step(1)}
+          aria-label="הבא"
+          className="absolute -end-13 max-md:-end-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
       ) : null}
     </div>
   );

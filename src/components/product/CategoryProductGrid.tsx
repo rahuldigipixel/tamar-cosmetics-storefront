@@ -1,14 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2, Minus, Plus, X } from "lucide-react";
-import type { Brand, Product, ProductCategory } from "@/types/product";
+import type { Brand, CountryOption, Product } from "@/types/product";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
 import { fetchCategoryProducts, type CategorySortOption } from "@/lib/wpgraphql/actions";
 
 const ALL_CATEGORIES_VALUE = "__all__";
 const ALL_BRANDS_VALUE = "__all__";
+const ALL_COUNTRIES_VALUE = "__all__";
+
+/** One option of the Categories filter; `href` is the page it navigates to (category pages). */
+export interface CategoryFilterOption {
+  id: string;
+  name: string;
+  slug: string;
+  href?: string;
+}
 
 // `categorySlug` can arrive still percent-encoded (nested /parent/child/
 // category URLs — see the same normalization in
@@ -189,7 +199,7 @@ function OptionList<T extends string>({
   selected,
   onSelect,
 }: {
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; image?: string }[];
   selected: T | string;
   onSelect: (value: T) => void;
 }) {
@@ -202,11 +212,12 @@ function OptionList<T extends string>({
             <button
               type="button"
               onClick={() => onSelect(o.value)}
-              className={`flex w-full items-center px-[15px] py-[8px] text-start text-[16px] transition-colors ${
+              className={`flex min-h-[46px] w-full items-center px-[18px] py-[8px] text-start text-[16px] transition-colors ${
                 active ? "bg-[#f3c3cc] text-[#333]" : "text-[#777] hover:text-[#333]"
               }`}
             >
-              {o.label}
+              {/* Logo only (as on the reference); the name is the alt text and the fallback when there is no logo. */}
+              {o.image ? (<Image src={o.image} alt={o.label} width={60} height={30} sizes="60px" className="h-[30px] w-[60px] object-contain" />) : (o.label)}
             </button>
           </li>
         );
@@ -226,6 +237,7 @@ export function CategoryProductGrid({
   initialEndCursor,
   categories,
   brands,
+  countries,
 }: {
   /** Exactly one of categorySlug/brandSlug should be passed. */
   categorySlug?: string;
@@ -239,10 +251,15 @@ export function CategoryProductGrid({
   initialProducts: Product[];
   initialHasNextPage: boolean;
   initialEndCursor: string | null;
-  /** When passed, renders a Categories filter — picking one navigates to that category's own page. */
-  categories?: ProductCategory[];
+  /**
+   * When passed, renders a Categories filter. On a category page (`categorySlug`) picking one
+   * navigates to that category's own page; elsewhere (brand page) it filters the list in place.
+   */
+  categories?: CategoryFilterOption[];
   /** When passed, renders a Brand filter (with logo thumbs) that refetches this same list. */
   brands?: Brand[];
+  /** When passed, renders the "ארץ ייצור" (pa_country) filter that refetches this same list. */
+  countries?: CountryOption[];
 }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
@@ -251,6 +268,9 @@ export function CategoryProductGrid({
   const [sort, setSort] = useState<CategorySortOption | "DEFAULT">("DEFAULT");
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [selectedBrand, setSelectedBrand] = useState(ALL_BRANDS_VALUE);
+  const [selectedCountry, setSelectedCountry] = useState(ALL_COUNTRIES_VALUE);
+  // Only used when the page itself isn't a category (brand page) — there the Categories filter refetches in place.
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES_VALUE);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Mobile accordion clips while it animates; once fully open it must not clip the dropdown lists.
   const [filtersSettled, setFiltersSettled] = useState(false);
@@ -263,6 +283,7 @@ export function CategoryProductGrid({
   const [priceBounds] = useState(() => computePriceBounds(initialProducts));
 
   const effectiveBrand = selectedBrand === ALL_BRANDS_VALUE ? brandSlug : selectedBrand;
+  const effectiveCategory = categorySlug ?? (selectedCategory === ALL_CATEGORIES_VALUE ? undefined : selectedCategory);
 
   // One removable chip per active filter (sort/price/brand — the category
   // isn't a "filter" here, it's the page itself), so any single one can be
@@ -290,11 +311,27 @@ export function CategoryProductGrid({
     });
   }
 
+  if (selectedCategory !== ALL_CATEGORIES_VALUE) {
+    activeChips.push({
+      key: "category",
+      label: categories?.find((c) => normalizeSlug(c.slug) === selectedCategory)?.name ?? selectedCategory,
+      onRemove: () => setSelectedCategory(ALL_CATEGORIES_VALUE),
+    });
+  }
+  if (selectedCountry !== ALL_COUNTRIES_VALUE) {
+    activeChips.push({
+      key: "country",
+      label: countries?.find((c) => c.slug === selectedCountry)?.name ?? selectedCountry,
+      onRemove: () => setSelectedCountry(ALL_COUNTRIES_VALUE),
+    });
+  }
+
   function runQuery(after: string | null, append: boolean) {
     startTransition(async () => {
       const result = await fetchCategoryProducts({
-        category: categorySlug,
+        category: effectiveCategory,
         brand: effectiveBrand,
+        country: selectedCountry === ALL_COUNTRIES_VALUE ? undefined : selectedCountry,
         search,
         after,
         sort: sort === "DEFAULT" ? undefined : sort,
@@ -319,12 +356,14 @@ export function CategoryProductGrid({
     }
     runQuery(null, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort, priceRange, selectedBrand]);
+  }, [sort, priceRange, selectedBrand, selectedCountry, selectedCategory]);
 
   function clearFilters() {
     setSort("DEFAULT");
     setPriceRange(null);
     setSelectedBrand(ALL_BRANDS_VALUE);
+    setSelectedCountry(ALL_COUNTRIES_VALUE);
+    setSelectedCategory(ALL_CATEGORIES_VALUE);
   }
 
   // Infinite scroll: load the next page once the sentinel below the grid
@@ -345,18 +384,20 @@ export function CategoryProductGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNextPage, isPending, endCursor]);
 
+  const onCategoryPage = Boolean(categorySlug);
   const currentCategorySlug = categorySlug ? normalizeSlug(categorySlug) : null;
-  const currentCategoryName = categories?.find((c) => normalizeSlug(c.slug) === currentCategorySlug)?.name;
+  // The page's own category when it's one of the options (i.e. not when the options are its children).
+  const currentCategoryName = categories?.find((c) => normalizeSlug(c.slug) === (currentCategorySlug ?? selectedCategory))?.name;
 
-  function goToCategory(slug: string) {
-    if (!categories || slug === currentCategorySlug) return;
-    // Preserve the site's /product-category/{parent}/{child}/ URL convention
-    // for child categories rather than flattening to a single segment, which
-    // would silently drop the breadcrumb trail on the destination page.
+  function pickCategory(slug: string) {
+    if (!categories) return;
+    if (!onCategoryPage) {
+      setSelectedCategory(slug);
+      return;
+    }
+    if (slug === currentCategorySlug) return;
     const target = categories.find((c) => normalizeSlug(c.slug) === slug);
-    const parent = target?.parentId ? categories.find((c) => c.id === target.parentId) : null;
-    const path = parent ? `${parent.slug}/${target!.slug}` : slug;
-    router.push(`/product-category/${path}/`);
+    router.push(target?.href ?? `/product-category/${slug}/`);
   }
 
   return (
@@ -390,7 +431,7 @@ export function CategoryProductGrid({
         }}
       >
       <div className={`min-h-0 md:overflow-visible ${filtersSettled ? "" : "overflow-hidden"}`}>
-      <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] max-md:pt-[15px] md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-[20px] gap-y-[10px] max-md:pt-[15px] md:grid-cols-5">
         <FilterDropdown title="מיין לפי" value={sort !== "DEFAULT" ? SORT_OPTIONS.find((o) => o.value === sort)?.label : undefined}>
           {(close) => (
             <OptionList
@@ -408,11 +449,14 @@ export function CategoryProductGrid({
           <FilterDropdown title="קטגוריות" value={currentCategoryName}>
             {(close) => (
               <OptionList
-                options={categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name }))}
-                selected={currentCategorySlug ?? ALL_CATEGORIES_VALUE}
+                options={[
+                  ...(onCategoryPage ? [] : [{ value: ALL_CATEGORIES_VALUE, label: "כל הקטגוריות" }]),
+                  ...categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name })),
+                ]}
+                selected={currentCategorySlug ?? selectedCategory}
                 onSelect={(slug) => {
                   close();
-                  goToCategory(slug);
+                  pickCategory(slug);
                 }}
               />
             )}
@@ -443,10 +487,31 @@ export function CategoryProductGrid({
           >
             {(close) => (
               <OptionList
-                options={[{ value: ALL_BRANDS_VALUE, label: "כל המותגים" }, ...brands.map((b) => ({ value: b.slug, label: b.name }))]}
+                options={[
+                  { value: ALL_BRANDS_VALUE, label: "כל המותגים" },
+                  ...brands.map((b) => ({ value: b.slug, label: b.name, image: b.thumbnailUrl })),
+                ]}
                 selected={selectedBrand}
                 onSelect={(v) => {
                   setSelectedBrand(v);
+                  close();
+                }}
+              />
+            )}
+          </FilterDropdown>
+        ) : null}
+
+        {countries && countries.length > 0 ? (
+          <FilterDropdown
+            title="ארץ ייצור"
+            value={selectedCountry !== ALL_COUNTRIES_VALUE ? countries.find((c) => c.slug === selectedCountry)?.name : undefined}
+          >
+            {(close) => (
+              <OptionList
+                options={[{ value: ALL_COUNTRIES_VALUE, label: "כל הארצות" }, ...countries.map((c) => ({ value: c.slug, label: c.name }))]}
+                selected={selectedCountry}
+                onSelect={(v) => {
+                  setSelectedCountry(v);
                   close();
                 }}
               />

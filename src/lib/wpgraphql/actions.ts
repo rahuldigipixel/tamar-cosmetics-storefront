@@ -22,12 +22,13 @@ function toOrderby(sort: CategorySortOption | undefined) {
 /**
  * Powers the category/brand/shop grid's infinite scroll and its sort/price
  * filters — a server action so the client can page through and re-query
- * results without a dedicated API route. Pass exactly one of
- * `category`/`brand` (the grid only ever filters on one taxonomy at a time).
+ * results without a dedicated API route. Category, brand and
+ * country (pa_country) combine with AND.
  */
 export async function fetchCategoryProducts(params: {
   category?: string;
   brand?: string;
+  country?: string;
   search?: string;
   after: string | null;
   sort?: CategorySortOption;
@@ -38,6 +39,7 @@ export async function fetchCategoryProducts(params: {
   return listProducts({
     category: params.category,
     brand: params.brand,
+    country: params.country,
     search: params.search,
     after: params.after ?? undefined,
     first: params.first ?? 20,

@@ -1,9 +1,9 @@
 ﻿import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
+import { CategoryCarousel } from "@/components/product/CategoryCarousel";
 
 export const revalidate = 60;
 
@@ -43,10 +43,12 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  categories: allCategories,
  brands,
  brandSlugsInCategory: brandsInCategorySlugs,
+ countriesInCategory,
  info,
  breadcrumbCategories,
  } = await getCategoryPageData(activeSlug, 20, slugPath.slice(0, -1).map(normalizeSlug));
  const banner = info?.banner ?? null;
+ const carouselItems = info?.carousel ?? [];
 
  // Sourced from the same full category list that powers the header's
  // brands mega-menu (rather than a dedicated by-slug lookup query) —
@@ -63,17 +65,30 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  ? null
  : products.flatMap((p) => p.categories).find((c) => normalizeSlug(c.slug) === activeSlug) ?? null;
 
- // 404 only for a slug that isn't a category at all — an existing category
- // with no products still opens, showing the grid's empty state. When the
- // WordPress lookup answered, it's authoritative (the products query
- // ignores an unknown category filter and returns unrelated products);
+ // A slug that isn't a category at all still opens the page, showing the
+ // grid's "no products available" empty state (no 404). When the WordPress
+ // lookup answered, it's authoritative (the products query ignores an unknown
+ // category filter and returns unrelated products, so those are dropped);
  // if it failed/timed out, fall back to the older heuristics.
- if (info ? !info.name : !category && !categoryFromProducts && products.length === 0) notFound();
+ const categoryMissing = info ? !info.name : !category && !categoryFromProducts && products.length === 0;
+ const shownProducts = categoryMissing ? [] : products;
 
  const brandsInCategory = brands.filter((b) => brandsInCategorySlugs.has(b.slug));
- // The client-side filter only needs id/name/slug/parent — drop the HTML
- // descriptions of every category from the serialized props.
- const categoryOptions = allCategories.map((c) => ({ ...c, description: undefined }));
+ // Categories filter: this category's child categories when it has any,
+ // otherwise the full category list. The client-side filter only needs
+ // name/slug + the link to navigate to — drop the HTML descriptions.
+ const childCategories = category ? allCategories.filter((c) => c.parentId === category.id) : [];
+ const pathOf = (c: (typeof allCategories)[number]) => {
+ const parent = c.parentId ? allCategories.find((p) => p.id === c.parentId) : null;
+ return parent ? `${parent.slug}/${c.slug}` : c.slug;
+ };
+ const categoryOptions = (childCategories.length > 0 ? childCategories : allCategories).map((c) => ({
+ id: c.id,
+ name: c.name,
+ slug: c.slug,
+ count: c.count,
+ href: `/product-category/${childCategories.length > 0 ? [...slugPath, c.slug].join("/") : pathOf(c)}/`,
+ }));
 
  const title =
  category?.name ?? info?.name ?? categoryFromProducts?.name ?? decodeURIComponent(activeSlug).replace(/-/g, " ");
@@ -125,6 +140,9 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  <span className="font-semibold text-[#333]">{title}</span>
  </nav>
 
+ {/* Admin-managed circle carousel (category setting "Enable Category Carousel"), straight after the breadcrumb. */}
+ {carouselItems.length > 0 ? <CategoryCarousel items={carouselItems} /> : null}
+
  {/* The description is rendered inside the grid component (as `intro`) so on mobile the filter accordion can sit above it. */}
  <div className={`mx-auto max-w-[1600px] px-[15px] ${description ? "pt-[15px] md:pt-[40px]" : "pt-[15px] md:pt-[30px]"} pb-0 md:pb-12`}>
  <CategoryProductGrid
@@ -137,11 +155,12 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  ) : null
  }
  categorySlug={activeSlug}
- initialProducts={products}
- initialHasNextPage={hasNextPage}
- initialEndCursor={endCursor}
+ initialProducts={shownProducts}
+ initialHasNextPage={categoryMissing ? false : hasNextPage}
+ initialEndCursor={categoryMissing ? null : endCursor}
  categories={categoryOptions}
  brands={brandsInCategory}
+ countries={countriesInCategory}
  />
  </div>
  {/* Accordions after the product list, same as the brand page: "קרא עוד" above the FAQ one. */}

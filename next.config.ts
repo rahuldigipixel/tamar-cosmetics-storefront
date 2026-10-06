@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/my-account/order-tracking", destination: "/my-account/d-shipment-tracking", permanent: false },
+      // Old wholesale slug -> new one.
+      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA", destination: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", permanent: false },
       { source: "/wishlist", destination: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA", permanent: false },
     ];
   },
@@ -34,10 +36,10 @@ const nextConfig: NextConfig = {
       { source: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA/", destination: "/wishlist" },
       { source: "/%D7%9E%D7%95%D7%AA%D7%92", destination: "/brand-list" },
       { source: "/%D7%9E%D7%95%D7%AA%D7%92/", destination: "/brand-list" },
-      // "/מכירה-סיטונאית" (wholesale page) — same non-ASCII-directory
+      // "/מכירה-סיטונאית-תמר-קוסמטיקס" (wholesale page) — same non-ASCII-directory
       // limitation as the brand list rewrite above.
-      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA", destination: "/wholesale" },
-      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA/", destination: "/wholesale" },
+      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/wholesale" },
+      { source: "/%D7%9E%D7%9B%D7%99%D7%A8%D7%94-%D7%A1%D7%99%D7%98%D7%95%D7%A0%D7%90%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/wholesale" },
       // "/ביקורות-לקוחות-תמר-קוסמטיקס" (customer reviews page) — matches the
       // live site's own URL exactly.
       { source: "/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%95%D7%AA-%D7%9C%D7%A7%D7%95%D7%97%D7%95%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/reviews" },
@@ -46,10 +48,44 @@ const nextConfig: NextConfig = {
       // site's own URL; the page itself lives at the ASCII route.
       { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/tamar-cosmetics-shipping-method" },
       { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/tamar-cosmetics-shipping-method" },
-      // "/הנבחרת-הסודית" (secret club page) — same non-ASCII-directory
+      // "/מדיניות-החזר-מוצר" (return policy page) — same ASCII-route approach
+      // as the shipping method page above.
+      { source: "/%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA-%D7%94%D7%97%D7%96%D7%A8-%D7%9E%D7%95%D7%A6%D7%A8", destination: "/return-policy" },
+      { source: "/%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA-%D7%94%D7%97%D7%96%D7%A8-%D7%9E%D7%95%D7%A6%D7%A8/", destination: "/return-policy" },
+      // "/מדיניות-ביטול-הזמנה-תמר-קוסמטיקס" (order cancellation page) — matches the live site's URL.
+      { source: "/%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA-%D7%91%D7%99%D7%98%D7%95%D7%9C-%D7%94%D7%96%D7%9E%D7%A0%D7%94-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/order-cancellation" },
+      { source: "/%D7%9E%D7%93%D7%99%D7%A0%D7%99%D7%95%D7%AA-%D7%91%D7%99%D7%98%D7%95%D7%9C-%D7%94%D7%96%D7%9E%D7%A0%D7%94-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/order-cancellation" },
+      // "/שאלות-נפוצות-אתר-תמר-קוסמטיקס" (FAQ page) — matches the live site's URL.
+      { source: "/%D7%A9%D7%90%D7%9C%D7%95%D7%AA-%D7%A0%D7%A4%D7%95%D7%A6%D7%95%D7%AA-%D7%90%D7%AA%D7%A8-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/faq" },
+      { source: "/%D7%A9%D7%90%D7%9C%D7%95%D7%AA-%D7%A0%D7%A4%D7%95%D7%A6%D7%95%D7%AA-%D7%90%D7%AA%D7%A8-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/faq" },
+      // "/ספקים" (suppliers page) — matches the live site's URL.
+      { source: "/%D7%A1%D7%A4%D7%A7%D7%99%D7%9D", destination: "/suppliers" },
+      { source: "/%D7%A1%D7%A4%D7%A7%D7%99%D7%9D/", destination: "/suppliers" },
+      // wp-admin "heading + editor" content pages — Hebrew public paths matching the live site.
+      { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1-2", destination: "/shipping-method-2" },
+      { source: "/%D7%A9%D7%99%D7%98%D7%AA-%D7%A9%D7%99%D7%9C%D7%95%D7%97-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1-2/", destination: "/shipping-method-2" },
+      { source: "/%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%9E%D7%A9%D7%9C%D7%95%D7%97%D7%99%D7%9D-%D7%91%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D-%D7%9E%D7%94%D7%99%D7%95%D7%9D-%D7%9C%D7%94%D7%99%D7%95%D7%9D", destination: "/jerusalem-delivery" },
+      { source: "/%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%9E%D7%A9%D7%9C%D7%95%D7%97%D7%99%D7%9D-%D7%91%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D-%D7%9E%D7%94%D7%99%D7%95%D7%9D-%D7%9C%D7%94%D7%99%D7%95%D7%9D/", destination: "/jerusalem-delivery" },
+      { source: "/%D7%94%D7%A6%D7%94%D7%A8%D7%AA-%D7%A0%D7%92%D7%99%D7%A9%D7%95%D7%AA", destination: "/accessibility-statement" },
+      { source: "/%D7%94%D7%A6%D7%94%D7%A8%D7%AA-%D7%A0%D7%92%D7%99%D7%A9%D7%95%D7%AA/", destination: "/accessibility-statement" },
+      { source: "/%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%90%D7%99%D7%A1%D7%95%D7%A3-%D7%A2%D7%A6%D7%9E%D7%99", destination: "/self-pickup" },
+      { source: "/%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%90%D7%99%D7%A1%D7%95%D7%A3-%D7%A2%D7%A6%D7%9E%D7%99/", destination: "/self-pickup" },
+      { source: "/%D7%AA%D7%A7%D7%A0%D7%95%D7%9F-%D7%A7%D7%95%D7%93-%D7%A7%D7%95%D7%A4%D7%95%D7%9F-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/coupon-terms" },
+      { source: "/%D7%AA%D7%A7%D7%A0%D7%95%D7%9F-%D7%A7%D7%95%D7%93-%D7%A7%D7%95%D7%A4%D7%95%D7%9F-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/coupon-terms" },
+      { source: "/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%97%D7%91%D7%A8%D7%94-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/about-company" },
+      { source: "/%D7%90%D7%95%D7%93%D7%95%D7%AA-%D7%97%D7%91%D7%A8%D7%94-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/about-company" },
+      { source: "/%D7%A1%D7%A0%D7%99%D7%A3-%D7%94%D7%93%D7%92%D7%9C-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/flagship-branch" },
+      { source: "/%D7%A1%D7%A0%D7%99%D7%A3-%D7%94%D7%93%D7%92%D7%9C-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/flagship-branch" },
+      { source: "/%D7%AA%D7%A9%D7%9C%D7%95%D7%9E%D7%99%D7%9D-%D7%91%D7%9B%D7%A8%D7%98%D7%99%D7%A1-%D7%90%D7%A9%D7%A8%D7%90%D7%99-2", destination: "/credit-card-payments" },
+      { source: "/%D7%AA%D7%A9%D7%9C%D7%95%D7%9E%D7%99%D7%9D-%D7%91%D7%9B%D7%A8%D7%98%D7%99%D7%A1-%D7%90%D7%A9%D7%A8%D7%90%D7%99-2/", destination: "/credit-card-payments" },
+      { source: "/%D7%90%D7%A4%D7%9C%D7%99%D7%A7%D7%A6%D7%99%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%9E%D7%A1%D7%99%D7%98%D7%A7%D7%A1", destination: "/app" },
+      { source: "/%D7%90%D7%A4%D7%9C%D7%99%D7%A7%D7%A6%D7%99%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%9E%D7%A1%D7%99%D7%98%D7%A7%D7%A1/", destination: "/app" },
+      { source: "/%D7%AA%D7%95-%D7%90%D7%9E%D7%95%D7%9F-%D7%94%D7%A6%D7%99%D7%91%D7%95%D7%A8", destination: "/trust-seal" },
+      { source: "/%D7%AA%D7%95-%D7%90%D7%9E%D7%95%D7%9F-%D7%94%D7%A6%D7%99%D7%91%D7%95%D7%A8/", destination: "/trust-seal" },
+      // "/הנבחרת-הסודית-תמר-קוסמטיקס" (secret club page) — same non-ASCII-directory
       // limitation as the brand list rewrite above.
-      { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA", destination: "/secret-club" },
-      { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA/", destination: "/secret-club" },
+      { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1", destination: "/secret-club" },
+      { source: "/%D7%94%D7%A0%D7%91%D7%97%D7%A8%D7%AA-%D7%94%D7%A1%D7%95%D7%93%D7%99%D7%AA-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1/", destination: "/secret-club" },
     ];
     // Backend on plain http (no valid SSL) can't serve images to an https
     // storefront (mixed content). Proxy uploads server-side; src/lib/wpgraphql/mediaUrl.ts
@@ -81,6 +117,8 @@ const nextConfig: NextConfig = {
       // upress dev WordPress backend (both schemes, so switching to https needs no code change)
       { protocol: "http", hostname: "tamarcosmetics-co-il-dev.s808.upress.link", pathname: "/wp-content/uploads/**" },
       { protocol: "https", hostname: "tamarcosmetics-co-il-dev.s808.upress.link", pathname: "/wp-content/uploads/**" },
+      // Legacy site — default images of the app page (wp-admin → אפליקציית תמר) until replaced by uploads
+      { protocol: "https", hostname: "www.tamarcosmetics.co.il", pathname: "/wp-content/uploads/**" },
     ],
     // Next.js 16 blocks image optimization for URLs resolving to a private IP by
     // default (SSRF hardening). Our local dev backend (192.168.0.107) is exactly

@@ -2,7 +2,7 @@ import { fetchGraphQLSafe } from "./client";
 import { GET_CATEGORY_PAGE_DATA } from "./queries/categoryPage";
 import { mapProductListNodes, type GqlProductNode } from "./products";
 import type { CategoryInfo } from "./tamarApi";
-import type { Product, ProductCategory, Brand } from "@/types/product";
+import type { Product, ProductCategory, Brand, CountryOption } from "@/types/product";
 
 interface GqlCategoryNode {
   id: string;
@@ -30,6 +30,8 @@ export interface CategoryPageData {
   categories: ProductCategory[];
   brands: Brand[];
   brandSlugsInCategory: Set<string>;
+  /** Countries of origin (pa_country) that appear on this category's products. */
+  countriesInCategory: CountryOption[];
   info: CategoryInfo | null;
   /** Ancestor categories (incl. empty ones the full list hides) for breadcrumb names. */
   breadcrumbCategories: { name: string; slug: string }[];
@@ -56,7 +58,7 @@ export async function getCategoryPageData(
     categoryInfo: CategoryInfo | null;
     categoryProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
     categoryProductBrands: {
-      nodes: { productCategories?: { nodes: { slug: string }[] }; allPaBrand?: { nodes: { slug: string }[] } }[];
+      nodes: { productCategories?: { nodes: { slug: string }[] }; allPaBrand?: { nodes: { slug: string }[] }; allPaCountry?: { nodes: CountryOption[] } }[];
     };
     allCategories: { nodes: GqlCategoryNode[] };
     breadcrumbCategories?: { nodes: { name: string; slug: string }[] };
@@ -77,9 +79,11 @@ export async function getCategoryPageData(
   // listBrandSlugsInCategory used to — this backend's categoryIn where-arg
   // has been observed to return a few false positives on its own.
   const brandSlugsInCategory = new Set<string>();
+  const countries = new Map<string, CountryOption>();
   for (const node of data.categoryProductBrands.nodes) {
     if (!node.productCategories?.nodes.some((c) => c.slug === categorySlug)) continue;
     node.allPaBrand?.nodes.forEach((b) => brandSlugsInCategory.add(b.slug));
+    node.allPaCountry?.nodes.forEach((c) => countries.set(c.slug, c));
   }
 
   const categories: ProductCategory[] = data.allCategories.nodes.map((c) => ({
@@ -108,6 +112,7 @@ export async function getCategoryPageData(
     categories,
     brands,
     brandSlugsInCategory,
+    countriesInCategory: [...countries.values()],
     info: data.categoryInfo,
     breadcrumbCategories: data.breadcrumbCategories?.nodes ?? [],
   };

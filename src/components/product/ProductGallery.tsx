@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
 import { ProductLabels } from "@/components/product/ProductLabels";
@@ -164,9 +165,9 @@ export function ProductGallery({
         </div>
       ) : null}
 
-      {lightboxOpen && current ? (
+      {lightboxOpen && current ? createPortal(
         <div
-          className="fixed inset-0 z-50 flex flex-col bg-black/95"
+          className="fixed inset-0 z-[9999] flex flex-col bg-black"
           onClick={() => setLightboxOpen(false)}
         >
           <div className="flex items-center justify-between p-4 text-white">
@@ -252,7 +253,8 @@ export function ProductGallery({
               ))}
             </div>
           ) : null}
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </div>
   );

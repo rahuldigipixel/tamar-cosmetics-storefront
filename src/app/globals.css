@@ -225,6 +225,10 @@ input[type="radio"] {
 .br_alabel > span b {
   font-weight: 400 !important;
 }
+/* Badges are squares (the legacy 3px corner), never circles — wp-admin has one label (e.g. free shipping) set to border-radius:50%. */
+.berocket_better_labels_image .br_alabel > span {
+  border-radius: 3px !important;
+}
 /* Label text centered vertically + horizontally inside its box (the plugin's line-height:1px on the wrapper pushed it off-center). */
 .berocket_better_labels_image .br_alabel > span {
   display: flex !important;

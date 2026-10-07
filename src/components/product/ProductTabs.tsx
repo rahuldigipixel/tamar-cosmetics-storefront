@@ -40,16 +40,6 @@ function isBlankHtml(html: string | undefined) {
   return html.replace(/<[^>]*>/g, "").replace(/&nbsp;|&#160;|\s/gi, "") === "";
 }
 
-/** Collapses editor HTML (paragraphs, <br>, newlines) into inline text for a single <p>. */
-function flattenToParagraph(html: string) {
-  return html
-    .replace(/<img\b[^>]*>/gi, "")
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<\/?(p|div|h[1-6])\b[^>]*>/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 export function ProductTabs({
   description,
   attributes,
@@ -79,7 +69,8 @@ export function ProductTabs({
     ...(aboutBrand && !isBlankHtml(aboutBrand.html)
       ? [{ title: "אודות המותג", kind: "brand" as const, content: aboutBrand.html }]
       : []),
-    ...(!isBlankHtml(shippingReturnsHtml) ? [{ title: "משלוחים והחזרות", kind: "html" as const, content: shippingReturnsHtml ?? "" }] : []),
+    // Shown whenever the admin toggle is on, even if its content is empty.
+    ...(shippingReturnsHtml !== undefined ? [{ title: "משלוחים והחזרות", kind: "html" as const, content: shippingReturnsHtml ?? "" }] : []),
   ];
   const [active, setActive] = useState(0);
 
@@ -109,20 +100,12 @@ export function ProductTabs({
       </div>
 
       {activeSection.kind === "brand" ? (
-        <div className="py-[20px] text-center">
-          {/* Images from the description are pulled out and centred above the text. */}
-          {(activeSection.content.match(/<img\b[^>]*>/gi) ?? []).length > 0 ? (
-            <div
-              className="mb-[25px] [&_img]:mx-auto [&_img]:block [&_img]:h-auto [&_img]:max-w-full"
-              dangerouslySetInnerHTML={{ __html: (activeSection.content.match(/<img\b[^>]*>/gi) ?? []).join("") }}
-            />
-          ) : null}
-          {/* One continuous full-width paragraph: the editor's line breaks / <p> splits are flattened to spaces. */}
-          <p
-            className="w-full text-[16px] leading-[34px] text-[#0c0c0c] [&_img]:mx-auto [&_img]:inline-block [&_img]:h-auto [&_img]:max-w-full [&_strong]:font-bold"
-            dangerouslySetInnerHTML={{ __html: flattenToParagraph(activeSection.content) }}
-          />
-        </div>
+        // Rendered exactly as saved in the brand description (headings, paragraphs, inline
+        // alignment/size styles and images keep the editor's structure), like the legacy tab.
+        <div
+          className="py-[20px] text-[16px] leading-[34px] text-[#0c0c0c] [&_div]:my-[16px] [&_h1]:my-[16px] [&_h1]:text-[28px] [&_h1]:leading-[1.3] [&_h1]:font-bold [&_h2]:my-[16px] [&_h2]:text-[24px] [&_h2]:leading-[1.3] [&_h2]:font-bold [&_h3]:my-[16px] [&_h3]:text-[16px] [&_h3]:leading-[34px] [&_h3]:font-bold [&_h4]:my-[8px] [&_h4]:text-[16px] [&_h4]:font-bold [&_img]:inline-block [&_img]:h-auto [&_img]:max-w-full [&_p]:my-[16px] [&_strong]:font-bold [&_a]:text-brand-accent"
+          dangerouslySetInnerHTML={{ __html: activeSection.content }}
+        />
       ) : activeSection.kind === "specs" ? (
         <div className="py-[20px]">
           <table className="w-full max-w-2xl text-right text-[21px] leading-[34px] text-[#0c0c0c]">

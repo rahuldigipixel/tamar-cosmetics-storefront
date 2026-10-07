@@ -16,6 +16,7 @@ import { TamarTip } from "@/components/product/TamarTip";
 import { BrandTip } from "@/components/product/BrandTip";
 import { LinkedProductsSlider } from "@/components/product/LinkedProductsSlider";
 import { FlashyProductWidget } from "@/components/product/FlashyProductWidget";
+import { FlashyViewContent } from "@/components/layout/FlashyTracker";
 import { ProductIconStrip } from "@/components/product/ProductIconStrip";
 import { FlashyReviewsWidget } from "@/components/reviews/FlashyReviewsWidget";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
@@ -336,6 +337,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  {showStrip ? <ProductIconStrip items={pageSettings.iconStrip} /> : null}
 
+ <FlashyViewContent productId={product.databaseId} />
  {showSliders ? (
  <div className="space-y-[10px] py-[15px] md:space-y-[30px] md:py-[50px]">
  {show.complementary ? <FlashyProductWidget kind="complementary" productId={product.databaseId} /> : null}

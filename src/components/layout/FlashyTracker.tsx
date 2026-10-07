@@ -87,3 +87,20 @@ export function FlashyTracker() {
 
   return null;
 }
+
+/**
+ * Reports `ViewContent` for the product page, like the WordPress plugin's inline
+ * `flashy("ViewContent", {content_ids: [id]})`. Flashy's recommendation sliders
+ * (complementary / similar) take their `current_product` context from this event;
+ * without it both requests come back identical (generic, not product-specific).
+ */
+export function FlashyViewContent({ productId }: { productId: number }) {
+  useEffect(() => {
+    const w = window as FlashyWindow;
+    const args: unknown[] = ["ViewContent", { content_ids: [String(productId)] }];
+    if (w.flashy) w.flashy(...args);
+    else (w.__flashyPending ??= []).push(args);
+  }, [productId]);
+
+  return null;
+}

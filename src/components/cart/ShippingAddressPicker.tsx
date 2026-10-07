@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { PRIMARY_BTN } from "@/components/cart/cartStyles";
 
-interface City {
-  code: string;
-  name: string;
-}
+import { loadShippingCities, type City } from "@/lib/data/shippingCities";
 
 // Measured from the original calculator: 42px pill selects with a 2px hairline border, 14px text,
 // 12px labels (5px gap), 20px between fields, 36px "עדכן" button.
@@ -31,13 +29,13 @@ export function ShippingAddressPicker({
   const [selected, setSelected] = useState(currentState ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const options = useMemo(() => (cities ?? []).map((c) => ({ value: c.code, label: c.name })), [cities]);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/shipping-cities")
-      .then((res) => res.json())
-      .then((data: City[]) => {
-        if (!cancelled) setCities(Array.isArray(data) ? data : []);
+    loadShippingCities()
+      .then((data) => {
+        if (!cancelled) setCities(data);
       })
       .catch(() => {
         if (!cancelled) setCities([]);
@@ -80,23 +78,15 @@ export function ShippingAddressPicker({
         <label htmlFor="cart-ship-city" className={LABEL}>
           עיר&nbsp;<span className="text-brand-accent">*</span>
         </label>
-        <div className="relative">
-          <select
-            id="cart-ship-city"
-            className={SELECT}
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-            disabled={cities === null || saving}
-          >
-            <option value="">{cities === null ? "טוען…" : "בחר אפשרות…"}</option>
-            {(cities ?? []).map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute left-[10px] top-1/2 h-4 w-4 -translate-y-1/2 text-black/50" />
-        </div>
+        <SearchableSelect
+          id="cart-ship-city"
+          className={SELECT}
+          options={options}
+          value={selected}
+          onChange={setSelected}
+          placeholder={cities === null ? "טוען…" : "בחר אפשרות…"}
+          disabled={cities === null || saving}
+        />
       </div>
       {error ? <p className="mb-[10px] text-brand-accent">{error}</p> : null}
       <button

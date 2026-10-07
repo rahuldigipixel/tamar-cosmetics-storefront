@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, ShoppingBag } from "lucide-react";
+import { Check, ShoppingBag } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { PRIMARY_BTN } from "@/components/cart/cartStyles";
 import { StreetSelect } from "@/components/checkout/StreetSelect";
+import { loadShippingCities, type City } from "@/lib/data/shippingCities";
+import { GoCreditFrame } from "@/components/checkout/GoCreditFrame";
+
+// GoCredit card form is embedded in an <iframe> on this page (like the Tamar Course checkout); other gateways redirect.
+const GOCREDIT_GATEWAY_ID = "gocredit_payment";
 
 // Checkout cloned from the live WooCommerce checkout (tamarcosmetics.co.il/checkout): sizes, weights,
 // paddings and radii are the measured computed values (Playwright, 1440px + 390px), so the <18px text is
@@ -18,24 +25,19 @@ import { StreetSelect } from "@/components/checkout/StreetSelect";
 // select), building, apartment (required), phone, email. Shipping + payment methods come from WooCommerce.
 const HAIRLINE = "border-black/[0.106]";
 const INPUT =
-  "h-[42px] w-full rounded-[35px] border-2 border-black/10 bg-transparent px-[15px] text-[14px] leading-[22.4px] text-black outline-none transition-colors placeholder:text-black focus:border-brand-accent aria-[invalid=true]:border-brand-accent";
-const SELECT = `${INPUT} appearance-none pl-[40px]`;
+  "h-[42px] w-full rounded-[35px] border-2 border-black/10 bg-transparent px-[15px] text-[14px] leading-[22.4px] text-[#0c0c0c] outline-none transition-colors placeholder:text-[#0c0c0c] focus:border-brand-accent aria-[invalid=true]:border-brand-accent";
 const H3 =
   "mb-[20px] text-[22px] font-bold leading-[30.8px] text-[#0c0c0c] max-[767px]:mb-[10px] max-[767px]:text-[17px] max-[767px]:leading-[23.8px]";
-const TH = `border-b-2 border-black/[0.075] px-[10px] py-[15px] text-start align-middle text-[16px] font-bold leading-[22.4px] text-[#0c0c0c] max-[767px]:px-[3px]`;
+const TH = `shadow-[inset_0_-2px_0_rgba(0,0,0,0.075)] px-[10px] py-[15px] text-start align-middle text-[16px] font-bold leading-[22.4px] text-[#0c0c0c] max-[767px]:px-[3px]`;
 const BODY = "text-[21px] leading-[29.4px] max-[767px]:text-[13px] max-[767px]:leading-[18.2px]";
-const TD = `border-b ${HAIRLINE} ${BODY} px-3 py-[15px] align-middle max-[767px]:px-[3px]`;
-const ROW_TH = `flex items-center whitespace-nowrap border-b ${HAIRLINE} px-[10px] py-[15px] text-start align-middle ${BODY} font-bold text-[#0c0c0c] max-[767px]:px-[3px]`;
+const TD = `shadow-[inset_0_-1px_0_rgba(0,0,0,0.106)] ${BODY} px-3 py-[15px] align-middle max-[767px]:px-[3px]`;
+const ROW_TH = `flex items-center whitespace-nowrap shadow-[inset_0_-1px_0_rgba(0,0,0,0.106)] px-[10px] py-[15px] text-start align-middle ${BODY} font-bold text-[#0c0c0c] max-[767px]:px-[3px]`;
 const CHECK_LABEL =
   "flex cursor-pointer items-start gap-[5px] text-[17px] leading-[24px] text-[#0c0c0c] max-[767px]:text-[13px] max-[767px]:leading-[20.8px]";
 const TERMS_LABEL =
-  "flex cursor-pointer items-start gap-[5px] text-[21px] leading-[21px] text-[#0c0c0c] max-[767px]:text-[13px] max-[767px]:leading-[20.8px]";
+  "flex min-h-[33.6px] cursor-pointer items-start gap-[5px] text-[21px] leading-[21px] text-[#0c0c0c] max-[767px]:min-h-[21px] max-[767px]:text-[13px] max-[767px]:leading-[13px]";
 const CHECKBOX = "mt-[3px] h-[13px] w-[13px] shrink-0 accent-brand-accent";
 
-interface City {
-  code: string;
-  name: string;
-}
 
 type FieldKey = "first_name" | "state" | "address_1" | "appartment" | "phone" | "email" | "terms";
 
@@ -59,7 +61,7 @@ const FIELD_IDS: Record<FieldKey, string> = {
   terms: "terms",
 };
 
-export function CheckoutForm({ notice }: { notice: string }) {
+export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMessage: string }) {
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
   const checkoutReady = useCartStore((s) => s.checkoutReady);
@@ -73,17 +75,24 @@ export function CheckoutForm({ notice }: { notice: string }) {
   const removeCoupon = useCartStore((s) => s.removeCoupon);
   const clearCart = useCartStore((s) => s.clearCart);
 
+  const loggedIn = useAuthStore((s) => !!s.token);
   const [cities, setCities] = useState<City[] | null>(null);
+  const cityOptions = useMemo(() => (cities ?? []).map((c) => ({ value: c.code, label: c.name })), [cities]);
   const [form, setForm] = useState({ first_name: "", address_2: "", appartment: "", phone: "", email: "" });
   const [stateCode, setStateCode] = useState<string | null>(null); // null = follow the cart's shipping city
   const [street, setStreet] = useState("");
   const [note, setNote] = useState("");
   const [acceptMarketing, setAcceptMarketing] = useState(false);
   const [terms, setTerms] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [termsDoc, setTermsDoc] = useState<{ heading: string; html: string } | null>(null);
+  const [termsFailed, setTermsFailed] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [cardPayment, setCardPayment] = useState<{ iframeUrl: string; orderId: number; orderKey: string } | null>(null);
   const [shippingUpdating, setShippingUpdating] = useState(false);
 
   const [couponOpen, setCouponOpen] = useState(false);
@@ -92,13 +101,20 @@ export function CheckoutForm({ notice }: { notice: string }) {
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
+  // GoCredit sent the shopper back (cancelled / failed) — say so, then drop the query string.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment_failed") !== "1") return;
+    queueMicrotask(() => setSubmitError("התשלום לא הושלם. ניתן לנסות שוב."));
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+
   useEffect(() => {
     void fetchCheckoutCart();
     let cancelled = false;
-    fetch("/api/shipping-cities")
-      .then((res) => res.json())
-      .then((data: City[]) => {
-        if (!cancelled) setCities(Array.isArray(data) ? data : []);
+    loadShippingCities()
+      .then((data) => {
+        if (!cancelled) setCities(data);
       })
       .catch(() => {
         if (!cancelled) setCities([]);
@@ -118,6 +134,18 @@ export function CheckoutForm({ notice }: { notice: string }) {
     cities?.find((c) => c.code === effectiveState)?.name ??
     (shippingAddress?.state === effectiveState ? shippingAddress?.city : "") ??
     "";
+
+  // The terms text is big, so it loads the first time the shopper opens the box (legacy: wp page content, 200px scroll box).
+  function toggleTerms() {
+    const next = !termsOpen;
+    setTermsOpen(next);
+    if (!next || termsDoc) return;
+    setTermsFailed(false);
+    fetch("/api/terms")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("terms"))))
+      .then((d: { heading: string; html: string }) => setTermsDoc(d))
+      .catch(() => setTermsFailed(true));
+  }
 
   function setField(key: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -233,7 +261,19 @@ export function CheckoutForm({ notice }: { notice: string }) {
       if (!res.ok) throw new Error(data.error ?? "שגיאה בביצוע ההזמנה");
 
       const redirect: string | undefined = data.payment_result?.redirect_url;
-      if (redirect && !redirect.includes("order-received")) {
+      if (activePayment.id === GOCREDIT_GATEWAY_ID && redirect) {
+        // The order exists and the cart is consumed; open GoCredit's card form inline.
+        const payRes = await fetch("/api/checkout/payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order_id: data.order_id, order_key: data.order_key }),
+        });
+        const pay = await payRes.json();
+        if (!payRes.ok) throw new Error(pay.error ?? "שגיאה בפתיחת דף התשלום");
+        clearCart();
+        setCardPayment({ iframeUrl: pay.iframe_url, orderId: data.order_id, orderKey: data.order_key });
+        setSubmitting(false);
+      } else if (redirect && !redirect.includes("order-received")) {
         // Hosted payment page (GoCredit): the order is created, the cart is consumed.
         clearCart();
         window.location.assign(redirect);
@@ -245,6 +285,15 @@ export function CheckoutForm({ notice }: { notice: string }) {
       setSubmitError((err as Error).message);
       setSubmitting(false);
     }
+  }
+
+  if (cardPayment) {
+    return (
+      <div className="mx-auto max-w-[1600px] px-[25px] pb-[40px] pt-[30px]">
+        <h3 className={`${H3} text-center`}>תשלום מאובטח</h3>
+        <GoCreditFrame iframeUrl={cardPayment.iframeUrl} orderId={cardPayment.orderId} orderKey={cardPayment.orderKey} />
+      </div>
+    );
   }
 
   if (!checkoutReady) return <CheckoutSkeleton />;
@@ -261,6 +310,8 @@ export function CheckoutForm({ notice }: { notice: string }) {
     );
   }
 
+  // The pay button stays disabled until every required field (and the terms box) is filled.
+  const formComplete = Object.keys(validate()).length === 0;
   const errorList = (Object.keys(FIELD_IDS) as FieldKey[]).filter((k) => errors[k]);
   const multiGateway = availableGateways.length > 1;
   const TOGGLE = "mb-[25px] font-semibold text-[#242424]";
@@ -268,14 +319,16 @@ export function CheckoutForm({ notice }: { notice: string }) {
 
   return (
     <>
-      <div className="mx-auto max-w-[1600px] px-[25px] pb-[10px] pt-[50px] text-[16px] leading-[1.6] text-black">
+      <div className="mx-auto max-w-[1600px] px-[25px] pb-[10px] pt-[50px] font-[family-name:Arial,Helvetica,sans-serif] text-[16px] leading-[1.6] text-[#0c0c0c]">
         {/* login + coupon toggles */}
-        <div className={`${TOGGLE} text-[21px] leading-[33.6px] max-[767px]:mb-[10px] max-[767px]:text-[16px] max-[767px]:leading-[18px]`}>
-          קנית כאן בעבר?{" "}
-          <Link prefetch={false} href="/account/login" className={LINK_BTN}>
-            יש ללחוץ כאן כדי להתחבר
-          </Link>
-        </div>
+        {loggedIn ? null : (
+          <div className={`${TOGGLE} text-[21px] leading-[33.6px] max-[767px]:mb-[10px] max-[767px]:text-[16px] max-[767px]:leading-[18px]`}>
+            קנית כאן בעבר?{" "}
+            <Link prefetch={false} href="/account/login" className={LINK_BTN}>
+              יש ללחוץ כאן כדי להתחבר
+            </Link>
+          </div>
+        )}
         <div className={`${TOGGLE} text-[16px] leading-[25.6px]`}>
           יש לך קופון?{" "}
           <button type="button" aria-expanded={couponOpen} onClick={() => setCouponOpen((o) => !o)} className={LINK_BTN}>
@@ -355,23 +408,18 @@ export function CheckoutForm({ notice }: { notice: string }) {
                   placeholder="שם מלא או שם חברה על גבי חשבונית *"
                   className={`${INPUT} min-[769px]:w-[48%]`}
                 />
-                <div className="relative min-[769px]:w-[48%]">
-                  <select
+                <div className="min-[769px]:w-[48%]">
+                  <SearchableSelect
                     id="billing_state"
+                    className={INPUT}
+                    options={cityOptions}
                     value={effectiveState}
+                    onChange={(code) => void handleCityChange(code)}
+                    placeholder={cities === null ? "טוען…" : "עיר (לבחור) *"}
                     disabled={cities === null}
-                    onChange={(e) => void handleCityChange(e.target.value)}
-                    aria-invalid={!!errors.state || undefined}
-                    className={SELECT}
-                  >
-                    <option value="">{cities === null ? "טוען…" : "עיר (לבחור) *"}</option>
-                    {(cities ?? []).map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute left-[15px] top-1/2 h-4 w-4 -translate-y-1/2 text-black/50" />
+                    invalid={!!errors.state}
+                    placeholderClassName="text-[#0c0c0c]"
+                  />
                 </div>
                 </div>
                 <div>
@@ -405,6 +453,7 @@ export function CheckoutForm({ notice }: { notice: string }) {
                 <input
                   id="billing_phone"
                   type="tel"
+                  dir="rtl"
                   autoComplete="tel"
                   value={form.phone}
                   onChange={(e) => setField("phone", e.target.value)}
@@ -415,6 +464,7 @@ export function CheckoutForm({ notice }: { notice: string }) {
                 <input
                   id="billing_email"
                   type="email"
+                  dir="rtl"
                   autoComplete="email"
                   value={form.email}
                   onChange={(e) => setField("email", e.target.value)}
@@ -424,7 +474,7 @@ export function CheckoutForm({ notice }: { notice: string }) {
                 />
               </div>
 
-              <h3 className={`${H3} mt-[40px] max-[767px]:mt-[30px]`}>מידע נוסף</h3>
+              <h3 className={`${H3} mt-[40px]`}>מידע נוסף</h3>
               <textarea
                 id="order_comments"
                 value={note}
@@ -447,11 +497,14 @@ export function CheckoutForm({ notice }: { notice: string }) {
             {/* ── order review column (receipt box) ── */}
             <div className="min-w-0">
               <div
-                className="relative bg-[#f5f5f5] px-[30px] pb-[30px] pt-[40px] before:absolute before:inset-x-0 before:top-0 before:h-[8px] before:bg-[radial-gradient(circle_at_5px_0,#fff_4px,transparent_4.5px)] before:bg-[length:10px_8px] after:absolute after:inset-x-0 after:bottom-0 after:h-[8px] after:bg-[radial-gradient(circle_at_5px_100%,#fff_4px,transparent_4.5px)] after:bg-[length:10px_8px] max-[767px]:px-[10px]"
+                className="relative bg-[#f7f7f7] p-[30px] max-[767px]:p-[10px] before:absolute before:inset-x-0 before:top-0 before:h-[8px] before:bg-[radial-gradient(circle_at_5px_0,#fff_4px,transparent_4.5px)] before:bg-[length:10px_8px] after:absolute after:inset-x-0 after:bottom-0 after:h-[8px] after:bg-[radial-gradient(circle_at_5px_100%,#fff_4px,transparent_4.5px)] after:bg-[length:10px_8px]"
               >
                 <h3 className={`${H3} text-center`}>פרטי ההזמנה</h3>
 
-                <table className={`block w-full bg-white ${shippingUpdating ? "opacity-70" : ""}`}>
+                {/* legacy .wd-table-wrapper: white card, 5px/15px padding (5px mobile), 20px below, faint shadow */}
+                <div className="mb-[20px] overflow-auto bg-white px-[15px] py-[5px] shadow-[1px_1px_2px_rgba(0,0,0,0.05)] max-[767px]:px-[5px]">
+                <table className="block">
+
                   <thead className="block">
                     <tr className="flex">
                       <th className={`${TH} min-w-0 flex-1`}>מוצר</th>
@@ -496,8 +549,8 @@ export function CheckoutForm({ notice }: { notice: string }) {
                         {cart.shippingRates.length > 0 ? (
                           <ul className="m-0 list-none p-0">
                             {cart.shippingRates.map((rate) => (
-                              <li key={rate.id} className="mb-[5px] last:mb-0">
-                                <label className="block cursor-pointer text-left text-[#0c0c0c] max-[767px]:text-[15px] max-[767px]:leading-[21px]">
+                              <li key={rate.id} className="mb-[10px] last:mb-0">
+                                <label className="block cursor-pointer text-left text-[#0c0c0c] max-[767px]:text-[12px] max-[767px]:leading-[16.8px]">
                                   <input
                                     type="radio"
                                     name="shipping_method"
@@ -526,17 +579,18 @@ export function CheckoutForm({ notice }: { notice: string }) {
                       <th className="flex shrink-0 items-center whitespace-nowrap px-[10px] py-[15px] text-start align-middle text-[18px] font-bold leading-[25.2px] text-[#0c0c0c] max-[767px]:px-[3px] max-[767px]:text-[13px] max-[767px]:leading-[18.2px]">
                         סה&quot;כ
                       </th>
-                      <td className="min-w-0 flex-1 px-3 py-[15px] text-end align-middle max-[767px]:px-[3px]">
-                        <span className="text-[22px] font-semibold text-brand-accent max-[767px]:text-[18px]">
+                      <td className="min-w-0 flex-1 px-3 py-[15px] text-end align-middle text-[22px] leading-[30.8px] max-[767px]:px-[3px] max-[767px]:text-[18px] max-[767px]:leading-[25.2px]">
+                        <span className="font-semibold text-brand-accent">
                           {formatPrice(cart.total)}
                         </span>
                       </td>
                     </tr>
                   </tfoot>
                 </table>
+                </div>
 
                 {/* payment methods (WooCommerce gateways) */}
-                <div className="mt-[30px]">
+                <div>
                   {availableGateways.length === 0 ? (
                     <p className="mb-[20px] text-[21px] text-[#777] max-[767px]:text-[13px]">לא נמצאו אמצעי תשלום זמינים.</p>
                   ) : (
@@ -555,11 +609,11 @@ export function CheckoutForm({ notice }: { notice: string }) {
                               />
                               {g.title}
                               {g.icon ? (
-                                <Image src={g.icon} alt="" width={133} height={40} unoptimized className="mx-[5px] h-[40px] w-auto" />
+                                <Image src={g.icon} alt="" width={133} height={40} unoptimized className="mx-[5px] h-[40px] w-auto max-[767px]:h-[27px]" />
                               ) : null}
                             </label>
                             {selected && g.description ? (
-                              <div className="relative mt-[15px] bg-white p-[15px] text-[21px] leading-[33.6px] text-black before:absolute before:-top-[8px] before:start-[20px] before:border-x-[8px] before:border-b-[8px] before:border-x-transparent before:border-b-white">
+                              <div className="relative mt-[15px] bg-white p-[15px] text-[21px] leading-[33.6px] text-[#0c0c0c] max-[767px]:text-[13px] max-[767px]:leading-[20.8px] before:absolute before:-top-[8px] before:start-[20px] before:border-x-[8px] before:border-b-[8px] before:border-x-transparent before:border-b-white">
                                 {g.description}
                               </div>
                             ) : null}
@@ -570,6 +624,23 @@ export function CheckoutForm({ notice }: { notice: string }) {
                   )}
 
                   <div className={`mb-[20px] border-t ${HAIRLINE} pt-[20px]`}>
+                    {termsOpen ? (
+                      <div
+                        id="terms-box"
+                        className="mb-[20px] max-h-[200px] overflow-auto bg-white p-[20px] text-start text-[21px] leading-[33.6px] text-[#0c0c0c] [&_h1]:mb-[20px] [&_h1]:text-[28px] [&_h1]:font-bold [&_h1]:leading-[39.2px] [&_h3]:mb-[20px] [&_h3]:text-[22px] [&_h3]:font-bold [&_h3]:leading-[30.8px] max-[767px]:[&_h3]:mb-[10px] max-[767px]:[&_h3]:text-[17px] max-[767px]:[&_h3]:leading-[23.8px] [&_p]:mb-[20px] [&_strong]:font-semibold [&_a]:underline [&_ul]:mb-[20px] [&_ol]:mb-[20px] [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pr-6 [&_ol]:pr-6"
+                      >
+                        {termsDoc ? (
+                          <>
+                            {termsDoc.heading ? <h1>{termsDoc.heading}</h1> : null}
+                            <div dangerouslySetInnerHTML={{ __html: termsDoc.html }} />
+                          </>
+                        ) : termsFailed ? (
+                          <p className="!mb-0">לא ניתן לטעון את התקנון כעת. נסו שוב מאוחר יותר.</p>
+                        ) : (
+                          <p className="!mb-0 text-[#777]">טוען…</p>
+                        )}
+                      </div>
+                    ) : null}
                     <label className={TERMS_LABEL}>
                       <input
                         id="terms"
@@ -578,20 +649,25 @@ export function CheckoutForm({ notice }: { notice: string }) {
                         onChange={(e) => {
                           setTerms(e.target.checked);
                           setErrors((prev) => ({ ...prev, terms: undefined }));
+                          if (e.target.checked && popupMessage) setPopupOpen(true);
                         }}
                         aria-invalid={!!errors.terms || undefined}
                         className={CHECKBOX}
                       />
                       <span>
                         קראתי ואני מסכימ/ה ל
-                        <a
-                          href="https://www.tamarcosmetics.co.il/terms-and-conditions/"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          aria-expanded={termsOpen}
+                          aria-controls="terms-box"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleTerms();
+                          }}
                           className="font-semibold text-[#333] hover:text-brand-accent"
                         >
                           תנאי שימוש
-                        </a>{" "}
+                        </button>{" "}
                         האתר <span className="text-[16px] text-[#e01020]">*</span>
                       </span>
                     </label>
@@ -599,24 +675,77 @@ export function CheckoutForm({ notice }: { notice: string }) {
 
                   <button
                     type="submit"
-                    disabled={submitting || shippingUpdating || !activePayment}
+                    disabled={submitting || shippingUpdating || !activePayment || !formComplete}
                     className={`${PRIMARY_BTN} h-[48px] w-full px-[28px] text-[14px] font-semibold leading-[16.8px] max-[767px]:text-[23px] max-[767px]:leading-[27.6px]`}
                   >
                     {submitting ? "מבצע הזמנה..." : "לתשלום"}
                   </button>
                 </div>
+                <BusyOverlay active={shippingUpdating || applyingCoupon} />
               </div>
             </div>
           </div>
         </form>
       </div>
 
+      {popupOpen && popupMessage ? <NoticePopup message={popupMessage} onClose={() => setPopupOpen(false)} /> : null}
+
       {notice ? (
-        <div className="mx-auto max-w-[1600px] px-[25px] pb-[50px] pt-[40px]">
-          <p className="text-[19px] font-normal leading-[30px] text-black">{notice}</p>
+        <div className="mx-auto max-w-[1600px] px-[25px] pb-[50px] pt-[40px] font-[family-name:Arial,Helvetica,sans-serif]">
+          <p className="text-[19px] font-light leading-[30px] text-black max-[767px]:text-[13px] max-[767px]:leading-[25px]">{notice}</p>
         </div>
       ) : null}
     </>
+  );
+}
+
+// Dims the (relatively positioned) receipt box and blocks clicks while shipping/coupon changes are
+// re-priced; spinner in the middle like WooCommerce's blockUI on the legacy checkout.
+function BusyOverlay({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <div role="status" aria-live="polite" aria-label="מעדכן" className="absolute inset-0 z-10 flex cursor-wait items-center justify-center bg-white/60">
+      <span className="h-[26px] w-[26px] animate-spin rounded-full border-[3px] border-black/15 border-t-brand-accent" />
+    </div>
+  );
+}
+
+// Legacy "checkout notice popup" (wps-woo-extended): 30%-black backdrop, pink #fde8ed card (600px max, 15px
+// radius, 20/30 padding, soft shadow), centred 19–21px/23px message, bold red "מאשר\ת" button, × top-right.
+// Closes on ×, the button, a backdrop click or Esc.
+function NoticePopup({ message, onClose }: { message: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] bg-black/30 font-[family-name:Arial,Helvetica,sans-serif] text-[#0c0c0c]"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative mx-auto mt-[15vw] w-[90%] max-w-[600px] rounded-[15px] bg-[#fde8ed] px-[30px] py-[20px] shadow-[0_5px_15px_rgba(0,0,0,0.3)] max-[767px]:mt-[36vh]"
+      >
+        <button type="button" aria-label="סגירה" onClick={onClose} className="absolute right-[15px] top-[10px] text-[24px] font-bold leading-[38.4px]">
+          &times;
+        </button>
+        <p className="mb-[20px] whitespace-pre-line text-center text-[21px] leading-[23px] max-[767px]:text-[19px]">{message}</p>
+        <div className="text-center">
+          <button
+            type="button"
+            autoFocus
+            onClick={onClose}
+            className="rounded-[11px] bg-[#cc2228] px-[30px] py-[15px] text-[20px] font-bold leading-[24px] text-white"
+          >
+            מאשר\ת
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

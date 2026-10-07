@@ -104,7 +104,7 @@ export function StreetSelect({
         disabled={!city}
         aria-invalid={invalid || undefined}
         value={open ? query : value}
-        placeholder={city ? "מספר בית ושם רחוב" : "יש לבחור עיר תחילה"}
+        placeholder="מספר בית ושם רחוב"
         onFocus={() => setOpen(true)}
         onChange={(e) => {
           setQuery(e.target.value);

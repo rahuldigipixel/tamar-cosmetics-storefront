@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { data, response } = await fetchGraphQL<{
-      checkout: { order: { databaseId: number; status: string }; result: string; redirect: string | null };
+      checkout: { order: { databaseId: number; orderKey: string; status: string }; result: string; redirect: string | null };
     }>(
       CHECKOUT,
       {
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       order_id: data.checkout.order.databaseId,
+      order_key: data.checkout.order.orderKey,
       status: data.checkout.order.status,
       payment_result: {
         payment_status: data.checkout.result,

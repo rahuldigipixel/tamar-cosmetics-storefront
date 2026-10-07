@@ -614,16 +614,6 @@ export async function accountRequest<T>(
   }
 }
 
-export interface ShippingCity {
-  code: string;
-  name: string;
-}
-
-/** Cities WooCommerce matches shipping zones against (plugin: class-shipping-cities.php). */
-export function getShippingCities() {
-  return tamarFetch<ShippingCity[]>(`/shipping-cities`, { revalidate: 86400, tags: ["shipping-cities"] });
-}
-
 export interface ShippingMethodPage {
   heading: string;
   contentHtml: string;
@@ -814,3 +804,33 @@ export interface FlagshipPageData {
 export const getFlagshipPage = cache(function getFlagshipPage() {
   return tamarFetch<FlagshipPageData>(`/flagship-branch-page`, { tags: ["flagship-branch-page"], revalidate: 300 });
 });
+
+/**
+ * Embedded GoCredit payment (includes/class-checkout-payment.php). Authorised by the WooCommerce order key,
+ * keeps the backend's error message, same timeout as the rest.
+ */
+export async function checkoutPaymentRequest<T>(
+  path: "/checkout/payment-iframe" | "/checkout/payment-status",
+  params: Record<string, string | number>,
+  method: "GET" | "POST"
+): Promise<{ ok: boolean; status: number; data: T | { message?: string } | null }> {
+  logApiCall("REST", path);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS * 2); // GoCredit's SOAP call can take a few seconds
+  try {
+    const query = method === "GET" ? `?${new URLSearchParams(params as Record<string, string>)}` : "";
+    const res = await fetch(`${TAMAR_API_BASE}${path}${query}`, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: method === "POST" ? JSON.stringify(params) : undefined,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+  } catch {
+    return { ok: false, status: 502, data: null };
+  } finally {
+    clearTimeout(timer);
+  }
+}

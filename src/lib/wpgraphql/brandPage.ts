@@ -60,7 +60,7 @@ export const getBrandPageData = cache(async (slug: string, first = 20): Promise<
  * any descendant has products. (WPGraphQL's own `hideEmpty` only looks at the category's own count, so it
  * would drop parents whose products sit in their sub-categories; hence we fetch all and prune here.)
  */
-function categoryTree(nodes: { id: string; name: string; slug: string; count: number | null; parent: { node: { id: string } } | null }[]) {
+export function categoryTree(nodes: { id: string; name: string; slug: string; count: number | null; parent: { node: { id: string } } | null }[]) {
   const ids = new Set(nodes.map((n) => n.id));
   const byParent = new Map<string | null, typeof nodes>();
   for (const n of nodes) {

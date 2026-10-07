@@ -27,6 +27,12 @@ const TD = `border-b ${HAIRLINE} min-[769px]:table-cell min-[769px]:px-3 min-[76
 const MOBILE_ROW =
   "mb-[5px] flex items-center before:flex-1 before:text-right before:text-[11px] before:font-semibold before:text-[#242424] before:content-[attr(data-title)] min-[769px]:mb-0 min-[769px]:before:hidden";
 
+// The WPGraphQL backend answers some coupon errors in English; show WooCommerce's own Hebrew wording.
+function couponErrorMessage(message: string): string {
+  if (/already been applied/i.test(message)) return "קוד הקופון כבר הוחל!";
+  return message || "קוד קופון לא תקין";
+}
+
 export default function CartPage() {
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
@@ -47,6 +53,24 @@ export default function CartPage() {
   // Quantity edits stay local until "לעדכן סל קניות" is pressed (same as the legacy cart).
   const [pendingQty, setPendingQty] = useState<Record<string, number>>({});
   const [updatingCart, setUpdatingCart] = useState(false);
+  // A request in flight dims only the section it changes behind a spinner (like the legacy cart's blockUI):
+  // "items" = the left items table, "totals" = the right totals box. Counters, so overlapping requests keep
+  // a section dimmed until the last one ends.
+  const [pendingItems, setPendingItems] = useState(0);
+  const [pendingTotals, setPendingTotals] = useState(0);
+
+  async function track<T>(scopes: ("items" | "totals")[], request: () => Promise<T>): Promise<T> {
+    const bump = (delta: number) => {
+      if (scopes.includes("items")) setPendingItems((n) => n + delta);
+      if (scopes.includes("totals")) setPendingTotals((n) => n + delta);
+    };
+    bump(1);
+    try {
+      return await request();
+    } finally {
+      bump(-1);
+    }
+  }
 
   useEffect(() => {
     fetchCart();
@@ -65,9 +89,13 @@ export default function CartPage() {
   async function handleUpdateCart() {
     if (changedItems.length === 0) return;
     setUpdatingCart(true);
+    setCouponError(null);
+    setCouponSuccess(null);
     try {
-      await updateItemQuantities(changedItems);
+      await track(["items", "totals"], () => updateItemQuantities(changedItems));
       setPendingQty({});
+    } catch (err) {
+      setCouponError((err as Error).message || "לא ניתן לעדכן את סל הקניות, נסו שוב.");
     } finally {
       setUpdatingCart(false);
     }
@@ -75,16 +103,20 @@ export default function CartPage() {
 
   async function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
-    if (!couponInput.trim()) return;
-    setApplyingCoupon(true);
     setCouponError(null);
     setCouponSuccess(null);
+    // WooCommerce lets an empty submit through and answers with this notice.
+    if (!couponInput.trim()) {
+      setCouponError("נא להזין קוד קופון.");
+      return;
+    }
+    setApplyingCoupon(true);
     try {
-      await applyCoupon(couponInput.trim());
+      await track(["totals"], () => applyCoupon(couponInput.trim()));
       setCouponInput("");
-      setCouponSuccess("קוד הקופון הוחל בהצלחה.");
+      setCouponSuccess("קוד קופון הוחל בהצלחה.");
     } catch (err) {
-      setCouponError((err as Error).message || "קוד קופון לא תקין");
+      setCouponError(couponErrorMessage((err as Error).message));
     } finally {
       setApplyingCoupon(false);
     }
@@ -94,7 +126,7 @@ export default function CartPage() {
     if (methodId === cart.chosenShippingMethod) return;
     setShippingUpdating(true);
     try {
-      await selectShippingMethod(methodId);
+      await track(["totals"], () => selectShippingMethod(methodId));
     } finally {
       setShippingUpdating(false);
     }
@@ -119,7 +151,7 @@ export default function CartPage() {
     <div className="mx-auto max-w-[1600px] px-[25px] pb-12 pt-[50px] text-left text-[12px] leading-[1.6] text-black max-[768px]:text-[18px]">
       <div className="grid grid-cols-[minmax(0,1fr)] min-[1025px]:grid-cols-[57%_minmax(0,1fr)] min-[1025px]:gap-x-[30px] min-[1200px]:grid-cols-[calc(66.6667%-15px)_calc(33.3333%-15px)]">
         {/* ── items column ── */}
-        <div className="order-1 mb-[40px] min-w-0 min-[1025px]:mb-0">
+        <div className="relative order-1 mb-[40px] min-w-0 min-[1025px]:mb-0">
           {/* 1 · free-shipping progress */}
           <FreeShippingBar cart={cart} className="mb-5" />
 
@@ -156,7 +188,7 @@ export default function CartPage() {
                     <td className="absolute left-[-7px] top-[-7px] flex text-center min-[769px]:static min-[769px]:table-cell min-[769px]:w-[40px] min-[769px]:border-b min-[769px]:border-black/[0.106] min-[769px]:align-middle">
                       <button
                         type="button"
-                        onClick={() => removeItem(item.key)}
+                        onClick={() => void track(["items", "totals"], () => removeItem(item.key)).catch(() => {})}
                         aria-label="הסרה"
                         className="mx-auto flex h-[30px] w-[30px] items-center justify-center text-[#333] transition-colors hover:text-brand-accent"
                       >
@@ -244,7 +276,7 @@ export default function CartPage() {
               />
               <button
                 type="submit"
-                disabled={applyingCoupon || !couponInput.trim()}
+                disabled={applyingCoupon}
                 className={`${PRIMARY_BTN} mt-[46px] h-[42px] px-5 text-[13px] font-semibold leading-[15.6px] min-[481px]:mt-0 min-[769px]:shrink-0`}
               >
                 {applyingCoupon ? "מחיל..." : "החלת קופון"}
@@ -282,6 +314,7 @@ export default function CartPage() {
           >
             מדיניות משלוחים בירושלים מ-&apos;היום להיום&apos;
           </a>
+          <BusyOverlay active={pendingItems > 0} />
         </div>
 
         {/* 5 · Flashy recommendations: below everything on desktop/tablet, between items and totals on mobile */}
@@ -290,7 +323,7 @@ export default function CartPage() {
         </div>
 
         {/* 4 · totals + shipping + checkout */}
-        <aside className="order-2 h-fit min-w-0 border-[3px] border-black/[0.075] p-[25px] max-[768px]:order-3 min-[1025px]:col-start-2 min-[1025px]:row-start-1">
+        <aside className="relative order-2 h-fit min-w-0 border-[3px] border-black/[0.075] p-[25px] max-[768px]:order-3 min-[1025px]:col-start-2 min-[1025px]:row-start-1">
           <h2 className="mb-[15px] text-left text-[22px] font-bold leading-[30.8px] text-[#0c0c0c] min-[769px]:pr-[6px]">
             סה&quot;כ בסל הקניות
           </h2>
@@ -307,7 +340,7 @@ export default function CartPage() {
                   <span className="text-brand-accent">-{formatPrice(c.discountAmount)}</span>{" "}
                   <button
                     type="button"
-                    onClick={() => removeCoupon(c.code)}
+                    onClick={() => void track(["totals"], () => removeCoupon(c.code)).catch(() => {})}
                     className="text-[#333] underline hover:text-brand-accent"
                   >
                     [הסרה]
@@ -335,14 +368,15 @@ export default function CartPage() {
                             onChange={() => handleSelectShipping(rate.id)}
                             className="relative top-[4px] float-left mr-[7px] h-[13px] w-[13px] accent-[#0075ff]"
                           />
-                          {/* Full method title (never truncated); the price sits on its own line, as in WooCommerce. */}
+                          {/* "label: ₪price" on one line (inherits 12px / 18px mobile, price 600 in accent), like the WooCommerce shipping list. */}
                           <span className="break-words">
                             {rate.label}
-                            {Number(rate.cost) > 0 ? ":" : ""}
+                            {Number(rate.cost) > 0 ? (
+                              <>
+                                : <span className="font-semibold text-brand-accent">{formatPrice(rate.cost)}</span>
+                              </>
+                            ) : null}
                           </span>
-                          {Number(rate.cost) > 0 ? (
-                            <span className="mt-[2px] block font-semibold text-brand-accent">{formatPrice(rate.cost)}</span>
-                          ) : null}
                         </label>
                       </li>
                     ))}
@@ -351,7 +385,7 @@ export default function CartPage() {
                 <p className="my-[10px]">
                   {shippingAddress?.city ? (
                     <>
-                      משלוח אל <strong>{shippingAddress.city}</strong>.
+                      משלוח אל <strong className="font-semibold">{shippingAddress.city}</strong>.
                     </>
                   ) : (
                     "אפשרויות המשלוח יעודכנו במהלך התשלום בקופה."
@@ -370,7 +404,7 @@ export default function CartPage() {
                 {editingAddress ? (
                   <ShippingAddressPicker
                     currentState={shippingAddress?.state}
-                    onSubmit={changeShippingAddress}
+                    onSubmit={(state, city) => track(["totals"], () => changeShippingAddress(state, city))}
                     onDone={() => setEditingAddress(false)}
                   />
                 ) : null}
@@ -392,8 +426,25 @@ export default function CartPage() {
               מעבר לתשלום
             </Link>
           </div>
+          <BusyOverlay active={pendingTotals > 0} />
         </aside>
       </div>
+    </div>
+  );
+}
+
+// Dims its (relatively positioned) parent and blocks clicks while a cart request runs; the spinner sits
+// in the middle, like WooCommerce's blockUI.
+function BusyOverlay({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="מעדכן"
+      className="absolute inset-0 z-10 flex cursor-wait items-center justify-center bg-white/60"
+    >
+      <span className="h-[26px] w-[26px] animate-spin rounded-full border-[3px] border-black/15 border-t-brand-accent" />
     </div>
   );
 }

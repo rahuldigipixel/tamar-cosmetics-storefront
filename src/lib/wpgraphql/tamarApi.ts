@@ -116,44 +116,48 @@ export interface HeaderMenuImage {
   alt: string;
 }
 
-export interface HeaderMenuLinkChild {
-  id: string;
-  type: "link";
-  label: string;
+/** Lean menu image (rendered with next/image `fill`, so no width/height); alt falls back to the label. */
+export interface HeaderMenuThumb {
   url: string;
-  /** Optional logo/thumbnail (e.g. brand logo). When any child in a panel has one, the mega menu renders cards instead of a bullet list. */
-  image?: HeaderMenuImage | null;
+  alt?: string;
 }
 
-export interface HeaderMenuProductChild {
-  id: string;
-  type: "product";
-  productId: number;
+export interface HeaderMenuLink {
   label: string;
+  /** Relative path (decoded), absolute URL for external links, "" = no link. */
   url: string;
-  price: number;
-  image: HeaderMenuImage | null;
+  /** Only set when the panel's "show images" checkbox is ticked and this link has an image. */
+  image?: HeaderMenuThumb;
 }
 
-export type HeaderMenuChild = HeaderMenuLinkChild | HeaderMenuProductChild;
+/** The panel's side advert column (wp-admin → mega menu → "עמודת פרסום"). */
+export interface HeaderMenuFeature {
+  text: string;
+  /** Button label, e.g. "לצפייה במוצר". */
+  btn: string;
+  url: string;
+  image: HeaderMenuThumb | null;
+}
+
+/** Mega panel of a main menu item — managed in wp-admin → הגדרות תמר → כותרת (Header) → תפריט ראשי. */
+export interface HeaderMenuMega {
+  title: string;
+  /** "Normal dropdown" checkbox: just a small white list of the links (like "עוד"), not the big panel. */
+  simple: boolean;
+  /** Ticked: links render as image + caption cards instead of the bullet list. */
+  showImages: boolean;
+  /** Label of the "show all" pill button (links to the main item's URL); "" = no button. */
+  allBtn: string;
+  links: HeaderMenuLink[];
+  feature: HeaderMenuFeature | null;
+}
 
 export interface HeaderMenuItem {
   id: string;
   label: string;
   url: string;
-  /** "כותרת פנימית" from wp-admin — a heading for the mega panel itself (e.g. "המוצר המומלץ שלנו"), not a replacement for the featured product's own name. Only set on "category"-source items; empty string otherwise. */
-  featuredTitle?: string;
-  /** Custom label shown next to the "view category" button in the mega panel. Falls back to the promoted category's own name when empty. Only on "category"-source items. */
-  featuredBtnLabel?: string;
-  /** Promoted category shown beside the sub-links (wp-admin "קטגוריה מקודמת בתפריט"): its image (custom or the category's own thumbnail), name and link. Only on "category"-source items; null when none is picked. */
-  featuredCategory?: HeaderMenuFeaturedCategory | null;
-  children: HeaderMenuChild[];
-}
-
-export interface HeaderMenuFeaturedCategory {
-  label: string;
-  url: string;
-  image: HeaderMenuImage | null;
+  /** null = plain link (no dropdown). */
+  mega: HeaderMenuMega | null;
 }
 
 export interface CategoryBanner {

@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronUp,
   Clock,
@@ -30,8 +29,6 @@ import type {
   HeaderBar,
   HeaderBarLink,
   HeaderMenuItem,
-  HeaderMenuLinkChild,
-  HeaderMenuProductChild,
   SiteLogo,
 } from "@/lib/wpgraphql/tamarApi";
 import { WhatsAppIcon } from "./FloatingActions";
@@ -207,6 +204,7 @@ export function Header({
   const [menuVisible, setMenuVisible] = useState(false);
   const [pinY, setPinY] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
+  const [simpleLeft, setSimpleLeft] = useState(0);
   const [overlayHeight, setOverlayHeight] = useState(0);
   const [mobileOpenId, setMobileOpenId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<"categories" | "menu">("categories");
@@ -218,35 +216,21 @@ export function Header({
   const linksLeft = bar?.linksLeft ?? [];
   const serviceIcons = bar?.serviceIcons ?? [];
 
+  // Desktop panel: the open item's admin-managed mega menu (wp-admin → כותרת
+  // (Header) → תפריט ראשי). `showImages` is its "show image + text instead of
+  // normal text" checkbox; `feature` is the side advert column.
   const panelItem = menu.find((item) => item.id === openItemId) ?? null;
-  const panelLinkChildren: HeaderMenuLinkChild[] =
-    panelItem?.children.filter((c): c is HeaderMenuLinkChild => c.type === "link") ?? [];
-  // Admin's "show images instead of names" toggle for this category
-  // (wp-admin) — true when at least one sub-category resolved a thumbnail.
-  const imagesMode = panelLinkChildren.some((c) => c.image);
-  // The panel's side feature: the promoted category on "category" items
-  // (wp-admin "קטגוריה מקודמת בתפריט"), else a product child on custom items.
-  const panelProductChild: HeaderMenuProductChild | null =
-    panelItem?.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
-  const panelFeature = panelItem?.featuredCategory
-    ? {
-        ...panelItem.featuredCategory,
-        // Use the admin-set btn label if provided, otherwise fall back to the promoted category's own name.
-        displayLabel: panelItem.featuredBtnLabel || panelItem.featuredCategory.label,
-        cta: "לצפייה במוצר",
-      }
-    : panelProductChild
-      ? { ...panelProductChild, displayLabel: panelProductChild.label, cta: "לצפייה במוצר" }
-      : null;
+  const panelMega = panelItem?.mega ?? null;
+  const panelLinks = panelMega?.links ?? [];
+  const imagesMode = panelMega?.showImages ?? false;
+  const panelFeature = panelMega?.feature ?? null;
 
-  // Mobile drawer sub-view: the drilled-into top-level category.
+  // Mobile drawer sub-view: the drilled-into top-level item.
   const mobileItem = menu.find((item) => item.id === mobileOpenId) ?? null;
-  const mobileLinkChildren: HeaderMenuLinkChild[] =
-    mobileItem?.children.filter((c): c is HeaderMenuLinkChild => c.type === "link") ?? [];
-  const mobileImagesMode = mobileLinkChildren.some((c) => c.image);
-  const mobileProductChild =
-    mobileItem?.children.find((c): c is HeaderMenuProductChild => c.type === "product") ?? null;
-  const mobileFeatured = mobileItem?.featuredCategory ?? mobileProductChild;
+  const mobileMega = mobileItem?.mega ?? null;
+  const mobileLinks = mobileMega?.links ?? [];
+  const mobileImagesMode = mobileMega?.showImages ?? false;
+  const mobileFeature = mobileMega?.feature ?? null;
 
   // usePathname can hand back the raw (percent-encoded) segment for
   // non-ASCII slugs instead of the decoded text depending on how the route
@@ -281,6 +265,9 @@ export function Header({
     const navRect = categoryNavRef.current?.getBoundingClientRect();
     if (navRect) {
       setMenuTop(btnRect.bottom - navRect.top + 10);
+      // Normal dropdown (reference "עוד"): 290px box whose right edge sits
+      // 9px past the trigger's right edge (RTL).
+      setSimpleLeft(btnRect.right - navRect.left + 9 - 290);
       // Dim is anchored to the document (absolute under the nav), so it
       // always starts right after the header and runs to the page bottom,
       // whatever the scroll position.
@@ -577,54 +564,73 @@ export function Header({
 
       {/* Category nav — driven entirely by the admin-managed tree from
           GET /wp-json/tamar/v1/menu (see includes/class-header-menu.php on
-          the WP side). Each item with children renders as a mega-menu
-          trigger; an item with no children is a plain link. Woodmart
+          the WP side). Each item with a mega menu renders as a mega-menu
+          trigger; an item without one is a plain link. Woodmart
           "separated" style: 60px red bar, wraps onto extra rows. */}
       <nav ref={categoryNavRef} className="relative hidden bg-[#d52027] lg:block">
         <div
-          className={`mx-auto flex max-w-[1600px] flex-wrap content-center items-center justify-center gap-y-[6px] px-[15px] ${
+          className={`mx-auto flex w-[calc((100vw-10px)*0.836)] flex-wrap content-center items-center justify-center gap-x-[var(--nav-gap)] gap-y-[4px] [--nav-gap:11px] min-[1116px]:[--nav-gap:20px] min-[1300px]:max-[1399px]:[--nav-gap:18px] min-[1300px]:gap-y-[6px] min-[1300px]:w-[min(calc(80vw-24px),1256px)] ${
             compact ? "min-h-[54px] py-[3px]" : "min-h-[60px] py-[5px]"
           }`}
         >
           {menu.map((item) => {
-            // Reference values: 14px/700 white (12–13px and 11px on narrower
-            // screens, per the site's own breakpoints), 20px item gap (11px
-            // at 1025–1115px), 18px-tall rgba(255,255,255,.25) separators,
-            // hover/active rgba(255,255,255,.8).
+            // Reference values (measured on the live site): 14px/700 white
+            // (13px 1425–1499, 12px 1211–1424, 11px below), item gap 20px
+            // (18px at 1300–1399, 11px at ≤1115), row gap 6px (4px below
+            // 1300), and the row box is min(80vw − 24px, 1256px) from
+            // 1300px up, 83.6% of the viewport below — that is what makes the
+            // live nav break after the same item at every width. 18px-tall
+            // rgba(255,255,255,.25) separators, hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center px-[5.5px] text-[14px] font-bold uppercase leading-[17px] transition-colors min-[1116px]:px-[10px] after:absolute after:top-1/2 after:left-0 after:h-[18px] after:-translate-y-1/2 after:border-r after:border-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center [font-family:Arial,Helvetica,sans-serif] [text-rendering:optimizeLegibility] text-[11px] font-bold leading-[16.8px] transition-colors min-[1211px]:text-[12px] min-[1425px]:text-[13px] min-[1508px]:text-[14px] after:relative after:left-[calc(var(--nav-gap)/-2)] after:block after:h-[18px] after:w-px after:bg-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 
-            if (item.children.length === 0) {
-              return (
-                <Link key={item.id} href={item.url} className={itemClass(isActiveHref(item.url))}>
+            if (!item.mega) {
+              return item.url ? (
+                <Link key={item.id} href={item.url} prefetch={false} className={itemClass(isActiveHref(item.url))}>
                   {decodeHtml(item.label)}
                 </Link>
+              ) : (
+                <span key={item.id} className={itemClass(false)}>
+                  {decodeHtml(item.label)}
+                </span>
               );
             }
 
             const isOpen = menuVisible && openItemId === item.id;
-            const active = isOpen || decodedPathname.startsWith(trimTrailingSlash(item.url));
-            // A real link to the category (as on the reference): hover or
-            // keyboard focus opens the mega panel, click navigates.
-            return (
-              <Link
-                key={item.id}
-                href={item.url}
-                aria-haspopup="true"
-                aria-expanded={isOpen}
-                onMouseEnter={(e) => openMenu(item, e)}
-                onFocus={(e) => openMenu(item, e)}
-                onMouseLeave={scheduleCloseMenu}
-                onClick={() => setMenuVisible(false)}
-                className={itemClass(active)}
-              >
+            const active = isOpen || (!!item.url && decodedPathname.startsWith(trimTrailingSlash(item.url)));
+            const triggerProps = {
+              "aria-haspopup": true as const,
+              "aria-expanded": isOpen,
+              onMouseEnter: (e: React.SyntheticEvent<HTMLElement>) => openMenu(item, e),
+              onFocus: (e: React.SyntheticEvent<HTMLElement>) => openMenu(item, e),
+              onMouseLeave: scheduleCloseMenu,
+              className: itemClass(active),
+            };
+            const triggerContent = (
+              <>
                 {decodeHtml(item.label)}
-                <ChevronDown
-                  className={`ms-[4px] h-[9px] w-[9px] stroke-[3] text-white/60 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                />
+                <svg
+                  aria-hidden
+                  viewBox="0 0 7 4"
+                  className={`ms-[3px] h-[4px] w-[7px] shrink-0 text-white/60 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                >
+                  <path d="M0.4 0.4 3.5 3.4 6.6 0.4" fill="none" stroke="currentColor" strokeWidth="1.1" />
+                </svg>
+              </>
+            );
+            // A real link (as on the reference): hover or keyboard focus opens
+            // the mega panel, click navigates. An item with no URL (the "עוד"
+            // dropdown) is a focusable, non-navigating trigger instead.
+            return item.url ? (
+              <Link key={item.id} href={item.url} prefetch={false} onClick={() => setMenuVisible(false)} {...triggerProps}>
+                {triggerContent}
               </Link>
+            ) : (
+              <span key={item.id} tabIndex={0} role="button" {...triggerProps}>
+                {triggerContent}
+              </span>
             );
           })}
         </div>
@@ -646,7 +652,33 @@ export function Header({
             ::before strip bridges that gap for hover. Fixed size + hidden
             overflow, not a scroll area: the reference never scrolls this
             panel. */}
-        {panelItem ? (
+        {panelItem && panelMega?.simple ? (
+          <ul
+            onMouseEnter={cancelCloseMenu}
+            onMouseLeave={scheduleCloseMenu}
+            style={{ top: menuTop, left: simpleLeft, width: 290 }}
+            className={`absolute z-50 bg-white py-[15px] shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
+              menuVisible ? "visible opacity-100" : "invisible opacity-0"
+            }`}
+          >
+            {panelLinks.map((child, index) => (
+              <li key={index}>
+                <Link
+                  href={child.url || "#"}
+                  prefetch={false}
+                  onClick={() => setMenuVisible(false)}
+                  className={`block px-[20px] py-[5px] text-[14px] leading-[18px] transition-colors hover:text-[#d52027] ${
+                    isActiveHref(child.url) ? "text-[#d52027]" : "text-[#777]"
+                  }`}
+                >
+                  {decodeHtml(child.label)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {panelItem && !panelMega?.simple ? (
           <div
             onMouseEnter={cancelCloseMenu}
             onMouseLeave={scheduleCloseMenu}
@@ -665,19 +697,18 @@ export function Header({
             <div className="flex gap-[40px] px-[30px] pt-[20px] pb-[40px]">
               <div className="min-w-0 flex-1">
                 <p className="mb-[10px] text-center text-[28px] font-light leading-[30px] text-black">
-                  {decodeHtml(panelItem.featuredTitle || panelItem.label)}
+                  {decodeHtml(panelMega?.title || panelItem.label)}
                 </p>
 
-                {/* Sub-category list. Text mode (bullet + label): 5 columns,
-                    3 when there's a promoted category beside it (see
-                    panelFeature below). When the admin's "show images
-                    instead of names" toggle is on for this category
-                    (wp-admin), each item carries its own category thumbnail
-                    as `child.image` (falling back to the plain label for
-                    any sub-category that has no thumbnail of its own) and
-                    the whole list switches to the reference site's card
-                    grid instead — always 7 columns, even beside a promoted
-                    category, matching the live site's fixed
+                {/* Link list. Text mode (bullet + label): 5 columns, 4 when
+                    there's a side advert column beside it (see panelFeature
+                    below). When the admin's "show image + text instead of
+                    normal text" checkbox is ticked for this mega menu
+                    (wp-admin), each link carries its own image as
+                    `child.image` (a link with no image shows just its
+                    caption) and the whole list switches to the reference
+                    site's card grid instead — always 7 columns, even beside
+                    the advert column, matching the live site's fixed
                     `--e-con-grid-template-columns: repeat(7, 1fr)`. Card
                     values (box-shadow, padding, min-height, image
                     aspect-ratio, caption size) are the live site's own
@@ -689,11 +720,12 @@ export function Header({
                       : `gap-x-[24px] gap-y-[18px] pt-[40px] ${panelFeature ? "grid-cols-4" : "grid-cols-5"}`
                   }`}
                 >
-                  {panelLinkChildren.map((child) =>
+                  {panelLinks.map((child, index) =>
                     imagesMode ? (
-                      <li key={child.id}>
+                      <li key={index}>
                         <Link
-                          href={child.url}
+                          href={child.url || "#"}
+                          prefetch={false}
                           onClick={() => setMenuVisible(false)}
                           className="flex min-h-[125px] flex-col items-center justify-center bg-white px-[10px] py-[20px] text-center shadow-[0_0_27px_0_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_0_27px_0_rgba(0,0,0,0.12)]"
                         >
@@ -718,9 +750,10 @@ export function Header({
                         </Link>
                       </li>
                     ) : (
-                      <li key={child.id}>
+                      <li key={index}>
                         <Link
-                          href={child.url}
+                          href={child.url || "#"}
+                          prefetch={false}
                           onClick={() => setMenuVisible(false)}
                           className={`flex items-center gap-[12px] text-[17px] font-light leading-[28px] transition-colors hover:text-[#d52027] ${
                             isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
@@ -734,28 +767,32 @@ export function Header({
                   )}
                 </ul>
 
-                <div className="mt-[30px] flex justify-center">
-                  <Link
-                    href={panelItem.url}
-                    onClick={() => setMenuVisible(false)}
-                    className="flex h-[42px] items-center rounded-[35px] border-2 border-[#d52027] px-[20px] text-[17px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
-                  >
-                    הצג את כל המוצרים
-                  </Link>
-                </div>
+                {panelMega?.allBtn && panelItem.url ? (
+                  <div className="mt-[30px] flex justify-center">
+                    <Link
+                      href={panelItem.url}
+                      prefetch={false}
+                      onClick={() => setMenuVisible(false)}
+                      className="flex h-[42px] items-center rounded-[35px] border-2 border-[#d52027] px-[20px] text-[17px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
+                    >
+                      {panelMega.allBtn}
+                    </Link>
+                  </div>
+                ) : null}
               </div>
 
               {panelFeature ? (
                 <div className="flex h-[500px] w-[300px] shrink-0 flex-col">
                   <Link
-                    href={panelFeature.url}
+                    href={panelFeature.url || "#"}
+                    prefetch={false}
                     onClick={() => setMenuVisible(false)}
                     className="relative block min-h-0 flex-1 w-full bg-[#f7f7f7]"
                   >
                     {panelFeature.image ? (
                       <Image
                         src={panelFeature.image.url}
-                        alt={panelFeature.image.alt}
+                        alt={panelFeature.image.alt || panelFeature.text}
                         fill
                         sizes="300px"
                         className="object-cover"
@@ -763,21 +800,26 @@ export function Header({
                     ) : null}
                   </Link>
                   <div className="mt-[20px] flex items-center justify-between gap-x-[12px]">
-                     <Link
-                      href={panelFeature.url}
-                      onClick={() => setMenuVisible(false)}
-                      className="text-[16px] font-bold leading-[22px] text-black transition-colors hover:text-[#d52027]"
-                    >
-                      {decodeHtml(panelFeature.displayLabel)}
-                    </Link>
-                    <Link
-                      href={panelFeature.url}
-                      onClick={() => setMenuVisible(false)}
-                      className="shrink-0 rounded-[35px] border-2 border-[#d52027] px-[14px] py-[5px] text-[16px] font-bold leading-[18px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
-                    >
-                      {panelFeature.cta}
-                    </Link>
-                   
+                    {panelFeature.text ? (
+                      <Link
+                        href={panelFeature.url || "#"}
+                        prefetch={false}
+                        onClick={() => setMenuVisible(false)}
+                        className="text-[16px] font-bold leading-[22px] text-black transition-colors hover:text-[#d52027]"
+                      >
+                        {decodeHtml(panelFeature.text)}
+                      </Link>
+                    ) : null}
+                    {panelFeature.btn ? (
+                      <Link
+                        href={panelFeature.url || "#"}
+                        prefetch={false}
+                        onClick={() => setMenuVisible(false)}
+                        className="shrink-0 rounded-[35px] border-2 border-[#d52027] px-[14px] py-[5px] text-[16px] font-bold leading-[18px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
+                      >
+                        {decodeHtml(panelFeature.btn)}
+                      </Link>
+                    ) : null}
                   </div>
                 </div>
               ) : null}
@@ -854,20 +896,21 @@ export function Header({
               </div>
 
               <p className="px-[20px] py-[24px] text-center text-[16px] font-light text-black">
-                {decodeHtml(mobileItem.featuredTitle || mobileItem.label)}
+                {decodeHtml(mobileMega?.title || mobileItem.label)}
               </p>
 
-              {mobileFeatured ? (
+              {mobileFeature ? (
                 <Link
-                  href={mobileFeatured.url}
+                  href={mobileFeature.url || "#"}
+                  prefetch={false}
                   onClick={() => setMobileOpen(false)}
                   className="mx-[15px] mb-[10px] flex items-center gap-3 rounded-lg bg-white p-2.5 shadow-[0_0_10px_rgba(0,0,0,.1)]"
                 >
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-brand-soft/40">
-                    {mobileFeatured.image ? (
+                    {mobileFeature.image ? (
                       <Image
-                        src={mobileFeatured.image.url}
-                        alt={mobileFeatured.image.alt}
+                        src={mobileFeature.image.url}
+                        alt={mobileFeature.image.alt || mobileFeature.text}
                         fill
                         sizes="56px"
                         className="object-contain p-1"
@@ -875,16 +918,17 @@ export function Header({
                     ) : null}
                   </div>
                   <span className="min-w-0 flex-1 text-[13px] font-semibold leading-snug text-black">
-                    {decodeHtml(mobileFeatured.label)}
+                    {decodeHtml(mobileFeature.text)}
                   </span>
                 </Link>
               ) : null}
 
               <ul>
-                {mobileLinkChildren.map((child) => (
-                  <li key={child.id} className="border-t border-black/10">
+                {mobileLinks.map((child, index) => (
+                  <li key={index} className="border-t border-black/10">
                     <Link
-                      href={child.url}
+                      href={child.url || "#"}
+                      prefetch={false}
                       onClick={() => setMobileOpen(false)}
                       className={`flex min-h-[66px] items-center gap-[15px] px-[20px] py-[8px] text-[13px] leading-snug ${
                         isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
@@ -909,26 +953,30 @@ export function Header({
                 ))}
               </ul>
 
-              <div className="flex justify-center border-t border-black/10 px-[15px] py-[24px]">
-                <Link
-                  href={mobileItem.url}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex h-[42px] items-center rounded-[35px] border-2 border-[#d52027] px-[20px] text-[13px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
-                >
-                  הצג את כל המוצרים
-                </Link>
-              </div>
+              {mobileMega?.allBtn && mobileItem.url ? (
+                <div className="flex justify-center border-t border-black/10 px-[15px] py-[24px]">
+                  <Link
+                    href={mobileItem.url}
+                    prefetch={false}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex h-[42px] items-center rounded-[35px] border-2 border-[#d52027] px-[20px] text-[13px] font-bold leading-[20px] text-[#d52027] transition-colors hover:bg-[#d52027] hover:text-white"
+                  >
+                    {mobileMega.allBtn}
+                  </Link>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
           {mobileTab === "categories" && !mobileItem
             ? menu.map((item) => {
                 const rowClass = "flex min-h-[50px] flex-1 items-center gap-2 px-[20px] py-[10px] text-[13px] font-bold";
-                if (item.children.length === 0) {
+                if (!item.mega) {
                   return (
                     <Link
                       key={item.id}
-                      href={item.url}
+                      href={item.url || "#"}
+                      prefetch={false}
                       onClick={() => setMobileOpen(false)}
                       className={`${rowClass} border-b border-black/10 ${
                         isActiveHref(item.url) ? "text-[#d52027]" : "text-black"
@@ -941,13 +989,24 @@ export function Header({
                 }
                 return (
                   <div key={item.id} className="flex items-stretch border-b border-black/10">
-                    <Link
-                      href={item.url}
-                      onClick={() => setMobileOpen(false)}
-                      className={`${rowClass} ${isActiveHref(item.url) ? "text-[#d52027]" : "text-black"}`}
-                    >
-                      {decodeHtml(item.label)}
-                    </Link>
+                    {item.url ? (
+                      <Link
+                        href={item.url}
+                        prefetch={false}
+                        onClick={() => setMobileOpen(false)}
+                        className={`${rowClass} ${isActiveHref(item.url) ? "text-[#d52027]" : "text-black"}`}
+                      >
+                        {decodeHtml(item.label)}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setMobileOpenId(item.id)}
+                        className={`${rowClass} text-black`}
+                      >
+                        {decodeHtml(item.label)}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setMobileOpenId(item.id)}

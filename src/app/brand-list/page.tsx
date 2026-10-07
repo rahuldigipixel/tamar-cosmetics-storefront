@@ -20,21 +20,27 @@ export default async function BrandListPage() {
 
   return (
     <div>
-      {/* Pink title band — same as category page */}
-      <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">
-        <h1 className="text-[28px] font-bold leading-[1.2] text-[#242424] md:text-[40px]">{title}</h1>
+      {/* Pink title band — brand-page-specific: legacy renders this h1 in the
+          browser's serif fallback (Open Sans never loads), 72px/800, 72px line
+          height, ~20px band padding. Measured from the legacy /מותג/ page. */}
+      <div className="bg-[#fde7eb] px-[15px] py-[20px] text-center">
+        <h1 className="font-[serif] text-[44px] font-extrabold leading-[1.1] text-black md:text-[72px] md:leading-[72px]">
+          {title}
+        </h1>
       </div>
 
+      {/* Description: Arial 400, 21px/34px, rgb(12,12,12), ~900px wide column
+          (same width as the search box), 50px below the title band. */}
       {description ? (
-        <div className="mx-auto max-w-[1600px] px-[15px] pt-[40px]">
+        <div className="mx-auto max-w-[1600px] px-[15px] pt-[50px]">
           <div
-            className="text-center text-[18px] leading-[1.6] text-[#0c0c0c] md:text-[21px] md:leading-[33.6px] [&_h1]:text-[26px] [&_h1]:font-bold [&_h2]:text-[24px] [&_h2]:font-bold [&_h3]:text-[22px] [&_h3]:font-semibold [&_p]:mb-[20px] [&_strong]:font-bold"
+            className="mx-auto max-w-[900px] text-center font-[Arial,Helvetica,sans-serif] text-[18px] font-normal leading-[30px] text-[#0c0c0c] md:text-[21px] md:leading-[34px] [&_h1]:text-[length:inherit] [&_h1]:font-normal [&_h1]:leading-[inherit] [&_h2]:text-[length:inherit] [&_h2]:font-normal [&_h2]:leading-[inherit] [&_h3]:text-[length:inherit] [&_h3]:font-normal [&_h3]:leading-[inherit] [&_p]:mb-[20px] [&_p:last-child]:mb-0 [&_strong]:font-bold"
             dangerouslySetInnerHTML={{ __html: description }}
           />
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-[1600px] px-[15px] py-8 pb-12">
+      <div className="mx-auto max-w-[1570px] px-[15px] pb-[10px] pt-[20px] md:pb-[0px]">
         <BrandGrid brands={visibleBrands} />
       </div>
     </div>

@@ -16,7 +16,7 @@ export default async function BlogPage() {
  {posts.length === 0 ? (
  <p className="text-center text-black/60">אין עדיין מאמרים.</p>
  ) : (
- <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+ <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
  {posts.map((post) => (
  <BlogPostCard key={post.id} post={post} />
  ))}

@@ -348,6 +348,8 @@ export interface BlogCommentInput {
   postId: number;
   authorName: string;
   authorEmail: string;
+  /** Optional website the commenter entered. */
+  authorUrl?: string;
   content: string;
 }
 

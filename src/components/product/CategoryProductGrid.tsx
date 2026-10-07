@@ -18,6 +18,8 @@ export interface CategoryFilterOption {
   name: string;
   slug: string;
   href?: string;
+  /** Nesting level, for the indented hierarchy list on the brand page. */
+  depth?: number;
 }
 
 // `categorySlug` can arrive still percent-encoded (nested /parent/child/
@@ -36,12 +38,64 @@ function normalizeSlug(slug: string) {
 }
 
 const SORT_OPTIONS: { value: CategorySortOption | "DEFAULT"; label: string }[] = [
-  { value: "DEFAULT", label: "מיון ברירת מחדל" },
-  { value: "POPULARITY", label: "הכי פופולריים" },
-  { value: "DATE", label: "החדשים ביותר" },
-  { value: "PRICE_ASC", label: "מחיר: מהזול ליקר" },
-  { value: "PRICE_DESC", label: "מחיר: מהיקר לזול" },
+  { value: "DEFAULT", label: "סידור ברירת מחדל" },
+  { value: "POPULARITY", label: "מיין לפי פופולריות" },
+  { value: "RATING", label: "מיין לפי דירוג ממוצע" },
+  { value: "DATE", label: "מיין לפי המעודכן ביותר" },
+  { value: "PRICE_ASC", label: "מיין מהזול ליקר" },
+  { value: "PRICE_DESC", label: "מיין מהיקר לזול" },
 ];
+
+// The filters live in the URL query, same parameter names as the legacy WooCommerce
+// site (min_price / max_price / filter_brand / filter_country / orderby), so a filtered
+// page is shareable and the filters follow the shopper when they switch category.
+const ORDERBY_PARAM: Record<CategorySortOption, string> = {
+  POPULARITY: "popularity",
+  RATING: "rating",
+  DATE: "date",
+  PRICE_ASC: "price",
+  PRICE_DESC: "price-desc",
+};
+
+interface UrlFilters {
+  sort: CategorySortOption | "DEFAULT";
+  priceRange: { min: number; max: number } | null;
+  brand: string;
+  country: string;
+  category: string;
+}
+
+function readUrlFilters(search: string): UrlFilters {
+  const q = new URLSearchParams(search);
+  const orderby = q.get("orderby");
+  const sort = (Object.keys(ORDERBY_PARAM) as CategorySortOption[]).find((k) => ORDERBY_PARAM[k] === orderby) ?? "DEFAULT";
+  const min = Number(q.get("min_price"));
+  const max = Number(q.get("max_price"));
+  const hasPrice = q.has("min_price") && q.has("max_price") && Number.isFinite(min) && Number.isFinite(max) && max >= min;
+  return {
+    sort,
+    priceRange: hasPrice ? { min, max } : null,
+    brand: q.get("filter_brand")?.normalize("NFC") || "__all__",
+    country: q.get("filter_country")?.normalize("NFC") || "__all__",
+    category: q.get("product_cat")?.normalize("NFC") || "__all__",
+  };
+}
+
+/** Rewrites only the filter params of `search`, leaving any other query params untouched. */
+function writeUrlFilters(search: string, f: UrlFilters, includeCategory: boolean): string {
+  const q = new URLSearchParams(search);
+  for (const k of ["orderby", "min_price", "max_price", "filter_brand", "filter_country", ...(includeCategory ? ["product_cat"] : [])]) q.delete(k);
+  if (f.sort !== "DEFAULT") q.set("orderby", ORDERBY_PARAM[f.sort]);
+  if (f.priceRange) {
+    q.set("min_price", String(f.priceRange.min));
+    q.set("max_price", String(f.priceRange.max));
+  }
+  if (f.brand !== ALL_BRANDS_VALUE) q.set("filter_brand", f.brand);
+  if (f.country !== ALL_COUNTRIES_VALUE) q.set("filter_country", f.country);
+  if (includeCategory && f.category !== ALL_CATEGORIES_VALUE) q.set("product_cat", f.category);
+  const out = q.toString();
+  return out ? `?${out}` : "";
+}
 
 // Falls back to a flat 0–1000 only when there's nothing to measure —
 // otherwise the slider's own bounds are the cheapest/priciest product
@@ -174,7 +228,7 @@ function FilterDropdown({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex h-[42px] w-full items-center gap-[8px] border-b-2 text-start text-[16px] font-semibold leading-[16px] text-[#333] transition-colors ${
+        className={`flex h-[42px] w-full items-center gap-[8px] border-b-2 text-start font-[Arial,Helvetica,sans-serif] text-[16px] font-semibold leading-[16px] text-[#333] transition-colors ${
           open ? "border-[#d52027]" : "border-black/10 hover:border-black/25"
         }`}
       >
@@ -186,7 +240,7 @@ function FilterDropdown({
       </button>
 
       {open ? (
-        <div className="absolute inset-x-0 top-full z-30 mt-[6px] max-h-[320px] min-w-[240px] overflow-y-auto bg-white shadow-[0_0_9px_rgba(0,0,0,.12)]">
+        <div className="absolute inset-x-0 top-full z-30 mt-[2px] max-h-[450px] min-w-[240px] overflow-y-auto bg-white shadow-[0_0_9px_rgba(0,0,0,.12)]">
           {children(() => setOpen(false))}
         </div>
       ) : null}
@@ -196,32 +250,28 @@ function FilterDropdown({
 
 function OptionList<T extends string>({
   options,
-  selected,
+  selected: _selected,
   onSelect,
 }: {
-  options: { value: T; label: string; image?: string }[];
+  options: { value: T; label: string; image?: string; depth?: number }[];
   selected: T | string;
   onSelect: (value: T) => void;
 }) {
   return (
     <ul className="py-[6px]">
-      {options.map((o) => {
-        const active = o.value === selected;
-        return (
+      {options.map((o) => (
           <li key={o.value}>
             <button
               type="button"
               onClick={() => onSelect(o.value)}
-              className={`flex min-h-[46px] w-full items-center px-[18px] py-[8px] text-start text-[16px] transition-colors ${
-                active ? "bg-[#f3c3cc] text-[#333]" : "text-[#777] hover:text-[#333]"
-              }`}
+              style={o.depth ? { paddingInlineStart: 18 + o.depth * 16 } : undefined}
+              className={`flex w-full items-center px-[18px] py-[8px] text-start font-[Arial,Helvetica,sans-serif] text-[16px] font-normal leading-[21px] text-[#777] transition-colors hover:bg-[#f1f1f1]`}
             >
               {/* Logo only (as on the reference); the name is the alt text and the fallback when there is no logo. */}
               {o.image ? (<Image src={o.image} alt={o.label} width={60} height={30} sizes="60px" className="h-[30px] w-[60px] object-contain" />) : (o.label)}
             </button>
           </li>
-        );
-      })}
+      ))}
     </ul>
   );
 }
@@ -238,6 +288,7 @@ export function CategoryProductGrid({
   categories,
   brands,
   countries,
+  priceBounds: allPriceBounds,
 }: {
   /** Exactly one of categorySlug/brandSlug should be passed. */
   categorySlug?: string;
@@ -260,6 +311,8 @@ export function CategoryProductGrid({
   brands?: Brand[];
   /** When passed, renders the "ארץ ייצור" (pa_country) filter that refetches this same list. */
   countries?: CountryOption[];
+  /** Price range of the WHOLE list (from the backend) — the slider ends. Falls back to the first page's prices. */
+  priceBounds?: { min: number; max: number } | null;
 }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
@@ -280,7 +333,11 @@ export function CategoryProductGrid({
   // Computed once from the first page of results — cheap, and re-deriving
   // it on every sort/price refetch would keep shrinking the slider's own
   // range toward whatever's currently filtered in.
-  const [priceBounds] = useState(() => computePriceBounds(initialProducts));
+  const [baseBounds] = useState(() => allPriceBounds ?? computePriceBounds(initialProducts));
+  // A range taken from the URL can lie outside the first page's prices — widen the slider so it still fits.
+  const priceBounds = priceRange
+    ? { min: Math.min(baseBounds.min, priceRange.min), max: Math.max(baseBounds.max, priceRange.max) }
+    : baseBounds;
 
   const effectiveBrand = selectedBrand === ALL_BRANDS_VALUE ? brandSlug : selectedBrand;
   const effectiveCategory = categorySlug ?? (selectedCategory === ALL_CATEGORIES_VALUE ? undefined : selectedCategory);
@@ -288,7 +345,7 @@ export function CategoryProductGrid({
   // One removable chip per active filter (sort/price/brand — the category
   // isn't a "filter" here, it's the page itself), so any single one can be
   // cleared without resetting the others, plus a combined "clear all".
-  const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
+  const activeChips: { key: string; label: string; amount?: string; onRemove: () => void }[] = [];
   if (sort !== "DEFAULT") {
     activeChips.push({
       key: "sort",
@@ -297,11 +354,11 @@ export function CategoryProductGrid({
     });
   }
   if (priceRange) {
-    activeChips.push({
-      key: "price",
-      label: `${priceRange.max} ₪ - ${priceRange.min} ₪`,
-      onRemove: () => setPriceRange(null),
-    });
+    // Legacy shows two chips (min / max), both clearing the same range.
+    activeChips.push(
+      { key: "price-min", label: "מינימום", amount: `₪${priceRange.min.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, onRemove: () => setPriceRange(null) },
+      { key: "price-max", label: "מקסימום", amount: `₪${priceRange.max.toLocaleString("en-US", { minimumFractionDigits: 2 })}`, onRemove: () => setPriceRange(null) },
+    );
   }
   if (selectedBrand !== ALL_BRANDS_VALUE) {
     activeChips.push({
@@ -354,9 +411,26 @@ export function CategoryProductGrid({
       skipNextRefetch.current = false;
       return;
     }
+    // Mirror the filters into the address bar (no navigation, no server render).
+    const nextSearch = writeUrlFilters(window.location.search, { sort, priceRange, brand: selectedBrand, country: selectedCountry, category: selectedCategory }, !categorySlug);
+    if (nextSearch !== window.location.search) window.history.replaceState(null, "", `${window.location.pathname}${nextSearch}${window.location.hash}`);
     runQuery(null, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort, priceRange, selectedBrand, selectedCountry, selectedCategory]);
+
+  // Opening a URL that already carries filters (shared link, or arriving from another
+  // category with them): apply them — the state change re-runs the query above.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from the URL (not readable during SSR without a hydration mismatch) */
+    const f = readUrlFilters(window.location.search);
+    if (f.sort !== "DEFAULT") setSort(f.sort);
+    if (f.priceRange) setPriceRange(f.priceRange);
+    if (f.brand !== ALL_BRANDS_VALUE) setSelectedBrand(f.brand);
+    if (f.country !== ALL_COUNTRIES_VALUE) setSelectedCountry(f.country);
+    if (!categorySlug && f.category !== ALL_CATEGORIES_VALUE) setSelectedCategory(f.category);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function clearFilters() {
     setSort("DEFAULT");
@@ -384,6 +458,9 @@ export function CategoryProductGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNextPage, isPending, endCursor]);
 
+  // A page that opened with no products at all (unknown brand/category) has nothing to filter — hide the bar.
+  // Filtering down to zero results later keeps it, so the filters can be undone.
+  const noFilters = hideFilters || initialProducts.length === 0;
   const onCategoryPage = Boolean(categorySlug);
   const currentCategorySlug = categorySlug ? normalizeSlug(categorySlug) : null;
   // The page's own category when it's one of the options (i.e. not when the options are its children).
@@ -392,12 +469,24 @@ export function CategoryProductGrid({
   function pickCategory(slug: string) {
     if (!categories) return;
     if (!onCategoryPage) {
-      setSelectedCategory(slug);
+      // Brand page (as on the legacy site): the category opens its own page; the page's own brand
+      // is NOT carried over — only filters the shopper actually applied are (a picked brand becomes filter_brand).
+      if (!brandSlug) {
+        setSelectedCategory(slug);
+        return;
+      }
+      const target = categories.find((c) => normalizeSlug(c.slug) === slug);
+      const q = new URLSearchParams(window.location.search);
+      q.delete("product_cat");
+      if (selectedBrand !== ALL_BRANDS_VALUE) q.set("filter_brand", selectedBrand);
+      const qs = q.toString();
+      router.push(`${target?.href ?? `/product-category/${slug}/`}${qs ? `?${qs}` : ""}`);
       return;
     }
     if (slug === currentCategorySlug) return;
     const target = categories.find((c) => normalizeSlug(c.slug) === slug);
-    router.push(target?.href ?? `/product-category/${slug}/`);
+    // Carry every active filter over to the other category's page.
+    router.push(`${target?.href ?? `/product-category/${slug}/`}${window.location.search}`);
   }
 
   return (
@@ -407,7 +496,7 @@ export function CategoryProductGrid({
       {/* Horizontal filter bar (reference: WoodMart product filters) —
           one dropdown per filter across the full width, above the grid.
           On mobile it collapses into a "סינון מוצרים" +/− accordion that sits above the description. */}
-      {hideFilters ? null : (
+      {noFilters ? null : (
       <div className="max-md:order-1">
       <button
         type="button"
@@ -450,8 +539,7 @@ export function CategoryProductGrid({
             {(close) => (
               <OptionList
                 options={[
-                  ...(onCategoryPage ? [] : [{ value: ALL_CATEGORIES_VALUE, label: "כל הקטגוריות" }]),
-                  ...categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name })),
+                  ...categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name, depth: c.depth })),
                 ]}
                 selected={currentCategorySlug ?? selectedCategory}
                 onSelect={(slug) => {
@@ -488,7 +576,6 @@ export function CategoryProductGrid({
             {(close) => (
               <OptionList
                 options={[
-                  { value: ALL_BRANDS_VALUE, label: "כל המותגים" },
                   ...brands.map((b) => ({ value: b.slug, label: b.name, image: b.thumbnailUrl })),
                 ]}
                 selected={selectedBrand}
@@ -508,7 +595,7 @@ export function CategoryProductGrid({
           >
             {(close) => (
               <OptionList
-                options={[{ value: ALL_COUNTRIES_VALUE, label: "כל הארצות" }, ...countries.map((c) => ({ value: c.slug, label: c.name }))]}
+                options={[...countries.map((c) => ({ value: c.slug, label: c.name }))]}
                 selected={selectedCountry}
                 onSelect={(v) => {
                   setSelectedCountry(v);
@@ -524,27 +611,30 @@ export function CategoryProductGrid({
       </div>
       )}
 
-      <div className={`max-md:order-3 ${hideFilters ? "" : intro ? "mt-[35px] max-md:mt-[20px]" : "mt-[35px]"}`}>
+      <div className={`max-md:order-3 ${noFilters ? "" : intro ? "mt-[35px] max-md:mt-[20px]" : "mt-[35px]"}`}>
         {activeChips.length > 0 ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
+          // Copied from the legacy Woodmart active-filters bar (measured: 14px/600, #333, red ₪-prefixed amounts).
+          <div className="mb-[15px] flex flex-wrap items-center gap-x-[15px] gap-y-[10px] text-[14px] leading-none max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:whitespace-nowrap">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex shrink-0 items-center border-e border-black/[0.105] pe-[15px] text-[14px] font-semibold leading-[2] text-[#333] transition-colors hover:text-[#777]"
+            >
+              <X className="me-[0.3em] h-[1em] w-[1em] font-normal" />
+              ניקוי מסננים
+            </button>
             {activeChips.map((chip) => (
               <button
                 key={chip.key}
                 type="button"
                 onClick={chip.onRemove}
-                className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-base text-black/70 transition-colors hover:border-brand-accent hover:text-brand-accent"
+                className="flex shrink-0 items-center text-[14px] font-semibold leading-[2] text-[#333] transition-colors hover:text-[#777]"
               >
-                <span dir={chip.key === "price" ? "ltr" : undefined}>{chip.label}</span>
-                <X className="h-3.5 w-3.5" />
+                <X className="me-[0.3em] h-[1em] w-[1em] font-normal" />
+                {chip.label}
+                {chip.amount ? <span dir="ltr" className="mr-[3px] text-[#d52027]">{chip.amount}</span> : null}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="rounded-full px-2 py-1.5 text-base font-semibold text-brand-accent hover:underline"
-            >
-              נקה הכל
-            </button>
           </div>
         ) : null}
 

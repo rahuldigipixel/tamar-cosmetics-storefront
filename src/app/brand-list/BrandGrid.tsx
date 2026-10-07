@@ -15,13 +15,13 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
   return (
     <>
       {/* Search */}
-      <div className="mb-8 flex justify-center">
+      <div className="mb-[50px] flex justify-center">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="חיפוש מותג"
-          className="w-full max-w-[700px] rounded-full border border-black/15 px-6 py-3 text-[16px] outline-none focus:border-brand-accent"
+          className="h-[40px] w-full max-w-[900px] rounded-full border border-[#ccc] bg-white px-6 text-center font-[Arial,Helvetica,sans-serif] text-[18px] text-black outline-none placeholder:text-black focus:border-brand-accent"
         />
       </div>
 

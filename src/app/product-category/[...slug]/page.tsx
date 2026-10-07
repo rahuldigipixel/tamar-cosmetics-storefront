@@ -46,6 +46,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  countriesInCategory,
  info,
  breadcrumbCategories,
+ priceBounds,
  } = await getCategoryPageData(activeSlug, 20, slugPath.slice(0, -1).map(normalizeSlug));
  const banner = info?.banner ?? null;
  const carouselItems = info?.carousel ?? [];
@@ -161,6 +162,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  categories={categoryOptions}
  brands={brandsInCategory}
  countries={countriesInCategory}
+ priceBounds={priceBounds}
  />
  </div>
  {/* Accordions after the product list, same as the brand page: "קרא עוד" above the FAQ one. */}

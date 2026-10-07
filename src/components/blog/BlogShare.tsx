@@ -67,7 +67,7 @@ export function BlogShare({ url, title }: { url: string; title: string }) {
   }
 
   return (
-    <div dir="ltr" className="flex flex-wrap items-center justify-center gap-3">
+    <div dir="ltr" className="flex flex-wrap items-center justify-center gap-2">
       {links.map(({ label, Icon, color, href }) => (
         <a
           key={label}

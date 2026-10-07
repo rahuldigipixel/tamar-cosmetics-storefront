@@ -1,5 +1,4 @@
 ﻿import Link from "next/link";
-import { notFound } from "next/navigation";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { getBrandPageData } from "@/lib/wpgraphql/brandPage";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
@@ -16,9 +15,24 @@ export default async function BrandPage({ params }: BrandPageProps) {
  const activeSlug = decodeURIComponent(slug).normalize("NFC");
 
  // Brand + first page of products + the filter-bar options, in one GraphQL request.
- const { brand, products, hasNextPage, endCursor, categories, brands, countries } = await getBrandPageData(activeSlug, 20);
+ const data = await getBrandPageData(activeSlug, 20);
+ const { categories, brands, countries } = data;
 
- if (!brand) notFound();
+ // Unknown brand (or failed lookup): keep the page shell and show the grid's
+ // "no products available" empty state instead of a 404. The products query
+ // ignores an unknown brand filter, so those unrelated products are dropped.
+ const brandMissing = !data.brand;
+ const brand = data.brand ?? {
+ name: activeSlug.replace(/-/g, " "),
+ description: "",
+ extraDescription: "",
+ categoryExtraDescriptionText: "",
+ desktopBannerUrl: null,
+ mobileBannerUrl: null,
+ };
+ const products = brandMissing ? [] : data.products;
+ const hasNextPage = brandMissing ? false : data.hasNextPage;
+ const endCursor = brandMissing ? null : data.endCursor;
 
  // The wp-admin editor saves single newlines inside a <p> (one line per
  // row) and relies on WordPress's wpautop() to turn them into <br> — do the
@@ -83,6 +97,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
  categories={categories}
  brands={brands}
  countries={countries}
+ priceBounds={data.priceBounds}
  />
  </div>
 

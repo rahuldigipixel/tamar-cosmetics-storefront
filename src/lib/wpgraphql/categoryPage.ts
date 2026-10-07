@@ -1,5 +1,6 @@
 import { fetchGraphQLSafe } from "./client";
 import { GET_CATEGORY_PAGE_DATA } from "./queries/categoryPage";
+import { toPriceBounds } from "./priceBounds";
 import { mapProductListNodes, type GqlProductNode } from "./products";
 import type { CategoryInfo } from "./tamarApi";
 import type { Product, ProductCategory, Brand, CountryOption } from "@/types/product";
@@ -35,6 +36,8 @@ export interface CategoryPageData {
   info: CategoryInfo | null;
   /** Ancestor categories (incl. empty ones the full list hides) for breadcrumb names. */
   breadcrumbCategories: { name: string; slug: string }[];
+  /** Price range of the whole category (null if unavailable) — the price slider's ends. */
+  priceBounds: { min: number; max: number } | null;
 }
 
 /**
@@ -57,9 +60,9 @@ export async function getCategoryPageData(
   const data = await fetchGraphQLSafe<{
     categoryInfo: CategoryInfo | null;
     categoryProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
-    categoryProductBrands: {
-      nodes: { productCategories?: { nodes: { slug: string }[] }; allPaBrand?: { nodes: { slug: string }[] }; allPaCountry?: { nodes: CountryOption[] } }[];
-    };
+    facets: { brands: { slug: string }[]; countries: CountryOption[] } | null;
+    priceLow: { nodes: { price?: string | null }[] };
+    priceHigh: { nodes: { price?: string | null }[] };
     allCategories: { nodes: GqlCategoryNode[] };
     breadcrumbCategories?: { nodes: { name: string; slug: string }[] };
     allBrands: { nodes: GqlBrandNode[] };
@@ -75,16 +78,9 @@ export async function getCategoryPageData(
 
   const products = await mapProductListNodes(data.categoryProducts.nodes);
 
-  // Cross-checked against the product's own productCategories, same as
-  // listBrandSlugsInCategory used to — this backend's categoryIn where-arg
-  // has been observed to return a few false positives on its own.
-  const brandSlugsInCategory = new Set<string>();
-  const countries = new Map<string, CountryOption>();
-  for (const node of data.categoryProductBrands.nodes) {
-    if (!node.productCategories?.nodes.some((c) => c.slug === categorySlug)) continue;
-    node.allPaBrand?.nodes.forEach((b) => brandSlugsInCategory.add(b.slug));
-    node.allPaCountry?.nodes.forEach((c) => countries.set(c.slug, c));
-  }
+  // Brands / countries of the whole category, resolved by the plugin (not derived from the first page of products).
+  const brandSlugsInCategory = new Set((data.facets?.brands ?? []).map((b) => b.slug));
+  const countries = new Map((data.facets?.countries ?? []).map((c) => [c.slug, c] as const));
 
   const categories: ProductCategory[] = data.allCategories.nodes.map((c) => ({
     id: c.id,
@@ -115,5 +111,6 @@ export async function getCategoryPageData(
     countriesInCategory: [...countries.values()],
     info: data.categoryInfo,
     breadcrumbCategories: data.breadcrumbCategories?.nodes ?? [],
+    priceBounds: toPriceBounds(data.priceLow, data.priceHigh),
   };
 }

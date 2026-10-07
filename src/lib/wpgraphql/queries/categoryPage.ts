@@ -1,4 +1,5 @@
 import { PRODUCT_LIST_FIELDS } from "./products";
+import { PRICE_BOUND_FIELDS } from "../priceBounds";
 
 /**
  * Everything the product-category page needs — this category's product
@@ -57,24 +58,20 @@ export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
         ${PRODUCT_LIST_FIELDS}
       }
     }
-    categoryProductBrands: products(first: 100, where: { categoryIn: $category, status: "publish" }) {
-      nodes {
-        productCategories {
-          nodes {
-            slug
-          }
-        }
-        allPaBrand {
-          nodes {
-            slug
-          }
-        }
-        allPaCountry {
-          nodes {
-            name
-            slug
-          }
-        }
+    priceLow: products(first: 1, where: { categoryIn: $category, status: "publish", orderby: [{ field: PRICE, order: ASC }] }) {
+      ${PRICE_BOUND_FIELDS}
+    }
+    priceHigh: products(first: 1, where: { categoryIn: $category, status: "publish", orderby: [{ field: PRICE, order: DESC }] }) {
+      ${PRICE_BOUND_FIELDS}
+    }
+    # Brands / countries across the WHOLE category (plugin field) — not just the first 100 products.
+    facets: tamarFacets(category: $categorySlug) {
+      brands {
+        slug
+      }
+      countries {
+        slug
+        name
       }
     }
     allCategories: productCategories(first: 150, where: { hideEmpty: true }) {

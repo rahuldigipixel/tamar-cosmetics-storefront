@@ -225,7 +225,7 @@ export interface ListProductsParams {
   search?: string;
   first?: number;
   after?: string;
-  orderby?: { field: "PRICE" | "POPULARITY" | "DATE"; order: "ASC" | "DESC" }[];
+  orderby?: { field: "PRICE" | "POPULARITY" | "RATING" | "DATE"; order: "ASC" | "DESC" }[];
   minPrice?: number;
   maxPrice?: number;
   onSale?: boolean;

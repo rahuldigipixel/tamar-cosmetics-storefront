@@ -2,7 +2,7 @@
 
 import { getQuickViewProduct, listProducts, type ListProductsResult } from "./products";
 
-export type CategorySortOption = "POPULARITY" | "PRICE_ASC" | "PRICE_DESC" | "DATE";
+export type CategorySortOption = "POPULARITY" | "RATING" | "PRICE_ASC" | "PRICE_DESC" | "DATE";
 
 function toOrderby(sort: CategorySortOption | undefined) {
   switch (sort) {
@@ -12,6 +12,8 @@ function toOrderby(sort: CategorySortOption | undefined) {
       return [{ field: "PRICE" as const, order: "DESC" as const }];
     case "DATE":
       return [{ field: "DATE" as const, order: "DESC" as const }];
+    case "RATING":
+      return [{ field: "RATING" as const, order: "DESC" as const }];
     case "POPULARITY":
       return [{ field: "POPULARITY" as const, order: "DESC" as const }];
     default:

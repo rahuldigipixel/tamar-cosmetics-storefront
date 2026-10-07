@@ -1,7 +1,7 @@
 ﻿function CardSkeleton() {
  return (
- <div className="flex flex-col overflow-hidden rounded-2xl border border-black/5 bg-white">
- <div className="aspect-video w-full bg-black/5" />
+ <div className="flex flex-col bg-white shadow-[0_0_4px_rgba(0,0,0,0.12)]">
+ <div className="aspect-[3/2] w-full bg-black/5" />
  <div className="flex flex-col gap-2 p-5">
  <div className="h-3 w-24 rounded-full bg-black/5" />
  <div className="h-5 w-5/6 rounded-full bg-black/10" />

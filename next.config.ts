@@ -93,6 +93,11 @@ const nextConfig: NextConfig = {
     const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL;
     if (wpUrl?.startsWith("http://")) {
       afterFiles.push({ source: "/wp-content/uploads/:path*", destination: `${wpUrl.replace(/\/+$/, "")}/wp-content/uploads/:path*` });
+      // GoCredit logo on the checkout (the payment gateway's icon is served from its plugin folder).
+      afterFiles.push({
+        source: "/wp-content/plugins/woocommerce-gateway-gocredit/assets/img/:path*",
+        destination: `${wpUrl.replace(/\/+$/, "")}/wp-content/plugins/woocommerce-gateway-gocredit/assets/img/:path*`,
+      });
     }
     return {
       // Product search results live at the WordPress-style "/?s=term&post_type=product"

@@ -15,7 +15,7 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // Matches both raw and JSON-escaped (`http:\/\/host\/wp-content\/uploads`) forms,
 // with either scheme (WordPress may emit https:// links for its own host).
 const pattern = httpHost
-  ? new RegExp(`https?:(?:\\\\?/){2}${escapeRegExp(httpHost).replace(/\//g, "(?:\\\\?/)")}(?=(?:\\\\?/)wp-content(?:\\\\?/)uploads)`, "g")
+  ? new RegExp(`https?:(?:\\\\?/){2}${escapeRegExp(httpHost).replace(/\//g, "(?:\\\\?/)")}(?=(?:\\\\?/)wp-content(?:\\\\?/)(?:uploads|plugins(?:\\\\?/)woocommerce-gateway-gocredit))`, "g")
   : null;
 
 /** Rewrites absolute upload URLs in a raw JSON/text response body to relative ones. */

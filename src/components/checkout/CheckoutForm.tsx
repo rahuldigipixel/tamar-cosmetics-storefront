@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { BillingAddress } from "@/lib/wpgraphql/tamarApi";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -75,7 +76,9 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
   const removeCoupon = useCartStore((s) => s.removeCoupon);
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const loggedIn = useAuthStore((s) => !!s.token);
+  const authToken = useAuthStore((s) => s.token);
+  const loggedIn = !!authToken;
+  const prefilled = useRef(false);
   const [cities, setCities] = useState<City[] | null>(null);
   const cityOptions = useMemo(() => (cities ?? []).map((c) => ({ value: c.code, label: c.name })), [cities]);
   const [form, setForm] = useState({ first_name: "", address_2: "", appartment: "", phone: "", email: "" });
@@ -124,6 +127,34 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Logged-in shopper: pre-fill the form from the billing address saved under My Account (once, after the
+  // city list is loaded so the saved city can be matched to its shipping-zone code).
+  useEffect(() => {
+    if (!authToken || cities === null || prefilled.current) return;
+    prefilled.current = true;
+    fetch("/api/account/billing", { headers: { Authorization: `Bearer ${authToken}` } })
+      .then((res) => (res.ok ? (res.json() as Promise<BillingAddress>) : null))
+      .catch(() => null)
+      .then(async (saved) => {
+        if (!saved) return;
+        const fullName = `${saved.first_name} ${saved.last_name}`.trim();
+        setForm((prev) => ({
+          first_name: prev.first_name || fullName,
+          address_2: prev.address_2 || saved.address_2,
+          appartment: prev.appartment || saved.appartment,
+          phone: prev.phone || saved.phone,
+          email: prev.email || saved.email,
+        }));
+        // Saved city is a name (My Account) or a zone code (classic checkout) — accept both.
+        const savedCity = saved.city.trim();
+        const city = cities.find((c) => c.code === savedCity) ?? cities.find((c) => c.name === savedCity);
+        if (!city) return;
+        await handleCityChange(city.code);
+        setStreet(saved.address_1);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken, cities]);
 
   // PayPal "Debit & Credit Cards" (ppcp-*) needs PayPal's browser SDK — it can't complete through the headless checkout.
   const availableGateways = gateways.filter((g) => !g.id.startsWith("ppcp"));

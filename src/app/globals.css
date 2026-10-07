@@ -148,3 +148,92 @@ input[type="radio"] {
 .berocket_better_labels * {
   pointer-events: none !important;
 }
+
+/* Product labels on the image: colors/images/sizes come from wp-admin (GlobalData.labelsCss); the label POSITION css is ignored.
+   Only the side (left/right group) is taken from the API; the labels of each side are stacked one under another and the stack is centered vertically on the image. */
+.berocket_better_labels.berocket_better_labels_image {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important; /* full image height only to center the stacks; clicks/hover pass through (pointer-events none) */
+  max-height: 100%;
+  overflow: hidden;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 1fr auto auto 1fr; /* both side stacks centered vertically on the image */
+  align-items: start;
+  direction: ltr; /* grid column 1 = physical left, matching the API "left" group */
+  z-index: 1; /* below the card hover actions (quick view / wishlist, z-10) */
+}
+.berocket_better_labels_image::before,
+.berocket_better_labels_image::after {
+  display: none !important;
+}
+.berocket_better_labels_image .berocket_better_labels_position,
+.berocket_better_labels_image .berocket_better_labels_line,
+.berocket_better_labels_image .berocket_better_labels_inline {
+  display: flex !important;
+  flex-direction: column;
+  gap: 4px;
+  float: none !important;
+  clear: none !important;
+  position: static !important;
+  transform: none !important;
+  min-width: 0;
+}
+.berocket_better_labels_image .berocket_better_labels_position_left,
+.berocket_better_labels_image .berocket_better_labels_position_center {
+  grid-column: 1;
+  align-items: flex-start !important;
+}
+.berocket_better_labels_image .berocket_better_labels_position_left {
+  grid-row: 2;
+}
+.berocket_better_labels_image .berocket_better_labels_position_center {
+  grid-row: 3;
+  margin-top: 4px;
+}
+.berocket_better_labels_image .berocket_better_labels_position_right {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  align-self: center;
+  align-items: flex-end !important;
+}
+.berocket_better_labels_image .berocket_better_labels_line,
+.berocket_better_labels_image .berocket_better_labels_inline {
+  gap: 4px;
+}
+.berocket_better_labels_image .br_alabel {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  max-width: 100%;
+  margin: 0 !important;
+  z-index: 1 !important;
+}
+.berocket_better_labels_image .br_alabel > span {
+  margin: 0 !important;
+}
+/* Badges stack in one column per side now, so one fixed size (64px, shrinking a little on very narrow cards); normal font weight. */
+.berocket_better_labels_image .br_alabel_template_type_image > span {
+  width: min(64px, 16vw) !important;
+  height: min(64px, 16vw) !important;
+}
+.br_alabel > span,
+.br_alabel > span b {
+  font-weight: 400 !important;
+}
+/* Label text centered vertically + horizontally inside its box (the plugin's line-height:1px on the wrapper pushed it off-center). */
+.berocket_better_labels_image .br_alabel > span {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2 !important;
+}
+.berocket_better_labels_image .br_alabel > span b {
+  line-height: 1.2 !important;
+}

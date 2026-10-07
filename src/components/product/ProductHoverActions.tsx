@@ -62,7 +62,7 @@ function ActionButton({
  * squares with a soft shadow; each shows a black tooltip on hover. On touch
  * screens (no hover) they stay visible. `className` positions the stack.
  */
-export function ProductHoverActions({ product, className = "" }: { product: Product; className?: string }) {
+export function ProductHoverActions({ product, className = "", hideWishlist = false }: { product: Product; className?: string; /** Quick view only (the wishlist page itself). */ hideWishlist?: boolean }) {
   const openQuickView = useQuickViewStore((s) => s.open);
   const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
   const toggleWishlist = useWishlistStore((s) => s.toggle);
@@ -74,13 +74,15 @@ export function ProductHoverActions({ product, className = "" }: { product: Prod
       <ActionButton label="מבט מהיר" hideOnMobile onClick={() => openQuickView(product)}>
         <QuickViewIcon />
       </ActionButton>
-      <ActionButton
-        label={inWishlist ? "הסרה מהמועדפים" : "הוספה למועדפים"}
-        pressed={inWishlist}
-        onClick={() => toggleWishlist(product.databaseId)}
-      >
-        <Heart className={`h-[20px] w-[20px] max-md:h-[16px] max-md:w-[16px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
-      </ActionButton>
+      {hideWishlist ? null : (
+        <ActionButton
+          label={inWishlist ? "הסרה מהמועדפים" : "הוספה למועדפים"}
+          pressed={inWishlist}
+          onClick={() => toggleWishlist(product.databaseId)}
+        >
+          <Heart className={`h-[20px] w-[20px] max-md:h-[16px] max-md:w-[16px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
+        </ActionButton>
+      )}
     </div>
   );
 }

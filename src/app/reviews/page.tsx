@@ -23,17 +23,17 @@ export default async function ReviewsPage() {
 
  return (
  <div>
- <div className="border-b border-black/5 bg-gradient-to-br from-brand-soft/60 via-brand-soft/20 to-white">
- <div className="mx-auto max-w-[1600px] px-[15px] py-6 text-center sm:py-6">
- <h1 className="text-3xl font-extrabold tracking-tight text-brand-accent sm:text-5xl lg:text-[50px] lg:leading-[50px]">{heading}</h1>
+ <div className="bg-[#fde7eb]">
+ <div className="mx-auto max-w-[1600px] px-[15px] py-[10px] text-center lg:py-5">
+ <h1 className="text-[43px] font-bold leading-[43px] text-brand-accent lg:text-[50px] lg:leading-[50px]">{heading}</h1>
  </div>
  </div>
 
  {descriptionHtml ? (
- <div className="mx-auto max-w-[1600px] px-[15px] py-10">
+ <div className="mx-auto max-w-[1600px] px-[15px] py-[10px]">
  <RichContent
  html={descriptionHtml}
- className="mx-auto max-w-none text-center !text-black !text-[21px] !leading-[34px]"
+ className="mx-auto max-w-none text-center [&_p]:!my-0 !text-black !text-[21px] !leading-[34px]"
  />
  </div>
  ) : null}

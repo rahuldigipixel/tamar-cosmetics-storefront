@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FreeShippingProvider } from "@/components/cart/FreeShippingProvider";
 import { resolveFreeShipping } from "@/lib/utils/freeShipping";
+import { sanitizeLabelsCss } from "@/lib/utils/labelsCss";
 import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
@@ -60,7 +61,7 @@ export default async function RootLayout({
   const bar = global?.headerBar ?? null;
   const integrations = resolveIntegrations(siteSettings);
   const freeShipping = resolveFreeShipping(siteSettings?.freeShipping);
-  const labelsCss = global?.labelsCss?.replace(/<\/style/gi, "") ?? "";
+  const labelsCss = sanitizeLabelsCss(global?.labelsCss);
 
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} h-full antialiased`}>

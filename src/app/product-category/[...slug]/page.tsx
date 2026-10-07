@@ -144,7 +144,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  {carouselItems.length > 0 ? <CategoryCarousel items={carouselItems} /> : null}
 
  {/* The description is rendered inside the grid component (as `intro`) so on mobile the filter accordion can sit above it. */}
- <div className={`mx-auto max-w-[1600px] px-[15px] ${description ? "pt-[15px] md:pt-[40px]" : "pt-[15px] md:pt-[30px]"} pb-0 md:pb-12`}>
+ <div className={`mx-auto max-w-[1600px] px-[15px] ${description ? "pt-[15px] md:pt-[40px]" : "pt-[15px] md:pt-[30px]"} ${readMoreText || extraDescription ? "pb-0" : "pb-0 md:pb-12"}`}>
  <CategoryProductGrid
  intro={
  description ? (
@@ -165,8 +165,8 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  </div>
  {/* Accordions after the product list, same as the brand page: "קרא עוד" above the FAQ one. */}
  {readMoreText || extraDescription ? (
- <div className="mx-auto max-w-[1600px] space-y-[9px] px-[15px] pb-12">
- {readMoreText ? <FaqAccordion title="קרא עוד" html={readMoreText} contentClassName="text-[16px] leading-[26px] text-[#1f2124]" /> : null}
+ <div className="mx-auto max-w-[1600px] space-y-[9px] px-[15px] pb-[40px]">
+ {readMoreText ? <FaqAccordion title="קרא עוד" html={readMoreText} /> : null}
  {extraDescription ? <FaqAccordion title="שאלות נפוצות" html={extraDescription} /> : null}
  </div>
  ) : null}

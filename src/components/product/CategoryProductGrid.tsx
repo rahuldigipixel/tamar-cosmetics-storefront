@@ -568,7 +568,7 @@ export function CategoryProductGrid({
         )}
 
         {/* Infinite-scroll sentinel + the reference's loading pill. */}
-        <div ref={sentinelRef} className="flex justify-center py-[10px] md:py-[30px]">
+        <div ref={sentinelRef} className="flex justify-center py-[11px]">
           {isPending && products.length > 0 ? (
             <span className="flex h-[44px] items-center gap-[8px] rounded-[35px] border-2 border-black/[.106] px-[25px] text-[13px] font-semibold text-[#333]">
               <Loader2 className="h-4 w-4 animate-spin" />

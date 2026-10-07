@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Check, X } from "lucide-react";
+import Link from "next/link";
+import { Check, Heart, X } from "lucide-react";
 import { AccountLayout } from "@/components/auth/AccountLayout";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
 import { WishlistShare } from "@/components/wishlist/WishlistShare";
@@ -88,10 +89,12 @@ function WishlistContent() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] font-bold text-black">עמוד המועדפים שלך</h1>
-        <WishlistShare />
-      </div>
+      {(loading || visible.length > 0) && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-[18px] font-bold leading-[25px] text-[#0c0c0c]">עמוד המועדפים שלך</h1>
+          <WishlistShare />
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-busy="true">
@@ -100,9 +103,27 @@ function WishlistContent() {
           ))}
         </div>
       ) : visible.length === 0 ? (
-        <p className="text-[18px] text-black/60">רשימת המשאלות שלך ריקה.</p>
+        <div className="text-center font-[Arial,Helvetica,sans-serif] text-[#0c0c0c]">
+          {/* Legacy empty state (Arial): 182px/106px faint heart, 48px/28px bold title, 23px/21px text, 14px button. */}
+          <Heart className="mx-auto mb-5 h-[106px] w-[106px] text-black/[0.07] lg:h-[182px] lg:w-[182px]" strokeWidth={1.6} aria-hidden />
+          <p className="mb-[15px] text-[28px] font-bold leading-[33.6px] lg:text-[48px] lg:leading-[58px]">רשימת המועדפים ריקה.</p>
+          <div className="text-[21px] leading-[33.6px] lg:text-[23px] lg:leading-[37px]">
+            <p dir="ltr">You don&apos;t have any products in the wishlist yet.</p>
+            <p dir="ltr">You will find a lot of interesting products on our &quot;Shop&quot; page.</p>
+          </div>
+          <p className="mb-[19.5px] mt-[25px] lg:mb-24">
+            <Link
+              href="/shop"
+              prefetch={false}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-7 text-[14px] font-semibold leading-[16.8px] text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)]"
+            >
+              חזרה לחנות
+            </Link>
+          </p>
+        </div>
       ) : (
         <>
+          {selected.size > 0 && (
           <div className="mb-5 flex items-center gap-8 border-y border-black/10 bg-[#f5f5f5] px-3 py-2 text-[18px] font-bold leading-[25px] text-[#0c0c0c]">
             <button
               type="button"
@@ -122,10 +143,11 @@ function WishlistContent() {
               {allSelected ? "ביטול בחירה" : "בחר הכל"}
             </button>
           </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="-mx-[15px] grid grid-cols-2 lg:grid-cols-4">
             {visible.map((product) => (
-              <div key={product.id} className="flex flex-col gap-2">
+              <div key={product.id} className="flex flex-col gap-2 p-[15px] pt-[17px] transition-shadow duration-200 hover:shadow-[0_0_9px_rgba(0,0,0,.15)]">
                 <div className="flex items-center justify-between text-[18px] font-bold leading-[25px] text-[#0c0c0c]">
                   <button
                     type="button"
@@ -143,7 +165,7 @@ function WishlistContent() {
                     className="h-5 w-5 cursor-pointer accent-brand-accent"
                   />
                 </div>
-                <CategoryProductCard product={product} standalone />
+                <CategoryProductCard product={product} standalone wishlist />
               </div>
             ))}
           </div>

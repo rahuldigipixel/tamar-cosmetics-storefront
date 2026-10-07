@@ -17,11 +17,11 @@ export function AccountLayout({ children }: { children: React.ReactNode }) {
           the sidebar renders first so it lands on the right, matching the
           reference. A vertical divider sits between them, same pattern as
           the /my-account login/register page. */}
-      <div className="grid gap-10 md:grid-cols-[260px_auto_1fr]">
+      <div className="grid gap-10 md:grid-cols-[22%_1px_1fr] md:gap-[30px]">
         <aside>
-          <h2 className="mb-4 text-[20px] font-bold text-black">החשבון שלי</h2>
+          <h2 className="mb-4 text-[18px] font-bold leading-[25px] text-[#0c0c0c]">החשבון שלי</h2>
           <nav>
-            <ul className="divide-y divide-black/5">
+            <ul>
               {ACCOUNT_NAV_ITEMS.map((item) => {
                 const active =
                   !item.isLogout &&
@@ -32,7 +32,7 @@ export function AccountLayout({ children }: { children: React.ReactNode }) {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="block w-full py-3 text-right text-[16px] text-black/80 transition-colors hover:text-brand-accent"
+                        className="flex h-10 w-full items-center text-right text-[14px] font-semibold leading-5 text-[#242424] transition-colors hover:text-brand-accent"
                       >
                         {item.label}
                       </button>
@@ -43,8 +43,8 @@ export function AccountLayout({ children }: { children: React.ReactNode }) {
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className={`block py-3 text-[16px] transition-colors ${
-                        active ? "bg-black/5 px-4 font-semibold text-black" : "text-black/80 hover:text-brand-accent"
+                      className={`flex h-10 items-center text-[14px] font-semibold leading-5 text-[#242424] transition-colors ${
+                        active ? "bg-black/5 px-4" : "hover:text-brand-accent"
                       }`}
                     >
                       {item.label}

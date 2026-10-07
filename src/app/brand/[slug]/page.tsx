@@ -66,7 +66,7 @@ export default async function BrandPage({ params }: BrandPageProps) {
  {/* The description is the rich-text editor HTML from wp-admin (the logo
  image lives inside it), so no separate thumbnail is rendered. It is passed to
  the grid as `intro` so on mobile the filter accordion can sit above it. */}
- <div className="mx-auto max-w-[1600px] px-[15px] pt-[15px] pb-0 md:pb-12 md:pt-[30px]">
+ <div className={`mx-auto max-w-[1600px] px-[15px] pt-[15px] md:pt-[30px] ${readMoreText || extraDescription ? "pb-0" : "pb-0 md:pb-12"}`}>
  <CategoryProductGrid
  intro={
  description ? (
@@ -89,9 +89,9 @@ export default async function BrandPage({ params }: BrandPageProps) {
  {/* Extra FAQ Description: one collapsed "שאלות נפוצות" accordion after the
  product list (smooth open/close). */}
  {readMoreText || extraDescription ? (
- <div className="mx-auto max-w-[1600px] space-y-[9px] px-[15px] pb-12">
+ <div className="mx-auto max-w-[1600px] space-y-[9px] px-[15px] pb-[40px]">
  {/* "קרא עוד" accordion (term meta category_extra_description_text) sits above the FAQ one. */}
- {readMoreText ? <FaqAccordion title="קרא עוד" html={readMoreText} contentClassName="text-[16px] leading-[26px] text-[#1f2124]" /> : null}
+ {readMoreText ? <FaqAccordion title="קרא עוד" html={readMoreText} /> : null}
  {extraDescription ? <FaqAccordion title="שאלות נפוצות" html={extraDescription} /> : null}
  </div>
  ) : null}

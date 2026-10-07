@@ -32,9 +32,12 @@ export function CategoryProductCard({
   product,
   standalone = false,
   wideMobile = false,
+  wishlist = false,
 }: {
   product: Product;
   standalone?: boolean;
+  /** Wishlist page: no card padding (text flush with the image edges), quick view only on hover. */
+  wishlist?: boolean;
   /** One-card-per-row on mobile (SALE / related sliders): 24px price with the struck-through price on the same line. */
   wideMobile?: boolean;
 }) {
@@ -57,6 +60,8 @@ export function CategoryProductCard({
   const discount = discountPercent(product);
   // Promoted coupon (wp-admin coupon flagged "show in product") — same strip as the product page, sized like the reference.
   // Full-width row under the price/cart row (simple products) or under the SKU (variable ones).
+  // Right-side labels start below the top-right stack (discount badge, brand logo).
+  const labelRightTop = (discount ? 24 : 0) + (product.brandLogoUrl ? 50 : 0) + (discount || product.brandLogoUrl ? 6 : 0);
   const couponBar = product.coupon ? (
     <p className="border border-brand-accent p-[2px] text-center text-[11px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px]">
       <span dir="rtl">השתמש בקוד</span> <strong className="font-bold">{product.coupon.code}</strong>
@@ -70,10 +75,10 @@ export function CategoryProductCard({
   ) : null;
 
   return (
-    <div data-tip-bounds className={`group relative isolate flex h-full flex-col bg-white p-[10px] text-right ${wideMobile ? "max-md:pb-[15px] " : ""}${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
+    <div data-tip-bounds className={`group relative isolate flex h-full flex-col bg-white ${wishlist ? "p-0" : "p-[10px]"} text-right ${wideMobile ? "max-md:pb-[15px] " : ""}${standalone ? "" : "border border-black/[.106] -mt-px -ml-px max-md:p-[5px]"}`}>
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
       {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
-      <div className={standalone ? "relative -mx-[10px] -mt-[10px]" : "relative"}>
+      <div className={standalone && !wishlist ? "relative -mx-[10px] -mt-[10px]" : "relative"} style={{ "--label-right-top": `${labelRightTop}px` } as React.CSSProperties}>
         <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
           {image ? (
             <Image
@@ -117,7 +122,7 @@ export function CategoryProductCard({
       </div>
 
       {/* Quick view + wishlist — shown on hover. */}
-      <ProductHoverActions product={product} className={standalone ? "top-[11px] left-[6px]" : "top-[11px] left-[11px] md:top-[21px] md:left-[21px]"} />
+      <ProductHoverActions product={product} hideWishlist={wishlist} className={wishlist ? "top-0 left-0" : standalone ? "top-[11px] left-[6px]" : "top-[11px] left-[11px] md:top-[21px] md:left-[21px]"} />
 
       <Link prefetch={false}
         href={`/product/${product.slug}`}

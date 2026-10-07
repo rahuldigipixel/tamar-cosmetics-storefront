@@ -54,7 +54,12 @@ export const getBrandPageData = cache(async (slug: string, first = 20): Promise<
   };
 });
 
-/** Elementor "Product filters" categories rule: wp-admin drag-and-drop order (as returned by the API), show hierarchy (children under their parent, indented). */
+/**
+ * Elementor "Product filters" categories rule (matches the live brand page): the full tree in name order,
+ * children indented under their parent, and — like WooCommerce's hide-empty — a category stays when it or
+ * any descendant has products. (WPGraphQL's own `hideEmpty` only looks at the category's own count, so it
+ * would drop parents whose products sit in their sub-categories; hence we fetch all and prune here.)
+ */
 function categoryTree(nodes: { id: string; name: string; slug: string; count: number | null; parent: { node: { id: string } } | null }[]) {
   const ids = new Set(nodes.map((n) => n.id));
   const byParent = new Map<string | null, typeof nodes>();
@@ -62,9 +67,11 @@ function categoryTree(nodes: { id: string; name: string; slug: string; count: nu
     const key = n.parent && ids.has(n.parent.node.id) ? n.parent.node.id : null;
     byParent.set(key, [...(byParent.get(key) ?? []), n]);
   }
+  const hasProducts = (n: (typeof nodes)[number]): boolean => (n.count ?? 0) > 0 || (byParent.get(n.id) ?? []).some(hasProducts);
   const out: (ProductCategory & { depth: number })[] = [];
   const walk = (parent: string | null, depth: number) => {
     for (const n of (byParent.get(parent) ?? [])) {
+      if (!hasProducts(n)) continue;
       out.push({ id: n.id, name: n.name, slug: n.slug, count: n.count ?? 0, parentId: n.parent?.node.id, depth });
       walk(n.id, depth + 1);
     }

@@ -32,7 +32,7 @@ export const GET_BRAND_PAGE_DATA = /* GraphQL */ `
     priceHigh: products(first: 1, where: ${brandProductsByPrice("DESC")}) {
       ${PRICE_BOUND_FIELDS}
     }
-    allCategories: productCategories(first: 150, where: { hideEmpty: true }) {
+    allCategories: productCategories(first: 500, where: { hideEmpty: false, orderby: NAME, order: ASC }) {
       nodes {
         id
         name

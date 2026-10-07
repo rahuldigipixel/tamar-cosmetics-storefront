@@ -72,11 +72,11 @@ function LoopingRow({ items }: { items: CategoryCarouselItem[] }) {
   const { trackRef, itemRefs, looped, step } = useInfiniteCarousel<CategoryCarouselItem, HTMLDivElement>({ items, durationMs: 600 });
   // Same round white arrow buttons as ProductSlider: right = previous, left = next (RTL).
   const btn =
-    "absolute top-[41px] z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white text-black/60 shadow-sm transition-colors hover:border-brand-accent hover:text-brand-accent md:top-[65px] md:h-10 md:w-10";
+    "absolute top-[41px] z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent md:top-[65px] md:h-10 md:w-10";
   return (
     <>
       <button type="button" aria-label="הקודם" onClick={() => step(-1)} className={`${btn} -right-[26px] md:-right-[52px]`}>
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-5 w-5" strokeWidth={1.25} />
       </button>
       <div className="overflow-clip [overflow-clip-margin:2px]">
         <div
@@ -95,7 +95,7 @@ function LoopingRow({ items }: { items: CategoryCarouselItem[] }) {
         </div>
       </div>
       <button type="button" aria-label="הבא" onClick={() => step(1)} className={`${btn} -left-[26px] md:-left-[52px]`}>
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-5 w-5" strokeWidth={1.25} />
       </button>
     </>
   );

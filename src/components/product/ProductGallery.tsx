@@ -127,7 +127,7 @@ export function ProductGallery({
               aria-label="התמונה הקודמת"
               className="absolute inset-y-0 start-2 z-10 flex items-center justify-center"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm transition-colors hover:bg-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-none bg-white/90 shadow-sm transition-colors hover:bg-white">
                 <ChevronRight className="h-4 w-4" />
               </span>
             </button>
@@ -139,7 +139,7 @@ export function ProductGallery({
               aria-label="התמונה הבאה"
               className="absolute inset-y-0 end-2 z-10 flex items-center justify-center"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm transition-colors hover:bg-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-none bg-white/90 shadow-sm transition-colors hover:bg-white">
                 <ChevronLeft className="h-4 w-4" />
               </span>
             </button>
@@ -214,7 +214,7 @@ export function ProductGallery({
                   aria-label="התמונה הקודמת"
                   className="absolute inset-y-0 start-2 z-10 flex items-center justify-center"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-none bg-white/10 text-white transition-colors hover:bg-white/20">
                     <ChevronRight className="h-6 w-6" />
                   </span>
                 </button>
@@ -227,7 +227,7 @@ export function ProductGallery({
                   aria-label="התמונה הבאה"
                   className="absolute inset-y-0 end-2 z-10 flex items-center justify-center"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-none bg-white/10 text-white transition-colors hover:bg-white/20">
                     <ChevronLeft className="h-6 w-6" />
                   </span>
                 </button>

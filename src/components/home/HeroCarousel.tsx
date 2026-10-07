@@ -76,8 +76,8 @@ function HeroTrack({ slides }: { slides: HomePageSlide[] }) {
         aria-label="הקודם"
         className="absolute inset-y-0 start-2 flex items-center sm:start-4"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow-md transition-colors hover:bg-white sm:h-11 sm:w-11">
-          <ChevronRight className="h-5 w-5" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent sm:h-11 sm:w-11">
+          <ChevronRight className="h-5 w-5" strokeWidth={1.25} />
         </span>
       </button>
       <button
@@ -85,8 +85,8 @@ function HeroTrack({ slides }: { slides: HomePageSlide[] }) {
         aria-label="הבא"
         className="absolute inset-y-0 end-2 flex items-center sm:end-4"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow-md transition-colors hover:bg-white sm:h-11 sm:w-11">
-          <ChevronLeft className="h-5 w-5" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent sm:h-11 sm:w-11">
+          <ChevronLeft className="h-5 w-5" strokeWidth={1.25} />
         </span>
       </button>
     </div>

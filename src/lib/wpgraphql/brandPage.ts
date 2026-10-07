@@ -33,7 +33,7 @@ export const getBrandPageData = cache(async (slug: string, first = 20): Promise<
     allCategories: { nodes: { id: string; name: string; slug: string; count: number | null; parent: { node: { id: string } } | null }[] };
     facets: { brands: { slug: string }[]; countries: CountryOption[] } | null;
     allBrands: { nodes: GqlBrandNode[] };
-  }>(GET_BRAND_PAGE_DATA, { slug, brand: [slug], first }, { tags: [`brand:${slug}`, "products", "brands"], revalidate: 60 });
+  }>(GET_BRAND_PAGE_DATA, { slug, brandSlug: slug, brand: [slug], first }, { tags: [`brand:${slug}`, "products", "brands"], revalidate: 60 });
 
   // Backend unreachable/timed out: throw so the route shows its error state rather than a false 404.
   if (!data) throw new Error(`Brand page request for "${slug}" failed (backend unreachable or timed out).`);

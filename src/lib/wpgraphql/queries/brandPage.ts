@@ -13,7 +13,7 @@ const brandProductsByPrice = (order: "ASC" | "DESC") =>
  * old brand lookup + product list pair. See getBrandPageData() in lib/wpgraphql/brandPage.ts.
  */
 export const GET_BRAND_PAGE_DATA = /* GraphQL */ `
-  query GetBrandPageData($slug: ID!, $brand: [String], $first: Int = 20) {
+  query GetBrandPageData($slug: ID!, $brandSlug: String, $brand: [String], $first: Int = 20) {
     brand: paBrand(id: $slug, idType: SLUG) {
       ${BRAND_DETAIL_FIELDS}
     }
@@ -46,7 +46,7 @@ export const GET_BRAND_PAGE_DATA = /* GraphQL */ `
       }
     }
     # Brands / countries across ALL of this brand's products (plugin field) — not just the first 100.
-    facets: tamarFacets(brand: $slug) {
+    facets: tamarFacets(brand: $brandSlug) {
       brands {
         slug
       }

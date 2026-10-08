@@ -18,6 +18,7 @@ export default async function BlogPage() {
 
  return (
  <div>
+ <h1 className="sr-only">מגזין תמר קוסמטיקס</h1>
  
 
  <div className="mx-auto max-w-[1600px] px-[15px] py-10 ">

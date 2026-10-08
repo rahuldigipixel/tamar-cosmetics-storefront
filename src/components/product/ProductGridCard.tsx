@@ -9,6 +9,7 @@ import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
+import { ShippingBadge } from "@/components/product/ShippingBadge";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
 /**
@@ -66,6 +67,7 @@ export function ProductGridCard({
           </span>
         ) : null}
         <ProductLabels html={product.labelsHtml?.image} />
+        <ShippingBadge price={product.price} className="top-[100px] left-[10px]" />
         {product.brandLogoUrl ? (
           <span className="absolute top-3 start-3 flex h-9 max-w-[4.5rem] items-center justify-center overflow-hidden rounded-md bg-white/90 p-1 shadow-sm backdrop-blur-sm">
             <Image

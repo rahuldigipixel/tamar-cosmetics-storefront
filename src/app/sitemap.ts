@@ -97,38 +97,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryUrls = (taxonomies?.productCategories.nodes ?? []).map((c) => {
     // WPGraphQL lists ancestors nearest-first; the URL path is root → leaf.
     const path = [...(c.ancestors?.nodes ?? []).map((a) => a.slug).reverse(), c.slug].join("/");
-    return { url: absoluteUrl(`/product-category/${path}/`), changeFrequency: "daily" as const, priority: 0.8 };
+    return { url: absoluteUrl(`/product-category/${path}/`) };
   });
 
   const brandUrls = (taxonomies?.allPaBrand.nodes ?? []).map((b) => ({
     url: absoluteUrl(`/brand/${b.slug}/`),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
   }));
 
   const productUrls = products.map((p) => ({
     url: absoluteUrl(`/product/${p.slug}`),
     lastModified: p.modified ? new Date(p.modified) : undefined,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
   }));
 
   const postUrls = posts.map((p) => ({
     url: absoluteUrl(`/${p.slug}`),
     lastModified: p.modified ? new Date(p.modified) : undefined,
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
   }));
 
   // Static / wp-admin pages, under the public (legacy) path that Google has indexed.
   const staticUrls = SITEMAP_STATIC_ROUTES.map((route) => ({
     url: absoluteUrl(PUBLIC_PATHS[route] ?? route),
-    changeFrequency: "monthly" as const,
-    priority: route === "/shop" ? 0.9 : 0.4,
   }));
 
   return [
-    { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
+    { url: absoluteUrl("/") },
     ...staticUrls,
     ...postUrls,
     ...categoryUrls,

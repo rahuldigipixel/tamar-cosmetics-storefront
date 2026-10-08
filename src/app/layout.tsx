@@ -10,6 +10,8 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FreeShippingProvider } from "@/components/cart/FreeShippingProvider";
 import { resolveFreeShipping } from "@/lib/utils/freeShipping";
 import { sanitizeLabelsCss } from "@/lib/utils/labelsCss";
+import { ShippingBadgeProvider } from "@/components/product/ShippingBadge";
+import { resolveShippingBadge } from "@/lib/utils/shippingBadge";
 import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
@@ -65,6 +67,7 @@ export default async function RootLayout({
   const bar = global?.headerBar ?? null;
   const integrations = resolveIntegrations(siteSettings);
   const freeShipping = resolveFreeShipping(siteSettings?.freeShipping);
+  const shippingBadge = resolveShippingBadge(siteSettings?.shippingBadge);
   const labelsCss = sanitizeLabelsCss(global?.labelsCss);
 
   return (
@@ -81,7 +84,9 @@ export default async function RootLayout({
         {labelsCss ? <style dangerouslySetInnerHTML={{ __html: labelsCss }} /> : null}
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">
-          <FreeShippingProvider config={freeShipping}>{children}</FreeShippingProvider>
+          <ShippingBadgeProvider config={shippingBadge}>
+            <FreeShippingProvider config={freeShipping}>{children}</FreeShippingProvider>
+          </ShippingBadgeProvider>
         </main>
         <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} />
         <FlashyTracker />

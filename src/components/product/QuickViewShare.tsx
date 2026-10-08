@@ -1,5 +1,7 @@
 "use client";
 
+import { absoluteUrl } from "@/lib/seo";
+
 const ICON_PATHS = {
   facebook:
     "M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.378 14.192 5 15.115 5H18V0h-3.808C10.596 0 9 1.583 9 4.615V8z",
@@ -32,13 +34,15 @@ export function QuickViewShare({
 }) {
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
+  // Pinterest needs an absolute image URL (a relative /wp-content/… path gets no pin image).
+  const mediaUrl = !image ? "" : /^https?:\/\//i.test(image) ? image : absoluteUrl(image);
   const links = [
     { key: "facebook", label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
     { key: "x", label: "X", href: `https://x.com/intent/tweet?url=${u}&text=${t}` },
     {
       key: "pinterest",
       label: "Pinterest",
-      href: `https://pinterest.com/pin/create/button/?url=${u}&media=${encodeURIComponent(image ?? "")}&description=${t}`,
+      href: `https://pinterest.com/pin/create/button/?url=${u}&media=${encodeURIComponent(mediaUrl)}&description=${t}`,
     },
     { key: "linkedin", label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
     { key: "telegram", label: "Telegram", href: `https://telegram.me/share/url?url=${u}&text=${t}` },

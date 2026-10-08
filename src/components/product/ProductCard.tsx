@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { ShippingBadge } from "@/components/product/ShippingBadge";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { ProductLabels } from "@/components/product/ProductLabels";
 
@@ -24,6 +25,7 @@ export function ProductCard({ product }: { product: Product }) {
         ) : null}
 
         <ProductLabels html={product.labelsHtml?.image} />
+        <ShippingBadge price={product.price} className="top-[100px] left-[10px]" />
         {product.onSale ? (
           <span className="absolute top-2 end-2 rounded bg-brand-accent px-2 py-1 text-xs font-semibold text-white">
             מבצע

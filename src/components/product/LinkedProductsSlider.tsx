@@ -17,8 +17,9 @@ const VISIBLE_MOBILE = 1;
 const ROW_GAP = 28;
 // First-paint window height until the real rows are measured (legacy-site sizing, approved product-page exception to the 18px floor).
 const VIEW_FALLBACK = 262;
-// The list is rendered 4× so a 2-row step from anywhere in the second copy never runs off the end.
-const COPIES = 4;
+// The list is rendered 3× (every extra copy re-renders every row + image into the page HTML). `step()` re-anchors into the
+// second copy before moving, so a 2-row step from there never runs off the end of the third.
+const COPIES = 3;
 
 /** Slider-only quantity box: compact, squarish, with vertical partition lines between − / number / +; sits on one line with the cart icon. */
 function SliderQuantity({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {

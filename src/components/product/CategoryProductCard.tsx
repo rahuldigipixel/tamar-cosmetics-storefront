@@ -9,6 +9,7 @@ import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
+import { ShippingBadge } from "@/components/product/ShippingBadge";
 import { Price } from "@/components/product/Price";
 
 function discountPercent(product: Product): number | null {
@@ -25,7 +26,8 @@ function discountPercent(product: Product): number | null {
  * red "-N%" badge top-right with the brand logo under it, promo label
  * (e.g. "מבצע SALE") on the image's left, 15px title, red star rating,
  * 24px/700 red price with the struck-through regular price beside it, and
- * a 12px SKU line, then the site's existing quantity stepper + add-to-cart
+ * a 12px SKU line (hover: the second image fades in over 0.5s while slowly zooming to 1.09× over 2s, desktop only —
+ * WoodMart's `.hover-img`, copied from the legacy theme CSS), then the site's existing quantity stepper + add-to-cart
  * button (unchanged design).
  */
 export function CategoryProductCard({
@@ -79,7 +81,7 @@ export function CategoryProductCard({
       {/* Wrapper (not the clipped Link) so a label's negative offset isn't cut off at the image edge. */}
       {/* Standalone (slider) cards run the image edge to edge: negative margins cancel the card padding (10px). */}
       <div className={standalone && !wishlist ? "relative -mx-[10px] -mt-[10px]" : "relative"} style={{ "--label-right-top": `${labelRightTop}px` } as React.CSSProperties}>
-        <Link prefetch={false} href={`/product/${product.slug}`} className="relative block aspect-square w-full overflow-hidden">
+        <Link prefetch={false} href={`/product/${product.slug}`} className="group/img relative block aspect-square w-full overflow-hidden">
           {image ? (
             <Image
               src={image.src}
@@ -95,11 +97,12 @@ export function CategoryProductCard({
               alt={hoverImage.alt || product.name}
               fill
               sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
-              className="bg-white object-contain opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              className="bg-white object-contain opacity-0 [transition:opacity_0.5s_ease,transform_2s_cubic-bezier(0,0,0.44,1.18)] group-hover/img:[transform:scale(1.09)] group-hover/img:opacity-100 max-[1024px]:hidden"
             />
           ) : null}
         </Link>
         <ProductLabels html={product.labelsHtml?.image} />
+        <ShippingBadge price={product.price} className="top-[100px] left-[12px]" />
       </div>
       <ProductLabels html={product.labelsHtml?.label} />
 

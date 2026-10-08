@@ -101,6 +101,8 @@ export interface SiteSettings {
   /** Third-party IDs from wp-admin → הגדרות תמר → הגדרות כלליות; each is "" when unset (use resolveIntegrations() for defaults). */
   /** Free-shipping progress bar target + messages (wp-admin → הגדרות כלליות); use resolveFreeShipping() for defaults. */
   freeShipping?: Partial<import("@/lib/utils/freeShipping").FreeShippingConfig>;
+  /** Free-shipping badge on product images (wp-admin → הגדרות עמוד מוצר); use resolveShippingBadge() for defaults. */
+  shippingBadge?: Partial<import("@/lib/utils/shippingBadge").ShippingBadgeConfig> | null;
   integrations?: {
     flashyAccountId: string;
     flashyReviewsElementId: string;

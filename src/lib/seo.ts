@@ -34,6 +34,13 @@ export const SEO_FIELDS = /* GraphQL */ `
   ogImageHeight
 `;
 
+/**
+ * True while the storefront is served from a temporary host (a *.vercel.app preview or localhost) rather than the real
+ * domain — such a copy must never compete with the live WordPress site in search results. Flips off automatically
+ * once NEXT_PUBLIC_SITE_URL is set to the production domain.
+ */
+export const isStagingHost = /(^|\.)vercel\.app(\/|$|:)|localhost|127\.0\.0\.1/i.test(wpEnv.siteUrl);
+
 export function absoluteUrl(path: string) {
   // Trailing slash on page URLs (`trailingSlash: true` in next.config.ts — same form as the legacy WordPress
   // site; the slashless variant 308-redirects to it), so canonical, og:url, JSON-LD and the sitemap all agree.
@@ -86,7 +93,7 @@ export function seoToMetadata(seo: Seo | null | undefined, { path, fallback, ogT
   }
 
   const directives = (seo?.robots ?? "").split(",").map((d) => d.trim());
-  const noindex = directives.includes("noindex");
+  const noindex = directives.includes("noindex") || isStagingHost;
   const nofollow = directives.includes("nofollow");
 
   return {

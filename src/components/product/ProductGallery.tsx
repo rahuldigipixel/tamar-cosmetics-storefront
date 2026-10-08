@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
 import { ProductLabels } from "@/components/product/ProductLabels";
+import { ShippingBadge } from "@/components/product/ShippingBadge";
 
 // The wishlist heart lives in the details column (reference layout); the
 // brand logo is overlaid top-left here at the legacy label size (max 100×110,
@@ -17,7 +18,10 @@ export function ProductGallery({
   brandLogoUrl,
   labelsHtml,
   discount,
+  price,
 }: {
+  /** Current price, for the free-shipping badge. */
+  price?: string;
   images: ProductImage[];
   name: string;
   brandName?: string;
@@ -147,6 +151,7 @@ export function ProductGallery({
         ) : null}
       </div>
       <ProductLabels html={labelsHtml} />
+      <ShippingBadge price={price} className="top-[72px] left-0 z-20" />
       </div>
 
       {images.length > 1 ? (

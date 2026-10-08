@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl } from "@/lib/seo";
+import { absoluteUrl, isStagingHost } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
+  // Temporary host (vercel.app preview): keep the whole copy out of search until NEXT_PUBLIC_SITE_URL is the real domain.
+  if (isStagingHost) return { rules: { userAgent: "*", disallow: "/" } };
+
   return {
     rules: {
       userAgent: "*",

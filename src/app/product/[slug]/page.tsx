@@ -267,7 +267,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </div>
 
  <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
- <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} />
+ <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} price={product.price} />
  </div>
 
  <div className="px-0 text-right md:px-[10px] md:col-start-1 md:row-start-2">

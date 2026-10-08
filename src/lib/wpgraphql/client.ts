@@ -21,6 +21,8 @@ interface FetchGraphQLOptions {
   headers?: HeadersInit;
   /** Use "no-store" for user/session-specific requests (cart, account). */
   cache?: RequestCache;
+  /** Override the request timeout (ms) — e.g. the checkout mutation, which waits on the payment gateway. */
+  timeoutMs?: number;
 }
 
 interface GraphQLResponse<T> {
@@ -42,14 +44,14 @@ export async function fetchGraphQL<T>(
   variables?: Record<string, unknown>,
   options: FetchGraphQLOptions = {}
 ): Promise<{ data: T; response: Response }> {
-  const { tags, revalidate, headers, cache } = options;
+  const { tags, revalidate, headers, cache, timeoutMs = REQUEST_TIMEOUT_MS } = options;
   logApiCall("GraphQL", graphqlOperationName(query));
 
   // Without a timeout, a stalled/unreachable backend (e.g. a LAN dev IP that
   // isn't on the network right now) hangs the whole page on its loading
   // skeleton for the OS's default TCP timeout (60s+) instead of failing fast.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
@@ -66,7 +68,7 @@ export async function fetchGraphQL<T>(
     });
   } catch (error) {
     if ((error as Error).name === "AbortError") {
-      throw new Error(`GraphQL request to ${wpEnv.graphqlUrl} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+      throw new Error(`GraphQL request to ${wpEnv.graphqlUrl} timed out after ${timeoutMs}ms`);
     }
     throw error;
   } finally {

@@ -8,8 +8,8 @@ const POLL_TIMEOUT_MS = 15 * 60 * 1000;
 const FAILED_STATUSES = ["cancelled", "failed", "trash"];
 
 /**
- * GoCredit card form embedded in /checkout (same flow as the Tamar Course checkout).
- * `iframeUrl` comes from POST /api/checkout/payment; the WP plugin sends the frame to the storefront's
+ * GoCredit card form embedded in /checkout under the order form (same flow as the Tamar Course checkout).
+ * `iframeUrl` is the `redirect` the checkout mutation returns (payment_type=creditcard); the WP plugin sends the frame to the storefront's
  * /checkout/success (paid) or /checkout?payment_failed=1 (cancelled) when GoCredit finishes.
  */
 export function GoCreditFrame({ iframeUrl, orderId, orderKey }: { iframeUrl: string; orderId: number; orderKey: string }) {

@@ -15,9 +15,22 @@ import { PRIMARY_BTN } from "@/components/cart/cartStyles";
 import { StreetSelect } from "@/components/checkout/StreetSelect";
 import { loadShippingCities, type City } from "@/lib/data/shippingCities";
 import { GoCreditFrame } from "@/components/checkout/GoCreditFrame";
+import type { GoCreditPaymentType } from "@/lib/wpgraphql/checkoutPage";
 
-// GoCredit card form is embedded in an <iframe> on this page (like the Tamar Course checkout); other gateways redirect.
+// GoCredit is offered as one option per enabled method (wp-admin "Enabled methods": credit card / PayPal / both).
+// The checkout mutation returns GoCredit's payment page URL: the card form is embedded in an <iframe> under the
+// form, PayPal is a full redirect. Other gateways redirect as WooCommerce says.
 const GOCREDIT_GATEWAY_ID = "gocredit_payment";
+const GOCREDIT_TITLES: Record<GoCreditPaymentType, string> = { creditcard: "כרטיס אשראי", paypal: "PayPal" };
+
+interface PaymentOption {
+  key: string;
+  gatewayId: string;
+  paymentType?: GoCreditPaymentType;
+  title: string;
+  description: string | null;
+  icon: string | null;
+}
 
 // Checkout cloned from the live WooCommerce checkout (tamarcosmetics.co.il/checkout): sizes, weights,
 // paddings and radii are the measured computed values (Playwright, 1440px + 390px), so the <18px text is
@@ -62,7 +75,15 @@ const FIELD_IDS: Record<FieldKey, string> = {
   terms: "terms",
 };
 
-export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMessage: string }) {
+export function CheckoutForm({
+  notice,
+  popupMessage,
+  goCreditMethods,
+}: {
+  notice: string;
+  popupMessage: string;
+  goCreditMethods: GoCreditPaymentType[];
+}) {
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
   const checkoutReady = useCartStore((s) => s.checkoutReady);
@@ -91,7 +112,7 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
   const [termsDoc, setTermsDoc] = useState<{ heading: string; html: string } | null>(null);
   const [termsFailed, setTermsFailed] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [paymentKey, setPaymentKey] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -158,7 +179,19 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
 
   // PayPal "Debit & Credit Cards" (ppcp-*) needs PayPal's browser SDK — it can't complete through the headless checkout.
   const availableGateways = gateways.filter((g) => !g.id.startsWith("ppcp"));
-  const activePayment = availableGateways.find((g) => g.id === paymentId) ?? availableGateways[0] ?? null;
+  const paymentOptions: PaymentOption[] = availableGateways.flatMap((g) =>
+    g.id === GOCREDIT_GATEWAY_ID
+      ? goCreditMethods.map((type) => ({
+          key: `${g.id}:${type}`,
+          gatewayId: g.id,
+          paymentType: type,
+          title: GOCREDIT_TITLES[type],
+          description: g.description,
+          icon: type === "creditcard" ? g.icon : null,
+        }))
+      : [{ key: g.id, gatewayId: g.id, title: g.title, description: g.description, icon: g.icon }]
+  );
+  const activePayment = paymentOptions.find((o) => o.key === paymentKey) ?? paymentOptions[0] ?? null;
 
   const effectiveState = stateCode ?? shippingAddress?.state ?? "";
   const cityName =
@@ -283,7 +316,8 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
         body: JSON.stringify({
           billing_address: address,
           shipping_address: address,
-          payment_method: activePayment.id,
+          payment_method: activePayment.gatewayId,
+          payment_type: activePayment.paymentType,
           customer_note: note.trim() || undefined,
           accept_marketing: acceptMarketing,
         }),
@@ -292,17 +326,17 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
       if (!res.ok) throw new Error(data.error ?? "שגיאה בביצוע ההזמנה");
 
       const redirect: string | undefined = data.payment_result?.redirect_url;
-      if (activePayment.id === GOCREDIT_GATEWAY_ID && redirect) {
-        // The order exists and the cart is consumed; open GoCredit's card form inline.
-        const payRes = await fetch("/api/checkout/payment/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ order_id: data.order_id, order_key: data.order_key }),
-        });
-        const pay = await payRes.json();
-        if (!payRes.ok) throw new Error(pay.error ?? "שגיאה בפתיחת דף התשלום");
-        clearCart();
-        setCardPayment({ iframeUrl: pay.iframe_url, orderId: data.order_id, orderKey: data.order_key });
+      if (activePayment.paymentType) {
+        // GoCredit created the payment request; `redirect` is its payment page.
+        if (!redirect) throw new Error("לא ניתן לפתוח את דף התשלום המאובטח כרגע. נסו שוב.");
+        if (activePayment.paymentType === "paypal") {
+          // The loader stays up until the browser leaves for PayPal.
+          clearCart();
+          window.location.assign(redirect);
+          return;
+        }
+        // Card form in an <iframe> under the (now locked) form; /checkout/success clears the cart once paid.
+        setCardPayment({ iframeUrl: redirect, orderId: data.order_id, orderKey: data.order_key });
         setSubmitting(false);
       } else if (redirect && !redirect.includes("order-received")) {
         // Hosted payment page (GoCredit): the order is created, the cart is consumed.
@@ -316,15 +350,6 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
       setSubmitError((err as Error).message);
       setSubmitting(false);
     }
-  }
-
-  if (cardPayment) {
-    return (
-      <div className="mx-auto max-w-[1600px] px-[25px] pb-[40px] pt-[30px]">
-        <h3 className={`${H3} text-center`}>תשלום מאובטח</h3>
-        <GoCreditFrame iframeUrl={cardPayment.iframeUrl} orderId={cardPayment.orderId} orderKey={cardPayment.orderKey} />
-      </div>
-    );
   }
 
   if (!checkoutReady) return <CheckoutSkeleton />;
@@ -344,13 +369,16 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
   // The pay button stays disabled until every required field (and the terms box) is filled.
   const formComplete = Object.keys(validate()).length === 0;
   const errorList = (Object.keys(FIELD_IDS) as FieldKey[]).filter((k) => errors[k]);
-  const multiGateway = availableGateways.length > 1;
+  const multiGateway = paymentOptions.length > 1;
   const TOGGLE = "mb-[25px] font-semibold text-[#242424]";
   const LINK_BTN = "font-semibold text-brand-accent underline hover:no-underline";
 
   return (
     <>
-      <div className="mx-auto max-w-[1600px] px-[25px] pb-[10px] pt-[50px] font-[family-name:Arial,Helvetica,sans-serif] text-[16px] leading-[1.6] text-[#0c0c0c]">
+      <div
+        inert={!!cardPayment}
+        className={`mx-auto max-w-[1600px] px-[25px] pb-[10px] pt-[50px] font-[family-name:Arial,Helvetica,sans-serif] text-[16px] leading-[1.6] text-[#0c0c0c] ${cardPayment ? "opacity-60" : ""}`}
+      >
         {/* login + coupon toggles */}
         {loggedIn ? null : (
           <div className={`${TOGGLE} text-[21px] leading-[33.6px] max-[767px]:mb-[10px] max-[767px]:text-[16px] max-[767px]:leading-[18px]`}>
@@ -622,20 +650,20 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
 
                 {/* payment methods (WooCommerce gateways) */}
                 <div>
-                  {availableGateways.length === 0 ? (
+                  {paymentOptions.length === 0 ? (
                     <p className="mb-[20px] text-[21px] text-[#777] max-[767px]:text-[13px]">לא נמצאו אמצעי תשלום זמינים.</p>
                   ) : (
                     <ul className="m-0 mb-[20px] list-none p-0">
-                      {availableGateways.map((g) => {
-                        const selected = activePayment?.id === g.id;
+                      {paymentOptions.map((g) => {
+                        const selected = activePayment?.key === g.key;
                         return (
-                          <li key={g.id} className="mb-[15px]">
+                          <li key={g.key} className="mb-[15px]">
                             <label className="flex cursor-pointer flex-wrap items-center gap-[5px] text-[21px] leading-[33.6px] text-[#0c0c0c] max-[767px]:text-[13px] max-[767px]:leading-[20.8px]">
                               <input
                                 type="radio"
                                 name="payment_method"
                                 checked={selected}
-                                onChange={() => setPaymentId(g.id)}
+                                onChange={() => setPaymentKey(g.key)}
                                 className={multiGateway ? "h-[13px] w-[13px] accent-[#0075ff]" : "sr-only"}
                               />
                               {g.title}
@@ -719,6 +747,15 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
         </form>
       </div>
 
+      {cardPayment ? (
+        <div className="mx-auto max-w-[1600px] px-[25px] pb-[10px] pt-[30px]">
+          <h3 className={`${H3} text-center`}>תשלום מאובטח</h3>
+          <GoCreditFrame iframeUrl={cardPayment.iframeUrl} orderId={cardPayment.orderId} orderKey={cardPayment.orderKey} />
+        </div>
+      ) : null}
+
+      {submitting ? <SubmitOverlay paypal={activePayment?.paymentType === "paypal"} /> : null}
+
       {popupOpen && popupMessage ? <NoticePopup message={popupMessage} onClose={() => setPopupOpen(false)} /> : null}
 
       {notice ? (
@@ -737,6 +774,20 @@ function BusyOverlay({ active }: { active: boolean }) {
   return (
     <div role="status" aria-live="polite" aria-label="מעדכן" className="absolute inset-0 z-10 flex cursor-wait items-center justify-center bg-white/60">
       <span className="h-[26px] w-[26px] animate-spin rounded-full border-[3px] border-black/15 border-t-brand-accent" />
+    </div>
+  );
+}
+
+// Full-page loader while the order + GoCredit payment request are created (and until the browser leaves for PayPal).
+function SubmitOverlay({ paypal }: { paypal: boolean }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-[100] flex cursor-wait flex-col items-center justify-center gap-[15px] bg-white/80 font-[family-name:Arial,Helvetica,sans-serif]"
+    >
+      <span className="h-[40px] w-[40px] animate-spin rounded-full border-[4px] border-black/15 border-t-brand-accent" />
+      <span className="text-[18px] font-semibold text-[#0c0c0c]">{paypal ? "מעביר לתשלום ב-PayPal..." : "מכין את התשלום המאובטח..."}</span>
     </div>
   );
 }

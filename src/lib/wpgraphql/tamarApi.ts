@@ -818,11 +818,11 @@ export const getFlagshipPage = cache(function getFlagshipPage() {
 });
 
 /**
- * Embedded GoCredit payment (includes/class-checkout-payment.php). Authorised by the WooCommerce order key,
+ * GoCredit payment status (includes/class-checkout-payment.php). Authorised by the WooCommerce order key,
  * keeps the backend's error message, same timeout as the rest.
  */
 export async function checkoutPaymentRequest<T>(
-  path: "/checkout/payment-iframe" | "/checkout/payment-status",
+  path: "/checkout/payment-status",
   params: Record<string, string | number>,
   method: "GET" | "POST"
 ): Promise<{ ok: boolean; status: number; data: T | { message?: string } | null }> {

@@ -46,7 +46,7 @@ export function WholesaleLeadForm({ heading, checkboxLabel, buttonLabel }: Whole
     e.preventDefault();
     setStatus("loading");
     try {
-      const res = await fetch("/api/wholesale-lead", {
+      const res = await fetch("/api/wholesale-lead/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, phone }),

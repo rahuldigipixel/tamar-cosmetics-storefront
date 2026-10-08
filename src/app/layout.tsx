@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Open_Sans } from "next/font/google";
 import { resolveIntegrations } from "@/lib/integrations";
@@ -29,6 +29,8 @@ const openSans = Open_Sans({
   adjustFontFallback: false,
 });
 
+export const viewport: Viewport = { themeColor: "rgb(253,231,235)" };
+
 export const metadata: Metadata = {
   metadataBase: new URL(wpEnv.siteUrl),
   title: {
@@ -41,6 +43,8 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "תמר קוסמטיקס",
   },
+  // Same Search Console ownership tokens as the legacy site, so the property stays verified after cutover.
+  verification: { google: ["tTdYPDZJkKydBoa9Lz-0LGcgNOmVHYeRG7Tuwmnpoik", "VFMtgeXp9SIdZQIAeu9nJuUpSPM_onBvepxZ9QIlVdE"] },
   icons: {
     icon: [
       { url: "/brand/favicon-32.png", sizes: "32x32" },

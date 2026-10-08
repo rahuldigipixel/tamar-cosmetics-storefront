@@ -7,7 +7,7 @@ import { useAccountData } from "@/lib/utils/useAccountData";
 import type { BillingAddress } from "@/lib/wpgraphql/tamarApi";
 
 export function AddressOverview() {
-  const { ready, loggedIn, loading, data } = useAccountData<BillingAddress>("/api/account/billing");
+  const { ready, loggedIn, loading, data } = useAccountData<BillingAddress>("/api/account/billing/");
 
   if (ready && !loggedIn) return <LoginPrompt />;
 

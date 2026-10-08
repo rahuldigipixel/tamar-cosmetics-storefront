@@ -47,7 +47,7 @@ export function GoCreditFrame({ iframeUrl, orderId, orderKey }: { iframeUrl: str
     async function poll() {
       if (stopped || leavingRef.current) return;
       try {
-        const res = await fetch(`/api/checkout/payment-status?order=${orderId}&key=${encodeURIComponent(orderKey)}`, { cache: "no-store" });
+        const res = await fetch(`/api/checkout/payment-status/?order=${orderId}&key=${encodeURIComponent(orderKey)}`, { cache: "no-store" });
         if (!res.ok || stopped || leavingRef.current) return;
         const data = (await res.json()) as { paid: boolean; status: string };
         if (data.paid) {

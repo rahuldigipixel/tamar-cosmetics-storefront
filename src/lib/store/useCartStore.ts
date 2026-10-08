@@ -131,7 +131,7 @@ export const useCartStore = create<CartState>()(
         cartRequest = (async () => {
           try {
             const epoch = cartMutationEpoch;
-            const { cart, sessionToken, shippingAddress } = await cartFetch("/api/cart", get().sessionToken);
+            const { cart, sessionToken, shippingAddress } = await cartFetch("/api/cart/", get().sessionToken);
             if (epoch === cartMutationEpoch) {
               set({ cart: withoutPendingRemovals(cart), sessionToken, shippingAddress: shippingAddress ?? null });
             }
@@ -150,7 +150,7 @@ export const useCartStore = create<CartState>()(
         }
         try {
           const { cart, sessionToken, shippingAddress, paymentGateways } = await cartFetch(
-            "/api/cart?gateways=1",
+            "/api/cart/?gateways=1",
             get().sessionToken
           );
           set({ cart, sessionToken, shippingAddress: shippingAddress ?? null, paymentGateways: paymentGateways ?? [] });
@@ -164,7 +164,7 @@ export const useCartStore = create<CartState>()(
       addItem: async (productId, quantity = 1, variationId) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/add", get().sessionToken, {
+          const { cart, sessionToken } = await cartFetch("/api/cart/add/", get().sessionToken, {
             productId,
             quantity,
             variationId,
@@ -210,7 +210,7 @@ export const useCartStore = create<CartState>()(
         latestQuantityRequestByKey[key] = requestId;
 
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/update", get().sessionToken, {
+          const { cart, sessionToken } = await cartFetch("/api/cart/update/", get().sessionToken, {
             items: [{ key, quantity }],
           });
           if (latestQuantityRequestByKey[key] === requestId) {
@@ -227,7 +227,7 @@ export const useCartStore = create<CartState>()(
       updateItemQuantities: async (items) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/update", get().sessionToken, { items });
+          const { cart, sessionToken } = await cartFetch("/api/cart/update/", get().sessionToken, { items });
           set({ cart, sessionToken });
         } finally {
           set({ loading: false });
@@ -254,7 +254,7 @@ export const useCartStore = create<CartState>()(
         });
 
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/remove", get().sessionToken, {
+          const { cart, sessionToken } = await cartFetch("/api/cart/remove/", get().sessionToken, {
             itemKey: key,
           });
           pendingRemovals.delete(key);
@@ -271,7 +271,7 @@ export const useCartStore = create<CartState>()(
       applyCoupon: async (code) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/coupon", get().sessionToken, { code }, "POST");
+          const { cart, sessionToken } = await cartFetch("/api/cart/coupon/", get().sessionToken, { code }, "POST");
           set({ cart, sessionToken });
         } finally {
           set({ loading: false });
@@ -282,7 +282,7 @@ export const useCartStore = create<CartState>()(
         set({ loading: true });
         try {
           const { cart, sessionToken } = await cartFetch(
-            "/api/cart/coupon",
+            "/api/cart/coupon/",
             get().sessionToken,
             { code },
             "DELETE"
@@ -296,7 +296,7 @@ export const useCartStore = create<CartState>()(
       selectShippingMethod: async (methodId) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken } = await cartFetch("/api/cart/shipping", get().sessionToken, { methodId });
+          const { cart, sessionToken } = await cartFetch("/api/cart/shipping/", get().sessionToken, { methodId });
           set({ cart, sessionToken });
         } finally {
           set({ loading: false });
@@ -306,7 +306,7 @@ export const useCartStore = create<CartState>()(
       changeShippingAddress: async (state, city) => {
         set({ loading: true });
         try {
-          const { cart, sessionToken, shippingAddress } = await cartFetch("/api/cart/shipping-address", get().sessionToken, {
+          const { cart, sessionToken, shippingAddress } = await cartFetch("/api/cart/shipping-address/", get().sessionToken, {
             state,
             city,
           });

@@ -114,7 +114,7 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),

@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   // No framework fingerprint in response headers.
   poweredByHeader: false,
+  // Legacy WordPress URLs end with "/" (/product/slug/, /product-category/a/b/). Serving the same form (and
+  // 308-redirecting the slashless one) keeps every already-indexed URL identical, so rankings carry over.
+  trailingSlash: true,
+  // Client fetches to the API routes use the slashed form (`/api/cart/`) so they never hit the slash redirect.
   // Dev server is reached over the LAN at http://192.168.0.x:3000 (not just
   // localhost) — without this, Next.js blocks the HMR/RSC dev requests from
   // that origin, which silently breaks client-side hydration (buttons render

@@ -40,6 +40,22 @@ function isBlankHtml(html: string | undefined) {
   return html.replace(/<[^>]*>/g, "").replace(/&nbsp;|&#160;|\s/gi, "") === "";
 }
 
+const PLACEHOLDER_HEADING = /^(כתוב את הכותרת כאן|הכנס כותרת כאן|click to edit|heading)$/i;
+
+/**
+ * Editor HTML → safe heading structure: drops leftover page-builder placeholder headings, turns headings that are
+ * really whole paragraphs (> 120 chars) into <p>, and demotes any <h1> to <h2> (the page's own title is the only h1).
+ */
+function cleanHeadings(html: string) {
+  return html
+    .replace(/<h([1-6])\b([^>]*)>([\s\S]*?)<\/h\1>/gi, (full, level: string, attrs: string, inner: string) => {
+      const text = inner.replace(/<[^>]*>/g, "").replace(/&nbsp;|\s+/g, " ").trim();
+      if (!text || PLACEHOLDER_HEADING.test(text)) return "";
+      if (text.length > 120) return `<p${attrs}>${inner}</p>`;
+      return level === "1" ? `<h2${attrs}>${inner}</h2>` : full;
+    });
+}
+
 export function ProductTabs({
   description,
   attributes,
@@ -99,14 +115,17 @@ export function ProductTabs({
         })}
       </div>
 
-      {activeSection.kind === "brand" ? (
+      {/* Every panel is rendered (inactive ones `hidden`) so crawlers get all tab content in the server HTML. */}
+      {sections.map((section, i) => (
+        <div key={section.title + i} role="tabpanel" hidden={section !== activeSection}>
+      {section.kind === "brand" ? (
         // Rendered exactly as saved in the brand description (headings, paragraphs, inline
         // alignment/size styles and images keep the editor's structure), like the legacy tab.
         <div
           className="py-[20px] text-[16px] leading-[34px] text-[#0c0c0c] [&_div]:my-[16px] [&_h1]:my-[16px] [&_h1]:text-[28px] [&_h1]:leading-[1.3] [&_h1]:font-bold [&_h2]:my-[16px] [&_h2]:text-[24px] [&_h2]:leading-[1.3] [&_h2]:font-bold [&_h3]:my-[16px] [&_h3]:text-[16px] [&_h3]:leading-[34px] [&_h3]:font-bold [&_h4]:my-[8px] [&_h4]:text-[16px] [&_h4]:font-bold [&_img]:inline-block [&_img]:h-auto [&_img]:max-w-full [&_p]:my-[16px] [&_strong]:font-bold [&_a]:text-brand-accent"
-          dangerouslySetInnerHTML={{ __html: activeSection.content }}
+          dangerouslySetInnerHTML={{ __html: cleanHeadings(section.content) }}
         />
-      ) : activeSection.kind === "specs" ? (
+      ) : section.kind === "specs" ? (
         <div className="py-[20px]">
           <table className="w-full max-w-2xl text-right text-[21px] leading-[34px] text-[#0c0c0c]">
             <tbody>
@@ -124,9 +143,11 @@ export function ProductTabs({
       ) : (
         <div
           className="max-w-none py-[20px] text-right text-[21px] leading-[34px] text-[#0c0c0c] [&_a]:text-brand-accent [&_h1]:my-[10px] [&_h1]:text-[24px] [&_h1]:font-bold [&_h2]:my-[10px] [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:my-[10px] [&_h3]:text-[17px] [&_h3]:font-bold [&_img]:h-auto [&_img]:max-w-full [&_li]:my-[6px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:ps-[25px] [&_p]:my-[10px] [&_strong]:font-bold [&_table]:w-full [&_td]:border-b [&_td]:border-black/10 [&_td]:py-[8px] [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:ps-[25px]"
-          dangerouslySetInnerHTML={{ __html: activeSection.content }}
+          dangerouslySetInnerHTML={{ __html: cleanHeadings(section.content) }}
         />
       )}
+        </div>
+      ))}
     </div>
   );
 }

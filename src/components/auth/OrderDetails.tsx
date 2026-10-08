@@ -9,7 +9,7 @@ import { orderStatusLabel } from "@/lib/utils/orderStatus";
 import type { OrderDetail } from "@/lib/wpgraphql/tamarApi";
 
 export function OrderDetails({ number }: { number: string }) {
-  const { ready, loggedIn, loading, data: order } = useAccountData<OrderDetail>(`/api/orders/${number}`);
+  const { ready, loggedIn, loading, data: order } = useAccountData<OrderDetail>(`/api/orders/${number}/`);
 
   if (ready && !loggedIn) return <LoginPrompt />;
 

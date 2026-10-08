@@ -92,7 +92,7 @@ export function HeaderSearch({
     if (!active) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
+      fetch(`/api/search/?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal })
         .then((r) => r.json() as Promise<{ results: HeaderSearchResult[] }>)
         .then((d) => {
           setResults(d.results);

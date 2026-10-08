@@ -56,7 +56,7 @@ export function CartDrawer() {
         aria-label="עגלת קניות"
       >
         <div className="flex items-center justify-between border-b border-black/10 px-[15px] py-5">
-          <h2 className="text-[20.8px] font-bold leading-[29px] text-[#0c0c0c]">עגלת קניות</h2>
+          <p className="text-[20.8px] font-bold leading-[29px] text-[#0c0c0c]">עגלת קניות</p>
           <button
             onClick={closeDrawer}
             aria-label="סגירה"

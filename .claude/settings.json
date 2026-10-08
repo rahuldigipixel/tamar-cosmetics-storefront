@@ -476,7 +476,22 @@
       "Bash(node scripts/check-seo.mjs http://localhost:3000 / /shop /brand/acrylic-pro-tamar-cosmetics/ \"/product/%d7%a4%d7%99%d7%92%d7%9e%d7%a0%d7%98-%d7%9c%d7%a9%d7%a4%d7%aa%d7%99%d7%99%d7%9d-10-%d7%9e%d7%9c-t-l1-watermelon-%d7%aa%d7%9e%d7%a8-%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%a1\" /product-category/sale/ \"/%d7%a9%d7%99%d7%98%d7%aa-%d7%9e%d7%99%d7%a7%d7%a8%d7%95%d7%91%d7%9c%d7%99%d7%99%d7%93%d7%99%d7%a0%d7%92-%d7%9e%d7%94-%d7%96%d7%94\")",
       "Bash(node .fix.mjs)",
       "Bash(node scripts/check-seo.mjs http://localhost:3000 /)",
-      "Bash(awk '{print $5, $6, $7, $8}')"
+      "Bash(awk '{print $5, $6, $7, $8}')",
+      "Bash(curl -s \"https://tamar-cosmetics-storefront-six.vercel.app/%D7%A1%D7%A0%D7%99%D7%A3-%D7%94%D7%93%D7%92%D7%9C-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D-%D7%AA%D7%9E%D7%A8-%D7%A7%D7%95%D7%A1%D7%9E%D7%98%D7%99%D7%A7%D7%A1\")",
+      "Bash(grep -o \"<h1[^>]*>[^<]\\\\{0,40\\\\}\")",
+      "Bash(node scripts/check-seo.mjs http://localhost:3000 /blog \"/%d7%a1%d7%a0%d7%99%d7%a3-%d7%94%d7%93%d7%92%d7%9c-%d7%99%d7%a8%d7%95%d7%a9%d7%9c%d7%99%d7%9d-%d7%aa%d7%9e%d7%a8-%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%a1\")",
+      "Bash(node scripts/check-seo.mjs http://localhost:3000 \"/%d7%a1%d7%a0%d7%99%d7%a3-%d7%94%d7%93%d7%92%d7%9c-%d7%99%d7%a8%d7%95%d7%a9%d7%9c%d7%99%d7%9d-%d7%aa%d7%9e%d7%a8-%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%a1\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Linux; Android 11; moto g power \\(2022\\)\\) AppleWebKit/537.36 Chrome/137 Mobile Safari/537.36 Chrome-Lighthouse\" https://tamar-cosmetics-storefront-six.vercel.app/clean-girl-nails)",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const i=d.indexOf\\(\"name=\\\\\"description\\\\\"\"\\);console.log\\(\"desc at\",i,\"head ends at\",d.indexOf\\(\"</head>\"\\),\"len\",d.length\\);console.log\\(d.slice\\(i-5,i+160\\)\\)}\\)')",
+      "Bash(curl -s https://tamar-cosmetics-storefront-six.vercel.app/clean-girl-nails)",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const all=[...d.matchAll\\(/<meta[^>]*name=\"description\"[^>]*>/g\\)];console.log\\(\"desc tags:\",all.length\\);for\\(const m of all\\)console.log\\(\" at\",m.index,m[0].slice\\(0,60\\)\\);const j=[...d.matchAll\\(/<meta[^>]*name=\"robots\"[^>]*>/g\\)];console.log\\(\"robots tags:\",j.map\\(x=>x[0]\\)\\);console.log\\(\"title tags:\",\\(d.match\\(/<title>/g\\)||[]\\).length\\)}\\)')",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --no-sandbox --disable-gpu --virtual-time-budget=15000 --dump-dom https://tamar-cosmetics-storefront-six.vercel.app/clean-girl-nails)",
+      "Bash(NEXT_DIST_DIR=.next-prod npm run build)",
+      "Bash(git check-ignore *)",
+      "Bash(grep -oE '<\\(h[1-6]\\)[^>]*>[^<]{0,60}' live.html)",
+      "Bash(node /tmp/seo/fix.js)",
+      "Bash(grep -o '[`\"]/api/[^`\" ]*[`\"]\\\\?')",
+      "Bash(powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 3055 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }')"
     ],
     "deny": [
       "Read(node_modules/**)",

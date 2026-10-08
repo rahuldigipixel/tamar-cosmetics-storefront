@@ -36,7 +36,7 @@ function ConfirmEmailGate({ hash }: { hash: string }) {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
-    fetch("/api/account/confirm-email", {
+    fetch("/api/account/confirm-email/", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ hash }),
@@ -68,7 +68,7 @@ function ConfirmEmailGate({ hash }: { hash: string }) {
 }
 
 function ProfileLoader() {
-  const { ready, loading, data } = useAccountData<AccountProfile>("/api/account/profile");
+  const { ready, loading, data } = useAccountData<AccountProfile>("/api/account/profile/");
 
   return (
     <>
@@ -119,7 +119,7 @@ function Form({ initial }: { initial: AccountProfile }) {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/account/profile", {
+      const res = await fetch("/api/account/profile/", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...form, currentPassword, newPassword, confirmPassword }),
@@ -151,7 +151,7 @@ function Form({ initial }: { initial: AccountProfile }) {
   }
 
   async function cancelPending() {
-    const res = await fetch("/api/account/cancel-email", {
+    const res = await fetch("/api/account/cancel-email/", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: "{}",

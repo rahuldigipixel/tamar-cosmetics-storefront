@@ -54,7 +54,7 @@ function WishlistContent() {
     let cancelled = false;
     const ids = useWishlistStore.getState().productIds;
     const request: Promise<Product[]> = ids.length
-      ? fetch(`/api/products?ids=${ids.join(",")}`)
+      ? fetch(`/api/products/?ids=${ids.join(",")}`)
           .then((r) => (r.ok ? r.json() : { products: [] }))
           .then((d: { products?: Product[] }) => d.products ?? [])
           .catch(() => [])

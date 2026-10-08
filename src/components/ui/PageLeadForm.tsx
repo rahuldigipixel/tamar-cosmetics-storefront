@@ -68,7 +68,7 @@ export function PageLeadForm({
     e.preventDefault();
     setStatus("loading");
     try {
-      const res = await fetch("/api/page-lead", {
+      const res = await fetch("/api/page-lead/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ form, name, email, phone }),

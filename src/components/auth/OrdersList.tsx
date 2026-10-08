@@ -11,7 +11,7 @@ import type { OrderSummary } from "@/lib/wpgraphql/tamarApi";
 const TH = "px-2 py-4 text-start text-[18px] font-bold text-black";
 
 export function OrdersList() {
-  const { ready, loggedIn, loading, data } = useAccountData<OrderSummary[]>("/api/orders");
+  const { ready, loggedIn, loading, data } = useAccountData<OrderSummary[]>("/api/orders/");
 
   if (ready && !loggedIn) return <LoginPrompt />;
 

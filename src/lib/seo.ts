@@ -35,11 +35,17 @@ export const SEO_FIELDS = /* GraphQL */ `
 `;
 
 export function absoluteUrl(path: string) {
-  // No trailing slash (except the root): that is the form Next serves (the slashed variant 308-redirects
-  // to it), so canonical, og:url, JSON-LD and the sitemap all agree.
+  // Trailing slash on page URLs (`trailingSlash: true` in next.config.ts — same form as the legacy WordPress
+  // site; the slashless variant 308-redirects to it), so canonical, og:url, JSON-LD and the sitemap all agree.
+  // File-like paths (/brand/logo.png, /wp-content/….jpg, sitemap.xml) stay as they are.
   // Percent-escapes upper-cased ("%d7" → "%D7") so every URL for the same page is byte-identical.
   const p = (path.startsWith("/") ? path : `/${path}`).replace(/%[0-9a-f]{2}/gi, (m) => m.toUpperCase());
-  return `${wpEnv.siteUrl.replace(/\/$/, "")}${p.length > 1 ? p.replace(/\/+$/, "") : p}`;
+  const qIdx = p.indexOf("?");
+  const pathname = qIdx === -1 ? p : p.slice(0, qIdx);
+  const query = qIdx === -1 ? "" : p.slice(qIdx + 1);
+  const isFile = /\.[a-z0-9]{2,5}$/i.test(pathname);
+  const withSlash = isFile ? pathname : `${pathname.replace(/\/+$/, "")}/`;
+  return `${wpEnv.siteUrl.replace(/\/$/, "")}${withSlash}${query ? `?${query}` : ""}`;
 }
 
 interface SeoFallback {
@@ -53,7 +59,8 @@ interface SeoOptions {
   /** Path of this page on the storefront, e.g. "/product/foo" — used for canonical + og:url. */
   path: string;
   fallback?: SeoFallback;
-  ogType?: "website" | "article";
+  /** "product": og:type is left out here (Next's openGraph can't emit it) — the page renders `<meta property="og:type">` itself. */
+  ogType?: "website" | "article" | "product";
 }
 
 const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
@@ -69,7 +76,8 @@ export function seoToMetadata(seo: Seo | null | undefined, { path, fallback, ogT
   const ogTitle = clean(seo?.ogTitle) || title;
   const ogDescription = toDescription(seo?.ogDescription, 200) || description;
   // Last resort so every shared link gets a preview image (brand logo), when neither Rank Math nor the page has one.
-  const image = seo?.ogImage || fallback?.image || absoluteUrl("/brand/logo.png");
+  const rawImage = seo?.ogImage || fallback?.image || "/brand/logo.png";
+  const image = /^https?:\/\//i.test(rawImage) ? rawImage : absoluteUrl(rawImage);
 
   // A custom canonical set in Rank Math wins; a backend-origin one is re-pointed at the storefront.
   let canonical = absoluteUrl(path);
@@ -85,16 +93,22 @@ export function seoToMetadata(seo: Seo | null | undefined, { path, fallback, ogT
     title: title ? { absolute: title } : undefined,
     description: description || undefined,
     alternates: { canonical },
-    robots: noindex || nofollow ? { index: !noindex, follow: !nofollow } : undefined,
+    // Rich-snippet directives (large image previews, full snippets) like the legacy Rank Math output.
+    robots: {
+      index: !noindex,
+      follow: !nofollow,
+      googleBot: { index: !noindex, follow: !nofollow, "max-snippet": -1, "max-image-preview": "large", "max-video-preview": -1 },
+    },
     openGraph: {
       title: ogTitle,
       description: ogDescription,
       url: canonical,
       locale: "he_IL",
       siteName: "תמר קוסמטיקס",
-      type: ogType,
+      // Spread (not `type: undefined`): Next throws "Invalid OpenGraph type" when the key exists with no value.
+      ...(ogType === "product" ? {} : { type: ogType }),
       images: image
-        ? [{ url: image, width: seo?.ogImageWidth || undefined, height: seo?.ogImageHeight || undefined }]
+        ? [{ url: image, width: seo?.ogImageWidth || undefined, height: seo?.ogImageHeight || undefined, alt: ogTitle }]
         : undefined,
     },
     twitter: {
@@ -203,6 +217,9 @@ export function toDescription(html: string | null | undefined, max = 155) {
     .trim();
   if (text.length <= max) return text;
   const cut = text.slice(0, max);
+  // Prefer ending on a full sentence (no dangling "…" mid-clause) when one ends in the last ~60% of the budget.
+  const sentenceEnd = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  if (sentenceEnd >= max * 0.4) return cut.slice(0, sentenceEnd + 1);
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), max - 30))}…`;
 }
 

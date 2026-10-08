@@ -133,7 +133,7 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
   useEffect(() => {
     if (!authToken || cities === null || prefilled.current) return;
     prefilled.current = true;
-    fetch("/api/account/billing", { headers: { Authorization: `Bearer ${authToken}` } })
+    fetch("/api/account/billing/", { headers: { Authorization: `Bearer ${authToken}` } })
       .then((res) => (res.ok ? (res.json() as Promise<BillingAddress>) : null))
       .catch(() => null)
       .then(async (saved) => {
@@ -172,7 +172,7 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
     setTermsOpen(next);
     if (!next || termsDoc) return;
     setTermsFailed(false);
-    fetch("/api/terms")
+    fetch("/api/terms/")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("terms"))))
       .then((d: { heading: string; html: string }) => setTermsDoc(d))
       .catch(() => setTermsFailed(true));
@@ -274,7 +274,7 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/checkout", {
+      const res = await fetch("/api/checkout/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -294,7 +294,7 @@ export function CheckoutForm({ notice, popupMessage }: { notice: string; popupMe
       const redirect: string | undefined = data.payment_result?.redirect_url;
       if (activePayment.id === GOCREDIT_GATEWAY_ID && redirect) {
         // The order exists and the cart is consumed; open GoCredit's card form inline.
-        const payRes = await fetch("/api/checkout/payment", {
+        const payRes = await fetch("/api/checkout/payment/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ order_id: data.order_id, order_key: data.order_key }),

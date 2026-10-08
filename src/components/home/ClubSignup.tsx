@@ -42,7 +42,7 @@ export function ClubSignup({
     if (!consent) return;
     setStatus("loading");
     try {
-      const res = await fetch("/api/club", {
+      const res = await fetch("/api/club/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, phone, birthday }),

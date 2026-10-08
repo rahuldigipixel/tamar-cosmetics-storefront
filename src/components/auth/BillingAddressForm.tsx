@@ -14,7 +14,7 @@ import type { BillingAddress } from "@/lib/wpgraphql/tamarApi";
 const COUNTRIES = [{ value: "IL", label: "ישראל" }];
 
 export function BillingAddressForm() {
-  const { ready, loggedIn, loading, data } = useAccountData<BillingAddress>("/api/account/billing");
+  const { ready, loggedIn, loading, data } = useAccountData<BillingAddress>("/api/account/billing/");
 
   if (ready && !loggedIn) return <LoginPrompt />;
 
@@ -50,7 +50,7 @@ function Form({ initial }: { initial: BillingAddress }) {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/account/billing", {
+      const res = await fetch("/api/account/billing/", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(form),

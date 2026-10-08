@@ -29,6 +29,12 @@ import { getUnitPrice } from "@/lib/utils/unitPrice";
 
 export const revalidate = 60;
 
+// No pages are pre-built, but declaring the params makes the route ISR: each product is rendered
+// on first request, then served from the cache (CDN `s-maxage`) and refreshed every `revalidate` seconds.
+export function generateStaticParams() {
+  return [];
+}
+
 // Global attribute options fall back to their (percent-encoded) slug.
 function humanizeOption(value: string) {
  try {
@@ -69,7 +75,8 @@ export async function generateMetadata({
  const plain = product.shortDescription?.replace(/<[^>]+>/g, "").trim();
  return seoToMetadata(result.seo, {
  path: `/product/${product.slug}`,
- fallback: { title: `${product.name} | תמר קוסמטיקס`, description: plain?.slice(0, 160), image: product.images[0]?.src },
+ ogType: "product",
+ fallback: { title: `${product.name} | תמר קוסמטיקס`, description: plain ? toDescription(plain, 155) : undefined, image: product.images[0]?.src },
  });
 }
 
@@ -130,7 +137,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  "@type": "Product",
  "@id": `${absoluteUrl(`/product/${product.slug}`)}#product`,
  name: product.name,
- image: product.images.map((img) => img.src),
+ image: product.images.map((img) => (/^https?:\/\//i.test(img.src) ? img.src : absoluteUrl(img.src))),
  description: toDescription(product.shortDescription, 300) || undefined,
  sku: product.sku ?? String(product.databaseId),
  mpn: product.sku ?? undefined,
@@ -213,6 +220,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  return (
  <div>
+ {/* React hoists these <meta> tags into <head>; Next's metadata API can't emit og:type=product or property-based product tags. */}
+ <meta property="og:type" content="product" />
+ <meta property="product:price:amount" content={String(jsonLd.offers.price)} />
+ <meta property="product:price:currency" content={product.currency} />
+ <meta property="product:availability" content={product.inStock ? "in stock" : "out of stock"} />
  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />
  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbLd) }} />
 
@@ -220,7 +232,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="mx-auto max-w-[1600px] px-[8px] pt-[12px] pb-[25px] md:px-[15px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
  <div className="grid gap-x-[80px] gap-y-[4px] md:gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_356px] xl:gap-x-[15px]">
- <nav className="hidden flex-wrap items-center md:flex gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
+ <nav aria-label="breadcrumb" className="hidden flex-wrap items-center md:flex gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>

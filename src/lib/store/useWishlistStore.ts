@@ -76,7 +76,7 @@ export const useWishlistStore = create<WishlistState>()((set, get) => ({
 
     wishlistRequest = (async () => {
       try {
-        const res = await fetch("/api/wishlist", {
+        const res = await fetch("/api/wishlist/", {
           cache: "no-store",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -106,7 +106,7 @@ export const useWishlistStore = create<WishlistState>()((set, get) => ({
     }
 
     try {
-      await fetch("/api/wishlist", {
+      await fetch("/api/wishlist/", {
         method: inList ? "DELETE" : "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ productId }),
@@ -125,7 +125,7 @@ export const useWishlistStore = create<WishlistState>()((set, get) => ({
 
     await Promise.all(
       guestIds.map((productId) =>
-        fetch("/api/wishlist", {
+        fetch("/api/wishlist/", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ productId }),

@@ -90,7 +90,7 @@ export function LoginDrawer() {
         aria-label="יש לי חשבון באתר"
       >
         <div className="flex items-center justify-between border-b border-black/5 px-4 py-4">
-          <h2 className="text-[21px] font-bold">יש לי חשבון באתר</h2>
+          <p className="text-[21px] font-bold">יש לי חשבון באתר</p>
           <button
             type="button"
             onClick={closeDrawer}

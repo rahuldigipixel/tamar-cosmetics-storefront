@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
       loggingOut: false,
 
       login: async (username, password, rememberMe = false) => {
-        const res = await fetch("/api/auth/login", {
+        const res = await fetch("/api/auth/login/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password }),
@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, customer: null });
         if (!token) return;
         try {
-          await fetch("/api/auth/logout", {
+          await fetch("/api/auth/logout/", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
           });

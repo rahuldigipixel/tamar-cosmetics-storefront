@@ -74,18 +74,14 @@ export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
         name
       }
     }
-    allCategories: productCategories(first: 150, where: { hideEmpty: true }) {
+    # Full tree in name order (as the live Categories filter); empty ones are pruned in getCategoryPageData().
+    allCategories: productCategories(first: 500, where: { hideEmpty: false, orderby: NAME, order: ASC }) {
       nodes {
         id
         databaseId
         name
         slug
         count
-        description
-        image {
-          sourceUrl
-          altText
-        }
         parent {
           node {
             id

@@ -82,13 +82,20 @@ export async function getCategoryPageData(
   const brandSlugsInCategory = new Set((data.facets?.brands ?? []).map((b) => b.slug));
   const countries = new Map((data.facets?.countries ?? []).map((c) => [c.slug, c] as const));
 
-  const categories: ProductCategory[] = data.allCategories.nodes.map((c) => ({
+  // Like WooCommerce's hide-empty: keep a category when it or any descendant has products
+  // (WPGraphQL's own hideEmpty only looks at the category's own count).
+  const allNodes = data.allCategories.nodes;
+  const childrenOf = new Map<string, GqlCategoryNode[]>();
+  for (const c of allNodes) {
+    const parentId = c.parent?.node.id;
+    if (parentId) childrenOf.set(parentId, [...(childrenOf.get(parentId) ?? []), c]);
+  }
+  const hasProducts = (c: GqlCategoryNode): boolean => (c.count ?? 0) > 0 || (childrenOf.get(c.id) ?? []).some(hasProducts);
+  const categories: ProductCategory[] = allNodes.filter(hasProducts).map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,
-    description: c.description,
-    count: c.count,
-    image: c.image?.sourceUrl,
+    count: c.count ?? 0,
     parentId: c.parent?.node.id,
   }));
 

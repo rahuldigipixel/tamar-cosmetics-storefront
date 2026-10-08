@@ -78,17 +78,19 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  // Categories filter: this category's child categories when it has any,
  // otherwise the full category list. The client-side filter only needs
  // name/slug + the link to navigate to — drop the HTML descriptions.
+ // Same rule as the live Categories filter: this category's sub-categories when it has any,
+ // otherwise its siblings (the parent's sub-categories — or, for a top-level category, all
+ // top-level categories).
  const childCategories = category ? allCategories.filter((c) => c.parentId === category.id) : [];
- const pathOf = (c: (typeof allCategories)[number]) => {
- const parent = c.parentId ? allCategories.find((p) => p.id === c.parentId) : null;
- return parent ? `${parent.slug}/${c.slug}` : c.slug;
- };
- const categoryOptions = (childCategories.length > 0 ? childCategories : allCategories).map((c) => ({
+ const optionList =
+ childCategories.length > 0 ? childCategories : allCategories.filter((c) => c.parentId === category?.parentId);
+ const optionParentPath = childCategories.length > 0 ? slugPath : slugPath.slice(0, -1);
+ const categoryOptions = optionList.map((c) => ({
  id: c.id,
  name: c.name,
  slug: c.slug,
  count: c.count,
- href: `/product-category/${childCategories.length > 0 ? [...slugPath, c.slug].join("/") : pathOf(c)}/`,
+ href: `/product-category/${[...optionParentPath, c.slug].join("/")}/`,
  }));
 
  const title =

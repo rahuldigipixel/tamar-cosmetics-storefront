@@ -92,13 +92,18 @@ export function CategoryProductCard({
             />
           ) : null}
           {hoverImage ? (
-            <Image
-              src={hoverImage.src}
-              alt={hoverImage.alt || product.name}
-              fill
-              sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
-              className="bg-white object-contain opacity-0 [transition:opacity_0.5s_ease,transform_2s_cubic-bezier(0,0,0.44,1.18)] group-hover/img:[transform:scale(1.09)] group-hover/img:opacity-100 max-[1024px]:hidden"
-            />
+            // WoodMart `.hover-img`: white box over the main image, the photo at 100% width / natural height, centred and
+            // clipped by the card's image box (a portrait photo fills the width and is cropped top/bottom).
+            <div className="absolute inset-0 flex items-center justify-center bg-white opacity-0 [transition:opacity_0.5s_ease,transform_2s_cubic-bezier(0,0,0.44,1.18)] group-hover/img:[transform:scale(1.09)] group-hover/img:opacity-100 max-[1024px]:hidden">
+              <Image
+                src={hoverImage.src}
+                alt={hoverImage.alt || product.name}
+                width={0}
+                height={0}
+                sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
+                className="h-auto w-full"
+              />
+            </div>
           ) : null}
         </Link>
         <ProductLabels html={product.labelsHtml?.image} />

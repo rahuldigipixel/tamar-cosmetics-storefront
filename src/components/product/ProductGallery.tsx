@@ -67,7 +67,7 @@ export function ProductGallery({
       {/* Outer wrapper holds the labels so the image box's overflow-hidden (zoom) doesn't clip their negative offset. */}
       <div className="relative isolate">
       <div
-        className="relative aspect-square w-full overflow-hidden rounded-lg bg-brand-soft/30"
+        className="group/gallery relative aspect-square w-full overflow-hidden rounded-lg bg-brand-soft/30"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -129,7 +129,7 @@ export function ProductGallery({
               onMouseEnter={() => setZoomed(false)}
               onMouseMove={(e) => e.stopPropagation()}
               aria-label="התמונה הקודמת"
-              className="absolute inset-y-0 start-2 z-10 flex items-center justify-center"
+              className="absolute inset-y-0 start-2 z-10 flex items-center justify-center transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/gallery:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-none bg-white/90 shadow-sm transition-colors hover:bg-white">
                 <ChevronRight className="h-4 w-4" />
@@ -141,7 +141,7 @@ export function ProductGallery({
               onMouseEnter={() => setZoomed(false)}
               onMouseMove={(e) => e.stopPropagation()}
               aria-label="התמונה הבאה"
-              className="absolute inset-y-0 end-2 z-10 flex items-center justify-center"
+              className="absolute inset-y-0 end-2 z-10 flex items-center justify-center transition-opacity duration-200 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/gallery:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-none bg-white/90 shadow-sm transition-colors hover:bg-white">
                 <ChevronLeft className="h-4 w-4" />

@@ -21,7 +21,7 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="חיפוש מותג"
-          className="h-[40px] w-full max-w-[900px] rounded-full border border-[#ccc] bg-white px-6 text-center font-[Arial,Helvetica,sans-serif] text-[18px] text-black outline-none placeholder:text-black focus:border-brand-accent"
+          className="h-[42px] w-full max-w-[900px] rounded-full border border-[#ccc] bg-white px-6 text-center font-[Arial,Helvetica,sans-serif] text-[18px] text-black outline-none placeholder:text-black focus:border-brand-accent"
         />
       </div>
 
@@ -29,30 +29,31 @@ export function BrandGrid({ brands }: { brands: Brand[] }) {
       {visible.length === 0 ? (
         <p className="py-12 text-center text-black/50">לא נמצאו מותגים.</p>
       ) : (
-        // Cell borders (not a tinted grid background) so empty slots in the
-        // last row stay white; the negative margin + overflow-hidden clips the
-        // outer-edge borders, leaving only the inner dividers.
+        // Legacy (Elementor grid) cells, measured from the live /מותג/: 6 columns from 768px (2 below), no gap, every cell has a
+        // 1px rgba(0,0,0,.106) bottom line and a divider on its side; the negative margin + overflow-hidden clips the
+        // outer-edge divider so only the inner ones show (and empty slots in the last row stay borderless).
         <div className="overflow-hidden">
-        <div className="-mb-px -me-px grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="-me-px grid grid-cols-2 min-[768px]:grid-cols-6">
           {visible.map((brand) => (
             <Link
               key={brand.id}
               href={`/brand/${brand.slug}/`}
-              className="group flex flex-col border-b border-e border-black/10 bg-white p-4 text-center"
+              className="flex flex-col border-b border-e border-black/[.106] bg-white text-center"
             >
-              <div className="relative aspect-square w-full">
+              {/* Logo box: 190px (106px at ≤1023px), logo centred at 70% of the cell width, natural aspect. */}
+              <span className="flex h-[190px] items-center justify-center max-[1023px]:h-[106px]">
                 <Image
                   src={brand.thumbnailUrl || "/brand/logo.png"}
                   alt={brand.name}
-                  fill
-                  sizes="(min-width: 1280px) 300px, (min-width: 1024px) 250px, (min-width: 640px) 33vw, 50vw"
+                  width={0}
+                  height={0}
+                  sizes="(min-width: 1570px) 183px, (min-width: 768px) 12vw, 35vw"
                   quality={90}
-                  className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+                  className="mx-auto h-auto w-[70%]"
                 />
-              </div>
-              <span className="mt-2 text-[15px] font-semibold leading-snug text-black/85 group-hover:text-brand-accent">
-                {brand.name}
               </span>
+              {/* Caption: 17px/500 (27.2px line), black, 5px/10px padding — an approved exception to the 18px floor (AGENTS.md). */}
+              <span className="px-[10px] py-[5px] text-[17px] font-medium leading-[27.2px] text-black">{brand.name}</span>
             </Link>
           ))}
         </div>

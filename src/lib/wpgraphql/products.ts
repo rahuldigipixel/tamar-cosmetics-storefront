@@ -51,8 +51,8 @@ export interface GqlProductNode {
   /** Unit price after YITH Dynamic Pricing rules (GraphQL `tamarDynamicPrice`); null when no rule applies. */
   tamarDynamicPrice?: string | null;
   galleryImages?: { nodes: GqlImage[] };
-  /** Only requested on list queries (first gallery image only) — a lighter alternative to `galleryImages` for the hover-swap thumbnail. */
-  galleryFirstImage?: { nodes: GqlImage[] };
+  /** Only requested on list queries: the first gallery image in wp-admin order (plugin field) — the hover-swap thumbnail, lighter than `galleryImages`. */
+  tamarHoverImage?: GqlImage | null;
   productCategories?: { nodes: { id: string; name: string; slug: string; parent?: { node: { id: string; name: string; slug: string } } | null }[] };
   allPaBrand?: { nodes: { name: string; slug: string; thumbnailUrl?: string | null }[] };
   attributes?: {
@@ -103,7 +103,7 @@ export interface GqlProductNode {
 }
 
 function fromGraphqlProduct(node: GqlProductNode): Product {
-  const galleryNodes = node.galleryImages?.nodes ?? node.galleryFirstImage?.nodes ?? [];
+  const galleryNodes = node.galleryImages?.nodes ?? (node.tamarHoverImage ? [node.tamarHoverImage] : []);
   const images = [
     ...(node.image ? [{ id: node.image.id, src: node.image.sourceUrl, alt: node.image.altText }] : []),
     ...galleryNodes.map((n) => ({ id: n.id, src: n.sourceUrl, alt: n.altText })),

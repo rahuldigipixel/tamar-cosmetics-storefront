@@ -521,7 +521,14 @@
       "Bash(grep -o 'class=\"[^\"]*hover-img[^\"]*\"' leg-cat.html)",
       "Bash(grep -o \"hover-img\\\\\">.\\\\{0,300\\\\}\" leg-cat.html)",
       "Bash(node hover.js 'http://192.168.0.107/tamarcosmetics/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%A6%D7%99%D7%A4%D7%95%D7%A8%D7%A0%D7%99%D7%9D/%D7%97%D7%99%D7%98%D7%95%D7%99/' '.wd-product .hover-img')",
-      "Bash(node hover2.js 'http://localhost:3000/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%A6%D7%99%D7%A4%D7%95%D7%A8%D7%A0%D7%99%D7%9D/%D7%97%D7%99%D7%98%D7%95%D7%99/' 'a[class*=\"group/img\"]' 'a[class*=\"group/img\"] img[class*=\"opacity-0\"]')"
+      "Bash(node hover2.js 'http://localhost:3000/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%A6%D7%99%D7%A4%D7%95%D7%A8%D7%A0%D7%99%D7%9D/%D7%97%D7%99%D7%98%D7%95%D7%99/' 'a[class*=\"group/img\"]' 'a[class*=\"group/img\"] img[class*=\"opacity-0\"]')",
+      "Bash(node fit.js 'http://192.168.0.107/tamarcosmetics/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%9E%D7%90%D7%A4%D7%A8%D7%AA/%D7%A2%D7%93%D7%94-%D7%A1%D7%A7%D7%99%D7%9F-adah-skin/' '.product-element-top' '.hover-img img' 4 x legacy.png)",
+      "Bash(node fit.js 'http://192.168.0.107/tamarcosmetics/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%9E%D7%90%D7%A4%D7%A8%D7%AA/%D7%A2%D7%93%D7%94-%D7%A1%D7%A7%D7%99%D7%9F-adah-skin/' '.product-element-top' '.hover-img img' 0 x legacy0.png)",
+      "Bash(curl -s -m 60 -o /dev/null -w 'legacy page %{http_code}\\\\n' 'http://192.168.0.107/tamarcosmetics/product-category/%D7%9E%D7%95%D7%A6%D7%A8%D7%99%D7%9D-%D7%9C%D7%9E%D7%90%D7%A4%D7%A8%D7%AA/%D7%A2%D7%93%D7%94-%D7%A1%D7%A7%D7%99%D7%9F-adah-skin/')",
+      "Bash(curl -s -m 60 'https://tamarcosmetics-co-il-dev.s808.upress.link/wp-json/wc/store/v1/products/311578' -o p311578.json -w '%{http_code}\\\\n')",
+      "Bash(head -c 300 p311578.json)",
+      "Bash(curl -s -m 60 'http://tamarcosmetics-co-il-dev.s808.upress.link/wp-json/wp/v2/product/311578?_fields=slug,link,featured_media' -w '\\\\n%{http_code}\\\\n')",
+      "Bash(curl -s -m 90 'http://tamarcosmetics-co-il-dev.s808.upress.link/?s=skin+trix+360&post_type=product' -o dev-s.html -w '%{http_code}\\\\n')"
     ],
     "deny": [
       "Read(node_modules/**)",

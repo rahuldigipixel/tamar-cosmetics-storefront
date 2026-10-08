@@ -17,6 +17,7 @@ export function ClubSignup({
   bgImageUrl,
   checkboxLabel,
   buttonLabel,
+  source,
 }: {
   heading?: string;
   description?: string;
@@ -24,6 +25,8 @@ export function ClubSignup({
   /** Raw HTML (e.g. may include a privacy-policy <a> link) — rendered as-is. */
   checkboxLabel?: string;
   buttonLabel?: string;
+  /** "home" selects the home page's own email settings (see class-home-page-settings.php). */
+  source?: "home";
 }) {
   const resolvedHeading = heading || DEFAULT_HEADING;
   const resolvedDescription = description || DEFAULT_DESCRIPTION;
@@ -45,7 +48,7 @@ export function ClubSignup({
       const res = await fetch("/api/club/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, birthday }),
+        body: JSON.stringify({ name, email, phone, birthday, source }),
       });
       const data = await res.json();
       setStatus(data.success ? "done" : "error");

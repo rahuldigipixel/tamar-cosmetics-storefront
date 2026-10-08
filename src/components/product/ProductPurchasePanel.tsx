@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Minus, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { BackInStockForm } from "@/components/product/BackInStockForm";
 import { useCartStore } from "@/lib/store/useCartStore";
 
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
@@ -65,6 +66,9 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
 // RTL row, right → left: buy now, add to cart, quantity (matches the reference).
 export function ProductPurchasePanel({ productId, inStock }: { productId: number; inStock: boolean }) {
   const [quantity, setQuantity] = useState(1);
+
+  // Out of stock: no add-to-cart / quantity — the back-in-stock signup replaces them.
+  if (!inStock) return <BackInStockForm productId={productId} />;
 
   return (
     <div className="mt-[25px] flex flex-nowrap items-center gap-[8px] sm:gap-[12px]">

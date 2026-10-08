@@ -18,9 +18,16 @@ export default async function BrandListPage() {
   const [brands, global] = await Promise.all([listBrands(), getGlobalData()]);
   const siteSettings = global?.settings ?? null;
 
+  // wp-admin → הגדרות מותגים: the picked brands, in the order the admin dragged them into. Nothing picked = every brand.
   const selectedIds = siteSettings?.selectedBrandIds ?? [];
+  const brandById = new Map(brands.map((b) => [b.databaseId, b]));
   const visibleBrands =
-    selectedIds.length > 0 ? brands.filter((b) => selectedIds.includes(b.databaseId)) : brands;
+    selectedIds.length > 0
+      ? selectedIds.flatMap((id) => {
+          const brand = brandById.get(id);
+          return brand ? [brand] : [];
+        })
+      : brands;
 
   const title = siteSettings?.brandPageTitle || "מותגים";
   const description = siteSettings?.brandPageDescription || "";
@@ -47,7 +54,8 @@ export default async function BrandListPage() {
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-[1570px] px-[15px] pb-[10px] pt-[20px] md:pb-[0px]">
+      {/* 1570px of grid between the 15px side gutters (legacy: 6 × 261.7px cells at 1920px). */}
+      <div className="mx-auto max-w-[1600px] px-[15px] pb-[10px] pt-[20px] md:pb-[0px]">
         <BrandGrid brands={visibleBrands} />
       </div>
     </div>

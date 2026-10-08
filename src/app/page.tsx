@@ -105,6 +105,7 @@ export default async function HomePage() {
       />
 
       <ClubSignup
+        source="home"
         heading={settings?.club.heading}
         description={settings?.club.description}
         bgImageUrl={settings?.club.bgImage?.url}

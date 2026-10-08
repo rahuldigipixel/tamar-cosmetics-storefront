@@ -36,12 +36,12 @@ const PRODUCT_CARD_SHARED_FIELDS = /* GraphQL */ `
       thumbnailUrl
     }
   }
-  galleryFirstImage: galleryImages(first: 1) {
-    nodes {
-      id
-      sourceUrl
-      altText
-    }
+  # Hover-swap image = the first gallery image in wp-admin order (plugin field). Not galleryImages(first: 1): WPGraphQL
+  # sorts that connection itself and returns a different image than the admin's first one for some products.
+  tamarHoverImage {
+    id
+    sourceUrl
+    altText
   }
   # Rendered Advanced Product Labels (wp-admin → BeRocket → Advanced Labels) — which products get one is decided there.
   tamarLabels {

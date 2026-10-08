@@ -432,12 +432,22 @@ export interface ClubSignupInput {
   email: string;
   phone: string;
   birthday?: string;
+  /** "home" = the home page form, which has its own email settings in wp-admin. */
+  source?: "home";
 }
 
 export function subscribeClub(input: ClubSignupInput) {
   return tamarFetch<{ success: boolean }>(`/club-signup`, {
     method: "POST",
-    body: JSON.stringify({ name: input.name, email: input.email, phone: input.phone, birthday: input.birthday }),
+    body: JSON.stringify({ name: input.name, email: input.email, phone: input.phone, birthday: input.birthday, source: input.source }),
+  });
+}
+
+// "Back In Stock Notifier for WooCommerce" signup for an out-of-stock product (see class-stub-routes.php).
+export function subscribeBackInStock(productId: number, email: string) {
+  return tamarFetch<{ success: boolean; alreadySubscribed: boolean; message?: string }>(`/back-in-stock`, {
+    method: "POST",
+    body: JSON.stringify({ productId, email }),
   });
 }
 

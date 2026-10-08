@@ -250,7 +250,7 @@ function FilterDropdown({
 
 function OptionList<T extends string>({
   options,
-  selected: _selected,
+  selected,
   onSelect,
 }: {
   options: { value: T; label: string; image?: string; depth?: number }[];
@@ -265,7 +265,7 @@ function OptionList<T extends string>({
               type="button"
               onClick={() => onSelect(o.value)}
               style={o.depth ? { paddingInlineStart: 18 + o.depth * 16 } : undefined}
-              className={`flex w-full items-center px-[18px] py-[8px] text-start font-[Arial,Helvetica,sans-serif] text-[16px] font-normal leading-[21px] text-[#777] transition-colors hover:bg-[#f1f1f1]`}
+              className={`flex w-full items-center px-[18px] py-[8px] text-start font-[Arial,Helvetica,sans-serif] text-[16px] font-normal leading-[21px] text-[#777] transition-colors hover:bg-[#f1f1f1] ${o.value === selected ? "bg-[#f1f1f1]" : ""}`}
             >
               {/* Logo only (as on the reference); the name is the alt text and the fallback when there is no logo. */}
               {o.image ? (<Image src={o.image} alt={o.label} width={60} height={30} sizes="60px" className="h-[30px] w-[60px] object-contain" />) : (o.label)}

@@ -46,9 +46,12 @@ for (const path of targets) {
     "og:url": meta("og:url"),
     "twitter:card": meta("twitter:card"),
     "json-ld": ld,
+    h1: [String((body.match(/<h1[\s>]/g) ?? []).length)],
+    "img alt": [`${(body.match(/<img[\s>][^>]*>/g) ?? []).filter((t) => !/\salt="[^"]+"/.test(t)).length} of ${(body.match(/<img[\s>]/g) ?? []).length} empty/missing`],
   };
   for (const [k, v] of Object.entries(rows)) console.log(`  ${k.padEnd(13)} ${v.length ? v.join("  |  ") : "-"}`);
   const problems = [];
+  if ((body.match(/<h1[\s>]/g) ?? []).length !== 1) problems.push(`h1 x${(body.match(/<h1[\s>]/g) ?? []).length}`);
   if (titles.length !== 1) problems.push(`title x${titles.length}`);
   if (!rows.description.length) problems.push("no description");
   if (canonicals.length !== 1) problems.push(`canonical x${canonicals.length}`);

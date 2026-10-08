@@ -461,7 +461,22 @@
       "Bash(grep -c 'BAILOUT_TO_CLIENT\\\\|$RC\\\\|$RS')",
       "Bash(sed -i 's|flex min-h-\\\\[50vh\\\\] items-center justify-center|flex min-h-[200vh] items-start justify-center pt-[25vh]|' src/app/loading.tsx)",
       "Bash(powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 3100 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }')",
-      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Select-Object ProcessId, @{n='cmd';e={$_.CommandLine.Substring\\(0,[Math]::Min\\(120,$_.CommandLine.Length\\)\\)}})"
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Select-Object ProcessId, @{n='cmd';e={$_.CommandLine.Substring\\(0,[Math]::Min\\(120,$_.CommandLine.Length\\)\\)}})",
+      "Bash(git commit -q -m 'SEO: robots, sitemap, metadata helpers, noindex layouts; perf tweaks to data loaders *)",
+      "Bash(sed -n 264p \"product/[slug]/page.tsx\")",
+      "Bash(grep -n \"<h1\" shop/loading.tsx)",
+      "Bash(sed -i '264s|<h1 className=\"hidden md:block \\\\\\(.*\\\\\\)\">{product.name}</h1>|{/* The mobile <h1> above is the only real h1 in the DOM; this desktop variant is a level-1 heading role so crawlers see one <h1>. */}\\\\n <div role=\"heading\" aria-level={1} className=\"hidden md:block \\\\1\">{product.name}</div>|' \"product/[slug]/page.tsx\")",
+      "Bash(sed -i '18s|<h1 \\\\\\(.*\\\\\\)>חנות</h1>|<div \\\\1>חנות</div>|' shop/loading.tsx)",
+      "Bash(curl -s -A \"Mozilla/5.0 Chrome-Lighthouse\" \"https://tamar-cosmetics-storefront-six.vercel.app/brand/acrylic-pro-tamar-cosmetics\")",
+      "Bash(sed -n 505,535p Header.tsx)",
+      "Bash(sed -n 85,100p Footer.tsx)",
+      "Bash(sed -n 310,320p Footer.tsx)",
+      "Bash(grep -n \"SERVICE_ICON_MAP\\\\|serviceIcons\" Header.tsx)",
+      "Bash(node -e \"console.log\\(encodeURI\\('/brand/acrylic-pro-tamar-cosmetics/'\\)\\)\")",
+      "Bash(node scripts/check-seo.mjs http://localhost:3000 / /shop /brand/acrylic-pro-tamar-cosmetics/ \"/product/%d7%a4%d7%99%d7%92%d7%9e%d7%a0%d7%98-%d7%9c%d7%a9%d7%a4%d7%aa%d7%99%d7%99%d7%9d-10-%d7%9e%d7%9c-t-l1-watermelon-%d7%aa%d7%9e%d7%a8-%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%a1\" /product-category/sale/ \"/%d7%a9%d7%99%d7%98%d7%aa-%d7%9e%d7%99%d7%a7%d7%a8%d7%95%d7%91%d7%9c%d7%99%d7%99%d7%93%d7%99%d7%a0%d7%92-%d7%9e%d7%94-%d7%96%d7%94\")",
+      "Bash(node .fix.mjs)",
+      "Bash(node scripts/check-seo.mjs http://localhost:3000 /)",
+      "Bash(awk '{print $5, $6, $7, $8}')"
     ],
     "deny": [
       "Read(node_modules/**)",

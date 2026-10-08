@@ -87,13 +87,29 @@ function Anchor({ href, newTab, className, children }: { href: string; newTab?: 
 // SVGs can't be optimized, and absolute URLs (the plugin's pre-first-save default images) aren't in next/image's remote host list.
 const isUnoptimized = (url: string) => /\.svg(\?|$)/i.test(url) || /^https?:/i.test(url);
 
+// wp-admin often leaves a footer image's alt empty; fall back to a label from the file name so image-only links and
+// logos still have an accessible name (and Google Images has context).
+const ALT_BY_FILE: [RegExp, string][] = [
+  [/waze/i, "Waze - ניווט לחנות"],
+  [/whatsapp/i, "WhatsApp"],
+  [/service-phone/i, "שירות לקוחות טלפוני"],
+  [/service-text/i, "שירות לקוחות בהודעה"],
+  [/trust/i, "תו אמון הציבור"],
+  [/payment/i, "אמצעי תשלום: ויזה, מאסטרקארד, ביט ועוד"],
+  [/facebook/i, "פייסבוק"],
+  [/instagram/i, "אינסטגרם"],
+  [/youtube/i, "יוטיוב"],
+  [/tiktok/i, "טיקטוק"],
+];
+const footerAlt = (image: FooterImage) => image.alt?.trim() || ALT_BY_FILE.find(([re]) => re.test(image.url))?.[1] || "תמר קוסמטיקס";
+
 function Img({ image, className }: { image: FooterImage; className?: string }) {
   const w = image.width || 40;
   const h = image.height || 40;
   return (
     <Image
       src={image.url}
-      alt={image.alt}
+      alt={footerAlt(image)}
       width={w}
       height={h}
       unoptimized={isUnoptimized(image.url)}
@@ -315,7 +331,7 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
           <div className="order-[100] flex justify-center md:hidden">
             <Image
               src={payments.url}
-              alt={payments.alt}
+              alt={footerAlt(payments)}
               width={300}
               height={40}
               unoptimized={isUnoptimized(payments.url)}

@@ -73,7 +73,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
  <h1 className="mb-[10px] text-center text-[20px] font-normal leading-[28px] text-black lg:text-[32px] lg:leading-[38.4px]">{post.title}</h1>
  </div>
 
- <BlogContent html={post.contentHtml} className="mt-[10px]" />
+ <BlogContent html={post.contentHtml} altFallback={post.title} className="mt-[10px]" />
 
  {post.products.length > 0 ? (
  // Top gap from the post text; side padding keeps the arrows inside the content width.

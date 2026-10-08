@@ -86,6 +86,8 @@ export default async function HomePage() {
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(organizationJsonLd()) }} />
+      {/* Every page needs exactly one <h1>: use the about title unless the admin-authored about content already has one. */}
+      {/<h1[\s>]/i.test(aboutHtml) ? null : <h1 className="sr-only">{aboutTitle}</h1>}
       <HeroCarousel desktopSlides={settings?.heroDesktop} mobileSlides={settings?.heroMobile} />
 
       <CategorySlider categories={displayCategories} heading={settings?.categoryHeading} />

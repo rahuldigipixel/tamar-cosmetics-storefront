@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { seoToMetadata } from "@/lib/seo";
+import { cleanEditorHtml } from "@/lib/utils/editorHtml";
+import { seoToMetadata, breadcrumbJsonLd, jsonLdString, absoluteUrl, toDescription, PUBLIC_PATHS } from "@/lib/seo";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { getBrandPageData } from "@/lib/wpgraphql/brandPage";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: BrandPageProps): Promise<Meta
  },
  });
  // Unknown brand slugs still render the empty state — keep them out of the index.
- return data.brand ? meta : { ...meta, robots: { index: false, follow: true } };
+ return data.brand ? meta : { ...meta, title: "המותג לא נמצא", robots: { index: false, follow: true } };
 }
 
 export default async function BrandPage({ params }: BrandPageProps) {
@@ -70,12 +71,31 @@ export default async function BrandPage({ params }: BrandPageProps) {
  : null,
  }
  : null;
- const description = formatHtml(brand.description ?? "");
- const extraDescription = formatHtml(brand.extraDescription ?? "");
- const readMoreText = formatHtml(brand.categoryExtraDescriptionText ?? "");
+ const description = cleanEditorHtml(formatHtml(brand.description ?? ""), brand.name);
+ const extraDescription = cleanEditorHtml(formatHtml(brand.extraDescription ?? ""), brand.name);
+ const readMoreText = cleanEditorHtml(formatHtml(brand.categoryExtraDescriptionText ?? ""), brand.name);
+
+ const brandPath = `/brand/${activeSlug}/`;
+ const brandLd = [
+ breadcrumbJsonLd([
+ { name: "תמר קוסמטיקס", path: "/" },
+ { name: "מותגים", path: PUBLIC_PATHS["/brand-list"] },
+ { name: brand.name, path: brandPath },
+ ]),
+ {
+ "@context": "https://schema.org",
+ "@type": "CollectionPage",
+ name: brand.name,
+ url: absoluteUrl(brandPath),
+ description: toDescription(brand.description) || undefined,
+ inLanguage: "he-IL",
+ isPartOf: { "@id": `${absoluteUrl("/")}#website` },
+ },
+ ];
 
  return (
  <div>
+ <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(brandLd) }} />
  {/* Full-width banner straight under the header, same as the category page. */}
  {banner ? <CategoryBanner banner={banner} title={brand.name} /> : null}
 

@@ -261,7 +261,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="px-0 text-right md:px-[10px] md:col-start-1 md:row-start-2">
  <div className="hidden md:block">{brandLogo}</div>
 
- <h1 className="hidden md:block md:text-[34px] md:leading-[41px] md:font-normal text-black">{product.name}</h1>
+ {/* The mobile <h1> above is the only real h1 in the DOM; this desktop variant is a level-1 heading role so crawlers see one <h1>. */}
+ <div role="heading" aria-level={1} className="hidden md:block md:text-[34px] md:leading-[41px] md:font-normal text-black">{product.name}</div>
 
  <FlashyStarRating rating={product.averageRating} count={product.reviewCount} />
 

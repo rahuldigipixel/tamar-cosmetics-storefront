@@ -65,9 +65,9 @@ const clean = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").t
 export function seoToMetadata(seo: Seo | null | undefined, { path, fallback, ogType = "website" }: SeoOptions): Metadata {
   const title = clean(seo?.title) || fallback?.title;
   // Never leave a page without a description (Lighthouse/Search Console flag it): site tagline as the last resort.
-  const description = clean(seo?.description) || fallback?.description || SITE_DESCRIPTION;
+  const description = toDescription(seo?.description, 160) || fallback?.description || SITE_DESCRIPTION;
   const ogTitle = clean(seo?.ogTitle) || title;
-  const ogDescription = clean(seo?.ogDescription) || description;
+  const ogDescription = toDescription(seo?.ogDescription, 200) || description;
   // Last resort so every shared link gets a preview image (brand logo), when neither Rank Math nor the page has one.
   const image = seo?.ogImage || fallback?.image || absoluteUrl("/brand/logo.png");
 
@@ -195,6 +195,8 @@ export function toDescription(html: string | null | undefined, max = 155) {
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
+    .replace(/&quot;|&#0?34;|&#x22;/gi, '"')
+    .replace(/&#0?39;|&#x27;|&apos;/gi, "'")
     .replace(/&amp;/g, "&")
     .replace(/&#?\w+;/g, " ")
     .replace(/\s+/g, " ")

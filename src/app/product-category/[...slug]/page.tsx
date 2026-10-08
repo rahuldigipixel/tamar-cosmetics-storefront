@@ -1,6 +1,7 @@
 ﻿import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cleanEditorHtml } from "@/lib/utils/editorHtml";
 import { seoToMetadata, jsonLdString, breadcrumbJsonLd } from "@/lib/seo";
 import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
  fallback: { title: name ? `${name} | תמר קוסמטיקס` : undefined, description: data.info?.description?.replace(/<[^>]+>/g, "").trim().slice(0, 160) || (name ? `${name} - מבחר מוצרים מקצועיים לקוסמטיקאיות, משלוח מהיר לכל הארץ. קנו אונליין בתמר קוסמטיקס.` : undefined) },
  });
  // Unknown category slugs still render the empty state — keep them out of the index.
- return name ? meta : { ...meta, robots: { index: false, follow: true } };
+ return name ? meta : { ...meta, title: "הקטגוריה לא נמצאה", robots: { index: false, follow: true } };
 }
 
 export default async function ProductCategoryPage({ params }: CategoryPageProps) {
@@ -121,13 +122,13 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  category?.name ?? info?.name ?? categoryFromProducts?.name ?? decodeURIComponent(activeSlug).replace(/-/g, " ");
  // Prefer the WordPress-rendered description (paragraphs/line breaks
  // applied, as on the reference); the GraphQL list one is raw text.
- const description = info?.description || category?.description || "";
+ const description = cleanEditorHtml(info?.description || category?.description || "", title);
  // Admin HTML saves one line per row and relies on wpautop() — newlines inside <p> (or plain text) become <br>, as on the brand page.
  const toBr = (t: string) => t.replace(/\r?\n/g, "<br />");
  const formatHtml = (raw: string) =>
  /<p\b/i.test(raw) ? raw.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, toBr) : toBr(raw);
- const readMoreText = formatHtml(info?.readMore ?? "");
- const extraDescription = formatHtml(info?.extraDescription ?? "");
+ const readMoreText = cleanEditorHtml(formatHtml(info?.readMore ?? ""), title);
+ const extraDescription = cleanEditorHtml(formatHtml(info?.extraDescription ?? ""), title);
  const categoryBySlug = new Map(
  [...allCategories, ...breadcrumbCategories].map((c) => [normalizeSlug(c.slug), c.name])
  );
@@ -186,7 +187,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  intro={
  description ? (
  <div
- className="text-center text-[16px] leading-[26px] text-[#1f2124] md:text-[21px] md:leading-[33.6px] md:text-[#0c0c0c] [&_h1]:text-[26px] [&_h1]:font-bold [&_h2]:text-[24px] [&_h2]:font-bold [&_h3]:text-[22px] [&_h3]:font-semibold [&_h4]:text-[22px] [&_h4]:font-semibold [&_img]:mx-auto [&_p]:mb-[20px] [&_strong]:font-bold"
+ className="text-center text-[16px] leading-[26px] text-[#1f2124] md:text-[21px] md:leading-[33.6px] md:text-[#0c0c0c] [&_h1]:text-[26px] [&_h1]:font-bold [&_h2[data-h1]]:text-[26px] [&_h2]:text-[24px] [&_h2]:font-bold [&_h3]:text-[22px] [&_h3]:font-semibold [&_h4]:text-[22px] [&_h4]:font-semibold [&_img]:mx-auto [&_p]:mb-[20px] [&_strong]:font-bold"
  dangerouslySetInnerHTML={{ __html: description }}
  />
  ) : null

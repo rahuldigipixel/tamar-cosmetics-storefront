@@ -15,7 +15,7 @@ export default function ShopLoading() {
  return (
  <div className="animate-pulse">
  <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">
- <h1 className="text-[28px] font-bold leading-[1.2] text-[#242424] md:text-[40px] md:leading-[48px]">חנות</h1>
+ <div className="text-[28px] font-bold leading-[1.2] text-[#242424] md:text-[40px] md:leading-[48px]">חנות</div>
  </div>
  <div className="mx-auto max-w-[1600px] px-[15px] pt-[50px]">
  <div className="mb-[35px] hidden grid-cols-5 gap-x-[20px] md:grid">

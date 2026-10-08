@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getOrderCancellationPage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_TOP, PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { RichContent } from "@/components/ui/RichContent";
@@ -8,7 +9,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getOrderCancellationPage();
-  return { title: page?.heading || "ביטול עסקה" };
+  return pageMetadata({ title: page?.heading || "ביטול עסקה", description: page?.contentHtml, route: "/order-cancellation" });
 }
 
 // Public path is the Hebrew "/מדיניות-ביטול-הזמנה-תמר-קוסמטיקס" (matching the live

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Lets a production build run beside the dev server (NEXT_DIST_DIR=.next-prod npm run build) for perf/SEO verification.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+  // No framework fingerprint in response headers.
+  poweredByHeader: false,
   // Dev server is reached over the LAN at http://192.168.0.x:3000 (not just
   // localhost) — without this, Next.js blocks the HMR/RSC dev requests from
   // that origin, which silently breaks client-side hydration (buttons render
@@ -109,6 +113,9 @@ const nextConfig: NextConfig = {
   images: {
     // 90 = hero banner (HeroCarousel); 75 = Next default for everything else.
     qualities: [75, 90],
+    // Optimized images are immutable per URL: cache 30 days at the edge/browser (default is 4 h) and serve AVIF where supported.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    formats: ["image/avif", "image/webp"],
     // Trimmed from Next's default 8+8 widths: every <img srcSet> lists each width, and
     // the home page renders hundreds of product images, so the default list alone
     // added ~0.5 MB of HTML. 3840/2048w are never needed for these layouts.

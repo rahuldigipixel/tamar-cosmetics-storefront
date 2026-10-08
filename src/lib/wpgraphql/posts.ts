@@ -1,9 +1,12 @@
 import { cache } from "react";
+import type { Seo } from "@/lib/seo";
 import { wpEnv } from "./env";
 import { fetchGraphQLSafe } from "./client";
 import { mapProductListNodes, type GqlProductNode } from "./products";
 import type { Product } from "@/types/product";
 import { GET_CATEGORY_BY_SLUG, GET_POSTS, GET_POSTS_BY_CATEGORY, GET_POST_BY_SLUG, GET_POST_NAV_LIST } from "./queries/posts";
+
+const MAX_POST_PRODUCTS = 24;
 
 export interface BlogPostSummary {
   id: string;
@@ -18,6 +21,9 @@ export interface BlogPostSummary {
 }
 
 export interface BlogPost extends BlogPostSummary {
+  /** Rank Math SEO for this post (null if the plugin field is unavailable). */
+  seo: Seo | null;
+  modified: string | null;
   contentHtml: string;
   authorName: string | null;
   /** Products picked in the post's wp-admin edit screen, in the admin's order (empty when none). */
@@ -133,24 +139,29 @@ export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null
   const queryableSlug = encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
 
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     post:
       | (GqlPostNode & {
+          modified?: string | null;
           content: string;
           author?: { node: { name: string } } | null;
           tamarPostProducts?: GqlProductNode[] | null;
           tamarPostProductsTitle?: string | null;
         })
       | null;
-  }>(GET_POST_BY_SLUG, { slug: queryableSlug }, { tags: ["posts", `post:${slug}`], revalidate: 300 });
+  }>(GET_POST_BY_SLUG, { slug: queryableSlug, seoSlug: queryableSlug }, { tags: ["posts", `post:${slug}`], revalidate: 300 });
 
   if (!data?.post) return null;
 
   return {
     ...toSummary(data.post),
+    seo: data.seo ?? null,
+    modified: data.post.modified ?? null,
     contentHtml: data.post.content,
     authorName: data.post.author?.node.name ?? null,
     productsTitle: data.post.tamarPostProductsTitle?.trim() ?? "",
-    products: await mapProductListNodes(data.post.tamarPostProducts ?? []),
+    // Cap the slider: one post had 100 picked products = a 4.6 MB page (every card renders 3x in the infinite carousel).
+    products: await mapProductListNodes((data.post.tamarPostProducts ?? []).slice(0, MAX_POST_PRODUCTS)),
   };
 });
 

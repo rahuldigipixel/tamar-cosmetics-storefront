@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { listBrands } from "@/lib/wpgraphql/brands";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { BrandGrid } from "./BrandGrid";
 
 export const revalidate = 300;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = (await getGlobalData())?.settings;
+  return pageMetadata({ title: settings?.brandPageTitle || "מותגים", description: settings?.brandPageDescription, route: "/brand-list" });
+}
 
 export default async function BrandListPage() {
   // getGlobalData() is React `cache()`-wrapped and already called once by

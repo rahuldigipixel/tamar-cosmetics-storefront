@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 import { PRODUCT_LIST_FIELDS } from "./products";
 import { BRAND_DETAIL_FIELDS } from "./brands";
 import { PRICE_BOUND_FIELDS } from "../priceBounds";
@@ -14,6 +15,9 @@ const brandProductsByPrice = (order: "ASC" | "DESC") =>
  */
 export const GET_BRAND_PAGE_DATA = /* GraphQL */ `
   query GetBrandPageData($slug: ID!, $brandSlug: String, $brand: [String], $first: Int = 20) {
+    seo: tamarSeo(kind: "pa_brand", slug: $brandSlug) {
+      ${SEO_FIELDS}
+    }
     brand: paBrand(id: $slug, idType: SLUG) {
       ${BRAND_DETAIL_FIELDS}
     }

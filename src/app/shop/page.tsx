@@ -1,11 +1,16 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getShopData } from "@/lib/wpgraphql/shop";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = { title: "חנות" };
+export const metadata: Metadata = pageMetadata({
+  title: "חנות",
+  description: "כל מוצרי תמר קוסמטיקס במקום אחד - לק ג׳ל, אקריל, ציוד לציפורניים, פדיקור, גבות והסרת שיער במחירי סיטונאי.",
+  route: "/shop",
+});
 
 export default async function ShopPage() {
  const { products, hasNextPage, endCursor, categories, brands, countries, priceBounds } = await getShopData(20);

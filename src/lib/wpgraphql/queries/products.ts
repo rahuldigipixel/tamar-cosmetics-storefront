@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 /**
  * Only what a product card renders (ProductGridCard / ProductCard /
  * SaleShowcase) — list views are 20-60 products per
@@ -260,7 +261,10 @@ export const GET_PRODUCTS = /* GraphQL */ `
 `;
 
 export const GET_PRODUCT_BY_SLUG = /* GraphQL */ `
-  query GetProductBySlug($slug: ID!, $relatedFirst: Int = 13) {
+  query GetProductBySlug($slug: ID!, $seoSlug: String, $relatedFirst: Int = 13) {
+    seo: tamarSeo(kind: "product", slug: $seoSlug) {
+      ${SEO_FIELDS}
+    }
     product(id: $slug, idType: SLUG) {
       ${PRODUCT_DETAIL_FIELDS}
       upsell(first: $relatedFirst) {

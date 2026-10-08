@@ -1,4 +1,5 @@
 import { cache } from "react";
+import type { Seo } from "@/lib/seo";
 import { fetchGraphQLSafe } from "./client";
 import { GET_HOME_DATA } from "./queries/home";
 import { mapProductListNodes, type GqlProductNode } from "./products";
@@ -26,6 +27,8 @@ interface GqlBrandNode {
 }
 
 export interface HomeData {
+  /** Rank Math SEO for the home page. */
+  seo: Seo | null;
   /** wp-admin → ניהול דף הבית settings (hero, headings, features, about) — null when the backend call failed. */
   settings: HomePageSettings | null;
   /** The three product rails — already the admin's picks (in their order) or the default list, see Tamar_Home_Page_Settings::default_rail_ids(). */
@@ -36,7 +39,7 @@ export interface HomeData {
   brands: Brand[];
 }
 
-const EMPTY: HomeData = { settings: null, hotProducts: [], newProducts: [], saleProducts: [], categories: [], brands: [] };
+const EMPTY: HomeData = { seo: null, settings: null, hotProducts: [], newProducts: [], saleProducts: [], categories: [], brands: [] };
 
 /**
  * All home-page backend data (sale/best-seller/new product rails, categories,
@@ -45,6 +48,7 @@ const EMPTY: HomeData = { settings: null, hotProducts: [], newProducts: [], sale
  */
 export const getHomeData = cache(async function getHomeData(): Promise<HomeData> {
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     tamarHomePage: {
       settings: string | null;
       hotProducts: GqlProductNode[] | null;
@@ -88,5 +92,5 @@ export const getHomeData = cache(async function getHomeData(): Promise<HomeData>
     thumbnailUrl: b.thumbnailUrl ?? undefined,
   }));
 
-  return { settings, hotProducts, newProducts, saleProducts, categories, brands };
+  return { seo: data.seo ?? null, settings, hotProducts, newProducts, saleProducts, categories, brands };
 });

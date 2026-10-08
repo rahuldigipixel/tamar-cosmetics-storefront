@@ -9,6 +9,7 @@ import {
 import { getProductLabels, getProductTabs } from "./tamarApi";
 import type { Product, ProductAttribute, ProductVariation } from "@/types/product";
 import type { HomePageFeature } from "./tamarApi";
+import type { Seo } from "@/lib/seo";
 
 /**
  * tamar-headless-api's /product-labels and /product-tabs routes are still
@@ -305,6 +306,8 @@ export interface ProductStripItem {
 
 export interface ProductWithRelated {
   product: Product;
+  /** Rank Math SEO for this product (null if the plugin field is unavailable). */
+  seo: Seo | null;
   /** Admin-managed single-product-page settings (icon boxes). */
   pageSettings: ProductPageSettings;
   /** WooCommerce's own related-products algorithm (tags + categories + cross-sells) via the `related` field on Product — fetched in the same request as the product itself instead of a second query. */
@@ -323,6 +326,7 @@ export interface ProductWithRelated {
  */
 export const getProductBySlug = cache(async (slug: string): Promise<ProductWithRelated | null> => {
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     product: (GqlProductNode & { related?: { nodes: GqlProductNode[] }; upsell?: { nodes: GqlProductNode[] } }) | null;
     pageSettings: {
       shippingReturns?: string | null;
@@ -339,7 +343,7 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
           }[]
         | null;
     } | null;
-  }>(GET_PRODUCT_BY_SLUG, { slug, relatedFirst: 13 }, { tags: [`product:${slug}`, "product-page"], revalidate: 60 });
+  }>(GET_PRODUCT_BY_SLUG, { slug, seoSlug: slug, relatedFirst: 13 }, { tags: [`product:${slug}`, "product-page"], revalidate: 60 });
   // null = request failed/timed out (not "no such product") — throw so the page errors instead of showing a false 404.
   if (!data) throw new Error(`Product request for "${slug}" failed (backend unreachable or timed out).`);
   if (!data.product) return null;
@@ -387,7 +391,7 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
     })),
   };
 
-  return { product, related, upsells, pageSettings };
+  return { product, seo: data.seo ?? null, related, upsells, pageSettings };
 });
 
 /** Card-level data for many products in one request, returned in the order of `ids`. */

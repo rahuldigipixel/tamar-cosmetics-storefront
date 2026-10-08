@@ -1,4 +1,5 @@
 import { fetchGraphQLSafe } from "./client";
+import type { Seo } from "@/lib/seo";
 import { GET_CATEGORY_PAGE_DATA } from "./queries/categoryPage";
 import { toPriceBounds } from "./priceBounds";
 import { mapProductListNodes, type GqlProductNode } from "./products";
@@ -25,6 +26,8 @@ interface GqlBrandNode {
 }
 
 export interface CategoryPageData {
+  /** Rank Math SEO for this category. */
+  seo: Seo | null;
   products: Product[];
   hasNextPage: boolean;
   endCursor: string | null;
@@ -58,6 +61,7 @@ export async function getCategoryPageData(
     encodeURIComponent(s).replace(/%[0-9A-F]{2}/g, (m) => m.toLowerCase()),
   ]);
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     categoryInfo: CategoryInfo | null;
     categoryProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
     facets: { brands: { slug: string }[]; countries: CountryOption[] } | null;
@@ -109,6 +113,7 @@ export async function getCategoryPageData(
   }));
 
   return {
+    seo: data.seo ?? null,
     products,
     hasNextPage: data.categoryProducts.pageInfo.hasNextPage,
     endCursor: data.categoryProducts.pageInfo.endCursor,

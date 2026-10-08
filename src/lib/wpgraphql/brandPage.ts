@@ -5,8 +5,11 @@ import { fromGraphqlBrand, type GqlBrandNode } from "./brands";
 import { toPriceBounds } from "./priceBounds";
 import { mapProductListNodes, type GqlProductNode } from "./products";
 import type { Brand, CountryOption, Product, ProductCategory } from "@/types/product";
+import type { Seo } from "@/lib/seo";
 
 export interface BrandPageData {
+  /** Rank Math SEO for this brand. */
+  seo: Seo | null;
   /** null = no such brand (404). */
   brand: Brand | null;
   products: Product[];
@@ -26,6 +29,7 @@ export interface BrandPageData {
  */
 export const getBrandPageData = cache(async (slug: string, first = 20): Promise<BrandPageData> => {
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     brand: GqlBrandNode | null;
     brandProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
     priceLow: { nodes: { price?: string | null }[] };
@@ -43,6 +47,7 @@ export const getBrandPageData = cache(async (slug: string, first = 20): Promise<
   const countries = data.facets?.countries ?? [];
 
   return {
+    seo: data.seo ?? null,
     brand: data.brand ? fromGraphqlBrand(data.brand) : null,
     products: await mapProductListNodes(data.brandProducts.nodes),
     hasNextPage: data.brandProducts.pageInfo.hasNextPage,

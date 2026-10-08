@@ -85,6 +85,19 @@ async function cartFetch(
 // overwrite state, so a slow earlier response can't clobber a newer click.
 let cartRequest: Promise<void> | null = null;
 
+// Same idea for removals: a GetCart that was already in flight (drawer open) or
+// an earlier remove's response can still list an item the visitor just removed,
+// making it reappear and vanish again. Keys with a pending removal are hidden
+// from any server cart, and a fetch that began before a removal is discarded.
+const pendingRemovals = new Set<string>();
+let cartMutationEpoch = 0;
+
+function withoutPendingRemovals(cart: Cart): Cart {
+  if (pendingRemovals.size === 0) return cart;
+  const items = cart.items.filter((i) => !pendingRemovals.has(i.key));
+  return items.length === cart.items.length ? cart : { ...cart, items };
+}
+
 let quantityRequestCounter = 0;
 const latestQuantityRequestByKey: Record<string, number> = {};
 
@@ -117,8 +130,11 @@ export const useCartStore = create<CartState>()(
         set({ loading: true });
         cartRequest = (async () => {
           try {
+            const epoch = cartMutationEpoch;
             const { cart, sessionToken, shippingAddress } = await cartFetch("/api/cart", get().sessionToken);
-            set({ cart, sessionToken, shippingAddress: shippingAddress ?? null });
+            if (epoch === cartMutationEpoch) {
+              set({ cart: withoutPendingRemovals(cart), sessionToken, shippingAddress: shippingAddress ?? null });
+            }
           } finally {
             set({ loading: false });
             cartRequest = null;
@@ -223,6 +239,8 @@ export const useCartStore = create<CartState>()(
         // instead of waiting on the round trip to the WooCommerce backend —
         // the authoritative cart (correct totals/tax) still replaces this
         // once the request resolves, or gets restored if it fails.
+        pendingRemovals.add(key);
+        cartMutationEpoch++;
         const previousCart = get().cart;
         const removedItem = previousCart.items.find((i) => i.key === key);
         set({
@@ -239,8 +257,12 @@ export const useCartStore = create<CartState>()(
           const { cart, sessionToken } = await cartFetch("/api/cart/remove", get().sessionToken, {
             itemKey: key,
           });
-          set({ cart, sessionToken });
+          pendingRemovals.delete(key);
+          cartMutationEpoch++;
+          set({ cart: withoutPendingRemovals(cart), sessionToken });
         } catch (error) {
+          pendingRemovals.delete(key);
+          cartMutationEpoch++;
           set({ cart: previousCart });
           throw error;
         }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { getAppPage, type AppPageImage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
@@ -11,7 +12,7 @@ const RED = "bg-[#d52027]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAppPage();
-  return { title: page?.heroTitle?.replace(/\s*\n\s*/g, " ") || FALLBACK_TITLE };
+  return pageMetadata({ title: page?.heroTitle?.replace(/\s*\n\s*/g, " ") || FALLBACK_TITLE, description: page?.heroText, route: "/app" });
 }
 
 /** YouTube watch / short / embed URL → video id. */

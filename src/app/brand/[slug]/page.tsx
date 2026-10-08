@@ -1,4 +1,6 @@
-﻿import Link from "next/link";
+﻿import type { Metadata } from "next";
+import Link from "next/link";
+import { seoToMetadata } from "@/lib/seo";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { getBrandPageData } from "@/lib/wpgraphql/brandPage";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
@@ -10,9 +12,26 @@ interface BrandPageProps {
  params: Promise<{ slug: string }>;
 }
 
+const normalizeBrandSlug = (slug: string) => decodeURIComponent(slug).normalize("NFC");
+
+export async function generateMetadata({ params }: BrandPageProps): Promise<Metadata> {
+ const { slug } = await params;
+ const activeSlug = normalizeBrandSlug(slug);
+ const data = await getBrandPageData(activeSlug, 20);
+ const meta = seoToMetadata(data.seo, {
+ path: `/brand/${activeSlug}/`,
+ fallback: {
+ title: data.brand?.name ? `${data.brand.name} | תמר קוסמטיקס` : undefined,
+ description: data.brand?.description?.replace(/<[^>]+>/g, "").trim().slice(0, 160) || (data.brand?.name ? `${data.brand.name} - כל מוצרי המותג במחירים משתלמים, משלוח מהיר לכל הארץ. קנו אונליין בתמר קוסמטיקס.` : undefined),
+ },
+ });
+ // Unknown brand slugs still render the empty state — keep them out of the index.
+ return data.brand ? meta : { ...meta, robots: { index: false, follow: true } };
+}
+
 export default async function BrandPage({ params }: BrandPageProps) {
  const { slug } = await params;
- const activeSlug = decodeURIComponent(slug).normalize("NFC");
+ const activeSlug = normalizeBrandSlug(slug);
 
  // Brand + first page of products + the filter-bar options, in one GraphQL request.
  const data = await getBrandPageData(activeSlug, 20);

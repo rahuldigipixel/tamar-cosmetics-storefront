@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 import { PRODUCT_LIST_FIELDS } from "./products";
 import { PRICE_BOUND_FIELDS } from "../priceBounds";
 
@@ -13,6 +14,9 @@ import { PRICE_BOUND_FIELDS } from "../priceBounds";
  */
 export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
   query GetCategoryPageData($category: [String], $categorySlug: String!, $first: Int = 20, $ancestorSlugs: [String]) {
+    seo: tamarSeo(kind: "product_cat", slug: $categorySlug) {
+      ${SEO_FIELDS}
+    }
     breadcrumbCategories: productCategories(first: 10, where: { slug: $ancestorSlugs, hideEmpty: false }) {
       nodes {
         name

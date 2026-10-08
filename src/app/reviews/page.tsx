@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getGlobalData, getReviewsPage } from "@/lib/wpgraphql/tamarApi";
 import { resolveIntegrations } from "@/lib/integrations";
 import { RichContent } from "@/components/ui/RichContent";
@@ -8,7 +9,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
  const page = await getReviewsPage();
- return { title: page?.heading || "ביקורות לקוחות" };
+ return pageMetadata({ title: page?.heading || "ביקורות לקוחות", description: page?.descriptionHtml, route: "/reviews" });
 }
 
 // Public path is the Hebrew "/ביקורות-לקוחות-תמר-קוסמטיקס" (matching the

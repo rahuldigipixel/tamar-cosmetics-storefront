@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { Percent, Sparkles, Flame } from "lucide-react";
+import { seoToMetadata, jsonLdString, organizationJsonLd } from "@/lib/seo";
 import { getHomeData } from "@/lib/wpgraphql/home";
 import { getGlobalData } from "@/lib/wpgraphql/tamarApi";
 import { resolveIntegrations } from "@/lib/integrations";
@@ -42,6 +44,14 @@ function pickBySlugOrTopCount<T extends { slug: string; count: number }>(
   return [...items].sort((a, b) => b.count - a.count).slice(0, limit);
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+ const { seo } = await getHomeData();
+ return seoToMetadata(seo, {
+ path: "/",
+ fallback: { title: "תמר קוסמטיקס - חנות למוצרי ציפורניים", description: "תמר קוסמטיקס - חנות למוצרי ציפורניים, פדיקור וגבות" },
+ });
+}
+
 export default async function HomePage() {
   // Global data (layout, shared via cache()) + ONE page-body request: settings,
   // curated rails, categories and brands all come from getHomeData().
@@ -75,6 +85,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(organizationJsonLd()) }} />
       <HeroCarousel desktopSlides={settings?.heroDesktop} mobileSlides={settings?.heroMobile} />
 
       <CategorySlider categories={displayCategories} heading={settings?.categoryHeading} />

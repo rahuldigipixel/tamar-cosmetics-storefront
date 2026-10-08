@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getTermsPage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_TOP, PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { RichContent } from "@/components/ui/RichContent";
@@ -7,7 +8,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getTermsPage();
-  return { title: page?.heading || "תקנון אתר תמר קוסמטיקס" };
+  return pageMetadata({ title: page?.heading || "תקנון אתר תמר קוסמטיקס", description: page?.contentHtml, route: "/terms-and-conditions" });
 }
 
 // Public path /terms-and-conditions (same as the live site and the footer link).

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { getSuppliersPage } from "@/lib/wpgraphql/tamarApi";
 import { PageLeadForm } from "@/components/ui/PageLeadForm";
@@ -10,7 +11,7 @@ const FALLBACK_TITLE = "שותפות עסקית ורכש - תמר קוסמטיק
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSuppliersPage();
-  return { title: page?.heading || FALLBACK_TITLE };
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/suppliers" });
 }
 
 // Public path is the Hebrew "/ספקים" (matching the live site) — see the rewrite

@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { listPosts } from "@/lib/wpgraphql/posts";
 import { BlogPostCard } from "@/components/blog/BlogPostCard";
 import { BlogInfiniteScroll } from "@/components/blog/BlogInfiniteScroll";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = pageMetadata({
+  title: "מגזין תמר קוסמטיקס",
+  description: "מדריכים, טיפים וחידושים מעולם הציפורניים, הלק ג׳ל והקוסמטיקה מבית תמר קוסמטיקס.",
+  route: "/blog",
+});
 
  
 export default async function BlogPage() {

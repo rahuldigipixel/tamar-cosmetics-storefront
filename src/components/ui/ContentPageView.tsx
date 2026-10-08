@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getContentPage } from "@/lib/wpgraphql/tamarApi";
 import { RichContent } from "@/components/ui/RichContent";
 import { CONTENT_PROFILES } from "@/lib/contentPageProfiles";
@@ -6,7 +7,7 @@ import { CONTENT_PROFILES } from "@/lib/contentPageProfiles";
 /** generateMetadata() for a wp-admin "heading + editor" page (shares the page's cached request). */
 export async function contentMetadata(route: string, fallbackTitle: string): Promise<Metadata> {
   const page = await getContentPage(route);
-  return { title: page?.heading || fallbackTitle };
+  return pageMetadata({ title: page?.heading || fallbackTitle, description: page?.contentHtml, route: `/${route.replace(/-page$/, "")}` });
 }
 
 /** Pink title band (#fde7eb, 72px/35px 800 serif title) shared by the content pages. */

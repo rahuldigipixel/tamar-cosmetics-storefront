@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 import { PRODUCT_LIST_FIELDS } from "./products";
 
 /**
@@ -11,6 +12,9 @@ import { PRODUCT_LIST_FIELDS } from "./products";
  */
 export const GET_HOME_DATA = /* GraphQL */ `
   query GetHomeData {
+    seo: tamarSeo(kind: "home") {
+      ${SEO_FIELDS}
+    }
     tamarHomePage {
       settings
       hotProducts {

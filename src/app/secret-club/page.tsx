@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getSecretClubPage } from "@/lib/wpgraphql/tamarApi";
 import { RichContent } from "@/components/ui/RichContent";
 import { ClubSignup } from "@/components/home/ClubSignup";
@@ -7,7 +8,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSecretClubPage();
-  return { title: page?.heading || "הנבחרת הסודית" };
+  return pageMetadata({ title: page?.heading || "הנבחרת הסודית", description: page?.contentHtml, route: "/secret-club" });
 }
 
 // Public path is the Hebrew "/הנבחרת-הסודית-תמר-קוסמטיקס" (see the rewrite in

@@ -1,4 +1,7 @@
-﻿import Link from "next/link";
+﻿import { cache } from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { seoToMetadata, jsonLdString, breadcrumbJsonLd } from "@/lib/seo";
 import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
@@ -28,6 +31,27 @@ function normalizeSlug(slug: string) {
  }
 }
 
+// One request per render for generateMetadata() + the page body (keyed by the URL path string, since
+// getCategoryPageData() takes an array, which React cache() would compare by identity).
+const loadCategoryPage = cache((pathKey: string) => {
+ const parts = pathKey.split("/");
+ return getCategoryPageData(parts[parts.length - 1], 20, parts.slice(0, -1));
+});
+
+const pathKeyOf = (slugPath: string[]) => slugPath.map(normalizeSlug).join("/");
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+ const { slug: slugPath } = await params;
+ const data = await loadCategoryPage(pathKeyOf(slugPath));
+ const name = data.info?.name;
+ const meta = seoToMetadata(data.seo, {
+ path: `/product-category/${slugPath.map(normalizeSlug).join("/")}/`,
+ fallback: { title: name ? `${name} | תמר קוסמטיקס` : undefined, description: data.info?.description?.replace(/<[^>]+>/g, "").trim().slice(0, 160) || (name ? `${name} - מבחר מוצרים מקצועיים לקוסמטיקאיות, משלוח מהיר לכל הארץ. קנו אונליין בתמר קוסמטיקס.` : undefined) },
+ });
+ // Unknown category slugs still render the empty state — keep them out of the index.
+ return name ? meta : { ...meta, robots: { index: false, follow: true } };
+}
+
 export default async function ProductCategoryPage({ params }: CategoryPageProps) {
  const { slug: slugPath } = await params;
  const activeSlug = normalizeSlug(slugPath[slugPath.length - 1]);
@@ -47,7 +71,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  info,
  breadcrumbCategories,
  priceBounds,
- } = await getCategoryPageData(activeSlug, 20, slugPath.slice(0, -1).map(normalizeSlug));
+ } = await loadCategoryPage(pathKeyOf(slugPath));
  const banner = info?.banner ?? null;
  const carouselItems = info?.carousel ?? [];
 
@@ -109,12 +133,22 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  );
  const breadcrumbSlugs = slugPath.slice(0, -1).map(normalizeSlug);
 
+ const breadcrumbLd = breadcrumbJsonLd([
+ { name: "עמוד הבית", path: "/" },
+ ...breadcrumbSlugs.map((s, i) => ({
+ name: categoryBySlug.get(s) ?? s.replace(/-/g, " "),
+ path: `/product-category/${breadcrumbSlugs.slice(0, i + 1).join("/")}/`,
+ })),
+ { name: title, path: `/product-category/${slugPath.map(normalizeSlug).join("/")}/` },
+ ]);
+
  return (
  // Reference layout (tamarcosmetics.co.il/product-category/sale/, measured
  // at 1920px): full-width banner straight under the header → pink title
  // band (40px/700 #242424, 15px padding) → 12px breadcrumb → centered 21px
  // description → horizontal filter bar → product grid.
  <div>
+ <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbLd) }} />
  {banner ? <CategoryBanner banner={banner} title={title} /> : null}
 
  <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">

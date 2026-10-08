@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,6 +9,28 @@ import { formatPrice } from "@/lib/utils/formatPrice";
 import type { HeaderSearchResult } from "@/app/api/search/route";
 
 const MIN_CHARS = 3;
+
+// Next's router navigates with history.pushState/replaceState, which fire no
+// event — wrap them once so subscribers hear about query-string-only changes.
+let historyPatched = false;
+function subscribeToUrl(onChange: () => void) {
+  if (!historyPatched) {
+    historyPatched = true;
+    for (const method of ["pushState", "replaceState"] as const) {
+      const original = history[method];
+      history[method] = function (this: History, ...args: Parameters<History["pushState"]>) {
+        original.apply(this, args);
+        window.dispatchEvent(new Event("urlchange"));
+      };
+    }
+  }
+  window.addEventListener("urlchange", onChange);
+  window.addEventListener("popstate", onChange);
+  return () => {
+    window.removeEventListener("urlchange", onChange);
+    window.removeEventListener("popstate", onChange);
+  };
+}
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -89,6 +111,21 @@ export function HeaderSearch({
     setLastPathname(pathname);
     setOpen(false);
   }
+
+  // The box shows the term only on the search-results page ("/?s=…&post_type=product");
+  // on every other page it is empty. Read from window.location (not useSearchParams)
+  // so the header stays statically renderable without a Suspense boundary.
+  // Subscribed to the URL's query string (not just the pathname) so going from
+  // "/?s=123&post_type=product" to "/" — same pathname — still clears the box.
+  const search = useSyncExternalStore(subscribeToUrl, () => window.location.search, () => "");
+  const urlTerm = (() => {
+    const params = new URLSearchParams(search);
+    return pathname === "/" && params.get("post_type") === "product" ? (params.get("s") ?? "") : "";
+  })();
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQuery(urlTerm);
+  }, [urlTerm, pathname]);
 
   useEffect(() => {
     if (!open) return;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { getContactPage } from "@/lib/wpgraphql/tamarApi";
 import { PageLeadForm } from "@/components/ui/PageLeadForm";
@@ -10,7 +11,7 @@ const FALLBACK_TITLE = "שירות לקוחות - תמר קוסמטיקס";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContactPage();
-  return { title: page?.heading || FALLBACK_TITLE };
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/contact" });
 }
 
 // Sizes measured from the legacy /contact page: pink band + 72px/35px 800

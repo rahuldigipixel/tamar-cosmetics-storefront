@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
 import Image from "next/image";
 import { getFaqPage } from "@/lib/wpgraphql/tamarApi";
@@ -12,7 +13,7 @@ const CONTENT_ID = "faq-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getFaqPage();
-  return { title: page?.heading || FALLBACK_TITLE };
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/faq" });
 }
 
 // Public path is the Hebrew "/שאלות-נפוצות-אתר-תמר-קוסמטיקס" (matching the

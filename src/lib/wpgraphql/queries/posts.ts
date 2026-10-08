@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 import { PRODUCT_LIST_FIELDS } from "./products";
 
 export const GET_POSTS =/* GraphQL */ `
@@ -93,8 +94,12 @@ export const GET_POST_NAV_LIST = /* GraphQL */ `
 
 // tamarPostProducts = products picked in the post edit screen (plugin class-blog.php), folded into this one query.
 export const GET_POST_BY_SLUG = /* GraphQL */ `
-  query GetPostBySlug($slug: ID!) {
+  query GetPostBySlug($slug: ID!, $seoSlug: String) {
+    seo: tamarSeo(kind: "post", slug: $seoSlug) {
+      ${SEO_FIELDS}
+    }
     post(id: $slug, idType: SLUG) {
+      modified
       tamarPostProductsTitle
       tamarPostProducts {
         ${PRODUCT_LIST_FIELDS}

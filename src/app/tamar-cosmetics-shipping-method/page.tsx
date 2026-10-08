@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getShippingMethodPage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_TOP, PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { RichContent } from "@/components/ui/RichContent";
@@ -7,7 +8,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getShippingMethodPage();
-  return { title: page?.heading || "שיטת משלוחים תמר קוסמטיקס" };
+  return pageMetadata({ title: page?.heading || "שיטת משלוחים תמר קוסמטיקס", description: page?.contentHtml, route: "/tamar-cosmetics-shipping-method" });
 }
 
 // Public path is the Hebrew "/שיטת-שילוח-תמר-קוסמטיקס" (matching the live

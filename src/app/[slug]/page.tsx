@@ -8,6 +8,7 @@ import { BlogPostNav } from "@/components/blog/BlogPostNav";
 import { BlogComments } from "@/components/blog/BlogComments";
 import { ProductSlider } from "@/components/home/ProductSlider";
 import { wpEnv } from "@/lib/wpgraphql/env";
+import { seoToMetadata, jsonLdString, absoluteUrl, toDescription } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -19,8 +20,14 @@ export const revalidate = 300;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
  const { slug } = await params;
  const post = await getPostBySlug(slug);
- if (!post) return {};
- return { title: post.title };
+ if (!post) return { title: "העמוד לא נמצא", robots: { index: false, follow: false } };
+ return {
+ ...seoToMetadata(post.seo, {
+ path: `/${post.slug}`,
+ ogType: "article",
+ fallback: { title: `${post.title} | תמר קוסמטיקס`, description: toDescription(post.excerpt), image: post.image?.url },
+ }),
+ };
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -34,9 +41,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
  ]);
 
  const shareUrl = `${wpEnv.siteUrl}/${post.slug}/`;
+ const articleLd = {
+ "@context": "https://schema.org",
+ "@type": "BlogPosting",
+ headline: post.title,
+ description: toDescription(post.excerpt),
+ image: post.image?.url ? [post.image.url] : undefined,
+ datePublished: post.date,
+ dateModified: post.modified ?? post.date,
+ author: { "@type": "Person", name: post.authorName ?? "תמר קוסמטיקס" },
+ publisher: { "@type": "Organization", name: "תמר קוסמטיקס", logo: { "@type": "ImageObject", url: absoluteUrl("/brand/logo.png") } },
+ mainEntityOfPage: absoluteUrl(`/${post.slug}`),
+ inLanguage: "he-IL",
+ };
 
  return (
  <article dir="rtl" className="mx-auto max-w-[1600px] px-[15px] py-8 sm:py-10">
+ <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(articleLd) }} />
  <div className="font-[family-name:Arial,Helvetica,sans-serif]">
  {post.category ? (
  <div className="mb-[15px] flex justify-center">

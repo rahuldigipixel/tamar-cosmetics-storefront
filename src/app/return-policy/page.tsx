@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getReturnPolicyPage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_TOP, PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { RichContent } from "@/components/ui/RichContent";
@@ -7,7 +8,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getReturnPolicyPage();
-  return { title: page?.heading || "מדיניות – החזר מוצר" };
+  return pageMetadata({ title: page?.heading || "מדיניות – החזר מוצר", description: page?.contentHtml, route: "/return-policy" });
 }
 
 // Public path is the Hebrew "/מדיניות-החזר-מוצר" (matching the live

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getProductBySlug } from "@/lib/wpgraphql/products";
 import { wpEnv } from "@/lib/wpgraphql/env";
+import { seoToMetadata, jsonLdString, breadcrumbJsonLd, absoluteUrl, toDescription, priceValidUntil } from "@/lib/seo";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductTabs } from "@/components/product/ProductTabs";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
@@ -62,25 +63,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
  const { slug } = await params;
  const result = await getProductBySlug(normalizeSlug(slug));
- if (!result) return {};
+ if (!result) return { title: "המוצר לא נמצא", robots: { index: false, follow: false } };
  const { product } = result;
 
- const url = `${wpEnv.siteUrl}/product/${product.slug}`;
- const image = product.images[0]?.src;
-
- return {
- title: `${product.name} | תמר קוסמטיקס`,
- description: product.shortDescription?.replace(/<[^>]+>/g, "").slice(0, 160),
- alternates: { canonical: url },
- openGraph: {
- title: product.name,
- description: product.shortDescription?.replace(/<[^>]+>/g, "").slice(0, 160),
- url,
- locale: "he_IL",
- type: "website",
- images: image ? [{ url: image }] : undefined,
- },
- };
+ const plain = product.shortDescription?.replace(/<[^>]+>/g, "").trim();
+ return seoToMetadata(result.seo, {
+ path: `/product/${product.slug}`,
+ fallback: { title: `${product.name} | תמר קוסמטיקס`, description: plain?.slice(0, 160), image: product.images[0]?.src },
+ });
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -96,23 +86,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const parentCategory = primaryCategory?.parent;
  const productUrl = `${wpEnv.siteUrl}/product/${product.slug}`;
 
- const jsonLd = {
- "@context": "https://schema.org",
- "@type": "Product",
- name: product.name,
- image: product.images.map((img) => img.src),
- description: product.shortDescription?.replace(/<[^>]+>/g, ""),
- sku: product.sku ?? String(product.databaseId),
- offers: {
- "@type": "Offer",
- url: productUrl,
- priceCurrency: product.currency,
- price: product.onSale && product.salePrice ? product.salePrice : product.price,
- availability: product.inStock
- ? "https://schema.org/InStock"
- : "https://schema.org/OutOfStock",
- },
- };
+ const breadcrumbLd = breadcrumbJsonLd([
+ { name: "תמר קוסמטיקס", path: "/" },
+ ...(parentCategory ? [{ name: parentCategory.name, path: `/product-category/${parentCategory.slug}/` }] : []),
+ ...(primaryCategory
+ ? [{ name: primaryCategory.name, path: `/product-category/${parentCategory ? `${parentCategory.slug}/` : ""}${primaryCategory.slug}/` }]
+ : []),
+ { name: product.name, path: `/product/${product.slug}` },
+ ]);
+
 
  // Details shown under the SKU/barcode/brand lines: every visible attribute
  // except the brand (already its own line), e.g. כמות: 13 מ"ל.
@@ -141,6 +123,35 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const brandAttribute = product.attributes.find((a) => /מותג|brand/i.test(`${a.label} ${a.name}`));
  const brandName = brandAttribute?.optionNames?.[0] ?? product.brand;
  const brandSlug = brandAttribute?.optionSlugs?.[0] || undefined;
+
+ const barcode = product.barcode?.replace(/D/g, "") ?? "";
+ const jsonLd = {
+ "@context": "https://schema.org",
+ "@type": "Product",
+ "@id": `${absoluteUrl(`/product/${product.slug}`)}#product`,
+ name: product.name,
+ image: product.images.map((img) => img.src),
+ description: toDescription(product.shortDescription, 300) || undefined,
+ sku: product.sku ?? String(product.databaseId),
+ mpn: product.sku ?? undefined,
+ gtin: barcode.length >= 8 && barcode.length <= 14 ? barcode : undefined,
+ brand: brandName ? { "@type": "Brand", name: brandName } : undefined,
+ category: primaryCategory?.name,
+ aggregateRating:
+ product.reviewCount && product.reviewCount > 0 && product.averageRating
+ ? { "@type": "AggregateRating", ratingValue: Number(product.averageRating.toFixed(1)), reviewCount: product.reviewCount }
+ : undefined,
+ offers: {
+ "@type": "Offer",
+ url: absoluteUrl(`/product/${product.slug}`),
+ priceCurrency: product.currency,
+ price: product.onSale && product.salePrice ? product.salePrice : product.price,
+ priceValidUntil: priceValidUntil(),
+ itemCondition: "https://schema.org/NewCondition",
+ availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+ seller: { "@type": "Organization", name: "תמר קוסמטיקס" },
+ },
+ };
  // pa_term_hint of the brand term → "?" tooltip next to the brand; hidden when empty.
  const brandTipText = show.brandTip ? brandAttribute?.optionHints?.[0]?.trim() || undefined : undefined;
  const regularNum = Number(product.regularPrice);
@@ -202,7 +213,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  return (
  <div>
- <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+ <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }} />
+ <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbLd) }} />
 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
  <div className="mx-auto max-w-[1600px] px-[8px] pt-[12px] pb-[25px] md:px-[15px]">

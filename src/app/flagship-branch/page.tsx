@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { getFlagshipPage } from "@/lib/wpgraphql/tamarApi";
 import { PAGE_TOP, PAGE_BOTTOM } from "@/lib/pageSpacing";
 import { RichContent } from "@/components/ui/RichContent";
@@ -12,7 +13,7 @@ const ARIAL = "font-[family-name:Arial,Helvetica,sans-serif]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getFlagshipPage();
-  return { title: page?.heading || FALLBACK_TITLE };
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/flagship-branch" });
 }
 
 /** YouTube watch / short / embed URL → video id. */

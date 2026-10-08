@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { getWholesalePage } from "@/lib/wpgraphql/tamarApi";
 import { RichContent } from "@/components/ui/RichContent";
@@ -10,7 +11,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
  const page = await getWholesalePage();
- return { title: page?.heading };
+ return pageMetadata({ title: page?.heading, description: page?.contentHtml, route: "/wholesale" });
 }
 
 // Public path is the Hebrew "/מכירה-סיטונאית-תמר-קוסמטיקס" (see the rewrite in

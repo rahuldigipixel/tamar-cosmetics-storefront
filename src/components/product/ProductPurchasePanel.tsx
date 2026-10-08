@@ -9,7 +9,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
   return (
-    <div className="flex h-[40px] w-[96px] shrink-0 items-center justify-between rounded-full border border-black/20 px-1 text-[18px] font-light text-black sm:w-auto sm:text-[16px] sm:font-normal sm:justify-start">
+    <div className="flex h-[40px] w-[96px] shrink-0 items-center justify-between rounded-full border border-black/20 px-1 text-[18px] font-light text-black sm:w-[96px] min-[1280px]:w-auto sm:text-[16px] sm:font-normal sm:justify-start">
       <button
         type="button"
         onClick={() => onChange(Math.max(1, quantity - 1))}
@@ -56,7 +56,7 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
       type="button"
       onClick={handleClick}
       disabled={submitting}
-      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-accent bg-white px-2 sm:px-4 text-[18px] leading-[22px] font-light text-black transition-all sm:font-semibold duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0"
+      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-accent bg-white px-2 sm:px-4 text-[18px] md:text-[16px] min-[1280px]:text-[18px] leading-[22px] font-light text-black transition-all sm:font-semibold duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0"
     >
       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "קנה עכשיו"}
     </button>
@@ -71,13 +71,13 @@ export function ProductPurchasePanel({ productId, inStock }: { productId: number
   if (!inStock) return <BackInStockForm productId={productId} />;
 
   return (
-    <div className="mt-[25px] flex flex-nowrap items-center gap-[8px] sm:gap-[12px]">
+    <div className="mt-[25px] flex flex-wrap items-center gap-[8px] sm:gap-[12px]">
       {inStock ? (
-        <div className="min-w-0 flex-1 sm:w-[168px] sm:flex-none">
+        <div className="min-w-[100px] flex-1 sm:max-w-[168px] md:max-w-none min-[1640px]:max-w-[168px]">
           <BuyNowButton productId={productId} quantity={quantity} />
         </div>
       ) : null}
-      <div className="min-w-0 flex-1 sm:w-[168px] sm:flex-none">
+      <div className="min-w-[100px] flex-1 sm:max-w-[168px] md:max-w-none min-[1640px]:max-w-[168px]">
         <AddToCartButton productId={productId} inStock={inStock} quantity={quantity} size="lg" />
       </div>
       <QuantityStepper quantity={quantity} onChange={setQuantity} />

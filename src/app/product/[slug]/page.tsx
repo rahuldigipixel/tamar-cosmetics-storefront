@@ -231,8 +231,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {/* Same full-width container as the header/home sections. Font sizes on this page follow the legacy site (approved exception to the 18px floor). */}
  <div className="mx-auto max-w-[1600px] px-[8px] pt-[12px] pb-[25px] md:px-[15px]">
  {/* RTL grid: column 1 is the right-hand side. Mobile stacks breadcrumb → gallery → details → features. */}
- <div className="grid gap-x-[80px] gap-y-[4px] md:gap-y-[15px] md:grid-cols-2 md:items-start xl:grid-cols-[550px_640px_356px] xl:gap-x-[15px]">
- <nav aria-label="breadcrumb" className="hidden flex-wrap items-center md:flex gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-2 md:col-start-1 md:row-start-1 xl:col-span-3">
+ <div className="grid gap-x-[80px] gap-y-[4px] md:gap-y-[15px] md:grid-cols-[minmax(0,550fr)_minmax(0,640fr)_minmax(0,356fr)] md:gap-x-[15px] md:items-start min-[1640px]:grid-cols-[550px_640px_356px]">
+ <nav aria-label="breadcrumb" className="hidden flex-wrap items-center md:flex gap-x-[5px] text-[12px] leading-[19px] text-[#555] md:col-span-3 md:col-start-1 md:row-start-1">
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>
@@ -266,7 +266,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="mt-[6px] [&>*]:!mb-0">{brandLogo}</div>
  </div>
 
- <div className="mx-auto w-full max-w-[500px] xl:max-w-[640px] xl:sticky xl:top-[100px] xl:px-[70px] xl:py-[10px] md:col-start-2 md:row-start-2 md:mx-0 xl:mx-auto xl:col-start-2">
+ <div className="mx-auto w-full max-w-[500px] md:max-w-[640px] md:sticky md:top-[100px] md:px-[10px] lg:px-[30px] min-[1640px]:px-[70px] md:py-[10px] md:col-start-2 md:row-start-2 md:mx-auto">
  <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} price={product.price} />
  </div>
 
@@ -274,7 +274,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="hidden md:block">{brandLogo}</div>
 
  {/* The mobile <h1> above is the only real h1 in the DOM; this desktop variant is a level-1 heading role so crawlers see one <h1>. */}
- <div role="heading" aria-level={1} className="hidden md:block md:text-[34px] md:leading-[41px] md:font-normal text-black">{product.name}</div>
+ <div role="heading" aria-level={1} className="hidden md:block md:text-[26px] md:leading-[32px] lg:text-[34px] lg:leading-[41px] md:font-normal text-black">{product.name}</div>
 
  <FlashyStarRating rating={product.averageRating} count={product.reviewCount} />
 
@@ -286,7 +286,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="flex flex-wrap items-baseline gap-x-[12px]">
  {product.onSale && product.salePrice ? (
  <>
- <span className="text-[38px] leading-none font-bold text-brand-accent md:text-[48px]">
+ <span className="text-[38px] leading-none font-bold text-brand-accent md:text-[38px] lg:text-[48px]">
  <Price value={product.salePrice} currency={product.currency} />
  </span>
  <span className="relative text-[30px] font-light leading-[30px] text-[#414141] after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#414141] after:content-[''] [unicode-bidi:isolate]">
@@ -294,7 +294,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </span>
  </>
  ) : (
- <span className="text-[38px] leading-none font-bold text-black md:text-[48px]">
+ <span className="text-[38px] leading-none font-bold text-black md:text-[38px] lg:text-[48px]">
  <Price value={product.price} currency={product.currency} />
  </span>
  )}
@@ -329,7 +329,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <div className="hidden md:block">{shareBlock}</div>
  </div>
 
- <div className={`max-md:mt-[11px] md:col-span-2 md:row-start-3 xl:col-span-1 xl:col-start-3 xl:row-start-2 xl:px-[10px] ${showLinked || showTip || showFeatures ? "" : "md:hidden"}`}>
+ <div className={`max-md:mt-[11px] md:col-span-1 md:col-start-3 md:row-start-2 md:px-[10px] ${showLinked || showTip || showFeatures ? "" : "md:hidden"}`}>
  {/* Without a tip the icons start lower, level with the gallery image. */}
  <div className={showLinked || showTip ? "space-y-[18px]" : ""}>
  {showLinked ? <LinkedProductsSlider products={linkedProducts} /> : null}

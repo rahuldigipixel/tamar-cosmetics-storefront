@@ -77,7 +77,7 @@ export function CategorySlider({ categories, heading }: { categories: ProductCat
                 </div>
 
                 {/* Category Title aligned with 160px width */}
-                <span className="mt-2 w-full text-center md:max-w-[180px] text-[18px] font-normal leading-[26px] md:text-[21px] md:leading-[34px] text-[#242424] group-hover:text-brand-accent">
+                <span className="mt-2 line-clamp-2 w-full text-center md:-mx-[30px] md:w-[240px] md:max-w-none text-[18px] font-normal leading-[26px] md:text-[21px] md:leading-[34px] text-[#242424] group-hover:text-brand-accent">
                   {category.name}
                 </span>
               </Link>

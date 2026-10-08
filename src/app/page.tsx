@@ -101,6 +101,7 @@ export default async function HomePage() {
         description={settings?.hot.description || "אספנו לך את כל המוצרים הכי חמים באתר:"}
         products={hotProducts}
         headerVariant="modern"
+        autoplayMs={5000}
       />
 
       <ClubSignup
@@ -126,6 +127,7 @@ export default async function HomePage() {
         description={settings?.sale.description}
         products={saleSectionProducts}
         headerVariant="modern"
+        autoplayMs={7000}
         singleOnMobile
       />
 

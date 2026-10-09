@@ -164,7 +164,6 @@ export function CartDrawer() {
                           {formatPrice(unit.toFixed(2))}
                         </span>
                       </p>
-                      {item.offerName ? <p className="text-[13px] font-bold leading-5 text-[#0c0c0c]">{item.offerName}</p> : null}
                     </div>
 
                     {item.locked ? null : (
@@ -208,13 +207,22 @@ export function CartDrawer() {
                 >
                   מעבר לסל הקניות
                 </Link>
-                <Link
-                  href="/checkout"
-                  onClick={closeDrawer}
-                  className="flex h-[42px] items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 text-[21px] font-semibold leading-[25px] text-white transition-transform hover:-translate-y-0.5"
-                >
-                  תשלום
-                </Link>
+                {Number(cart.total) > 0 ? (
+                  <Link
+                    href="/checkout"
+                    onClick={closeDrawer}
+                    className="flex h-[42px] items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 text-[21px] font-semibold leading-[25px] text-white transition-transform hover:-translate-y-0.5"
+                  >
+                    תשלום
+                  </Link>
+                ) : (
+                  <span
+                    aria-disabled="true"
+                    className="flex h-[42px] cursor-not-allowed items-center justify-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-5 text-[21px] font-semibold leading-[25px] text-white opacity-50"
+                  >
+                    תשלום
+                  </span>
+                )}
               </div>
             </div>
           </>

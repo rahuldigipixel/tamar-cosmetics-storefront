@@ -429,12 +429,21 @@ export default function CartPage() {
           </table>
 
           <div className="mb-[15px] mt-[15px] min-[769px]:mt-[16px]">
-            <Link
-              href="/checkout"
-              className={`${PRIMARY_BTN} h-[42px] w-full px-5 text-[21px] font-semibold leading-[25.2px]`}
-            >
-              מעבר לתשלום
-            </Link>
+            {Number(cart.total) > 0 ? (
+              <Link
+                href="/checkout"
+                className={`${PRIMARY_BTN} h-[42px] w-full px-5 text-[21px] font-semibold leading-[25.2px]`}
+              >
+                מעבר לתשלום
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className={`${PRIMARY_BTN} h-[42px] w-full cursor-not-allowed px-5 text-[21px] font-semibold leading-[25.2px] opacity-50`}
+              >
+                מעבר לתשלום
+              </span>
+            )}
           </div>
           <BusyOverlay active={pendingTotals > 0} />
         </aside>

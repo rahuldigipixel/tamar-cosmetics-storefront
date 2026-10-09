@@ -86,6 +86,8 @@ export function CheckoutForm({
 }) {
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
+  // A cart that totals 0 (everything free) has nothing to pay — checkout is not allowed (the backend enforces it too).
+  const nothingToPay = !(Number(cart.total) > 0);
   const checkoutReady = useCartStore((s) => s.checkoutReady);
   const gateways = useCartStore((s) => s.paymentGateways);
   const shippingAddress = useCartStore((s) => s.shippingAddress);
@@ -286,6 +288,10 @@ export function CheckoutForm({
     const firstKey = (Object.keys(FIELD_IDS) as FieldKey[]).find((k) => found[k]);
     if (firstKey) {
       document.getElementById(FIELD_IDS[firstKey])?.focus();
+      return;
+    }
+    if (nothingToPay) {
+      setSubmitError("לא ניתן להשלים הזמנה ללא סכום לתשלום.");
       return;
     }
     if (!activePayment) {
@@ -735,7 +741,7 @@ export function CheckoutForm({
 
                   <button
                     type="submit"
-                    disabled={submitting || shippingUpdating || !activePayment || !formComplete}
+                    disabled={submitting || shippingUpdating || !activePayment || !formComplete || nothingToPay}
                     className={`${PRIMARY_BTN} h-[48px] w-full px-[28px] text-[14px] font-semibold leading-[16.8px] max-[767px]:text-[23px] max-[767px]:leading-[27.6px]`}
                   >
                     {submitting ? "מבצע הזמנה..." : "לתשלום"}

@@ -242,33 +242,55 @@ input[type="radio"] {
   line-height: 1.2 !important;
 }
 
-/* Product-list image badges (ProductImageBadges): BeRocket places each label with its own wp-admin margin offsets
-   (margin-top: 65px, negative side margins…), which made labels overlap each other and the free-shipping square.
-   Inside the shared stack, drop the overlay positioning and those offsets so everything flows in one left-aligned column. */
+/* Product-list image badges (ProductImageBadges): only the wp-admin side is honored — left or right. Center / line / margin
+   settings are ignored (margins are zeroed above), so labels can never overlap: the left column stacks the free-shipping
+   square, then the left group, then the center group; the right column starts below the discount % / brand logo. */
 .tamar-image-labels .berocket_better_labels.berocket_better_labels_image {
   position: static !important;
-  display: flex !important;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
+  display: contents !important;
 }
 .tamar-image-labels .berocket_better_labels .berocket_better_labels_position {
   float: none !important;
-  grid-area: auto !important;
   width: auto !important;
-  align-items: flex-start !important;
+  display: flex !important;
+  flex-direction: column;
   gap: 5px;
+}
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_position_left {
+  grid-column: 1;
+  grid-row: 2;
+  align-items: flex-start !important;
+}
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_position_center {
+  grid-column: 1;
+  grid-row: 3;
+  margin-top: 5px;
+  align-items: flex-start !important;
+}
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_position_right {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-items: flex-end !important;
+  padding-top: var(--label-right-top, 0px);
 }
 .tamar-image-labels .berocket_better_labels .berocket_better_labels_line,
 .tamar-image-labels .berocket_better_labels .berocket_better_labels_inline {
   float: none !important;
   clear: none !important;
-}
-.tamar-image-labels .berocket_better_labels .br_alabel,
-.tamar-image-labels .berocket_better_labels .br_alabel > span {
-  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .tamar-image-labels .berocket_better_labels:before,
 .tamar-image-labels .berocket_better_labels:after {
   display: none;
+}
+/* Image labels (e.g. the "TAMAR App" PNGs) are drawn as a background anchored "right top" inside a fixed box, so a narrower picture floats away
+   from the left edge. Anchor them to their own side so small and large labels share one edge: left column flush left, right column flush right. */
+.tamar-image-labels .berocket_better_labels_position_left .br_alabel > span,
+.tamar-image-labels .berocket_better_labels_position_center .br_alabel > span {
+  background-position: left top !important;
+}
+.tamar-image-labels .berocket_better_labels_position_right .br_alabel > span {
+  background-position: right top !important;
 }

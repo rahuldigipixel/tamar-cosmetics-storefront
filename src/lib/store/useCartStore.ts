@@ -243,13 +243,25 @@ export const useCartStore = create<CartState>()(
         cartMutationEpoch++;
         const previousCart = get().cart;
         const removedItem = previousCart.items.find((i) => i.key === key);
+        // Free BOGO / gift lines are tied to the line being removed: drop a rule-added (locked) line of the same
+        // product right away, and all of them once no regular line is left — the server does the same.
+        const remaining = previousCart.items.filter((i) => i.key !== key);
+        const hasRegular = remaining.some((i) => !i.locked);
+        const stillHasProduct = (productId: number) => remaining.some((i) => !i.locked && i.product.databaseId === productId);
+        const orphans = remaining.filter(
+          (i) => i.locked && (!hasRegular || (removedItem && !removedItem.locked && i.product.databaseId === removedItem.product.databaseId && !stillHasProduct(i.product.databaseId)))
+        );
+        orphans.forEach((i) => pendingRemovals.add(i.key));
+        const orphanKeys = new Set(orphans.map((i) => i.key));
+        const visibleItems = remaining.filter((i) => !orphanKeys.has(i.key));
+        const removedQty = (removedItem?.quantity ?? 0) + orphans.reduce((n, i) => n + i.quantity, 0);
         set({
           cart: {
             ...previousCart,
-            items: previousCart.items.filter((i) => i.key !== key),
+            items: visibleItems,
             // Last item gone → the server drops the coupons too; mirror that so nothing stale flashes.
-            ...(previousCart.items.length <= 1 ? { appliedCoupons: [], discountTotal: "0" } : {}),
-            itemCount: Math.max(0, previousCart.itemCount - (removedItem?.quantity ?? 0)),
+            ...(visibleItems.length === 0 ? { appliedCoupons: [], discountTotal: "0" } : {}),
+            itemCount: Math.max(0, previousCart.itemCount - removedQty),
           },
         });
 
@@ -258,10 +270,12 @@ export const useCartStore = create<CartState>()(
             itemKey: key,
           });
           pendingRemovals.delete(key);
+          orphanKeys.forEach((k) => pendingRemovals.delete(k));
           cartMutationEpoch++;
           set({ cart: withoutPendingRemovals(cart), sessionToken });
         } catch (error) {
           pendingRemovals.delete(key);
+          orphanKeys.forEach((k) => pendingRemovals.delete(k));
           cartMutationEpoch++;
           set({ cart: previousCart });
           throw error;

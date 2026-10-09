@@ -2,24 +2,26 @@ import { ProductLabels } from "@/components/product/ProductLabels";
 import { ShippingBadge } from "@/components/product/ShippingBadge";
 
 /**
- * Top-left badge stack of a product-list card: the BeRocket "image" labels (all three plugin position groups) and the
- * free-shipping square flow in ONE column with a fixed gap, instead of each being absolutely positioned on its own
- * (their wp-admin margin offsets used to land them on top of each other — see `.tamar-image-labels` in globals.css).
- * Render inside the image wrapper (`relative`). The top-right corner stays with the discount % / brand logo.
+ * Badge grid of a product-list card: the BeRocket "image" labels keep the wp-admin side (left or right only — center, line and margin are ignored),
+ * so labels never overlap; the free-shipping square sits above the left group, and the right group starts
+ * below the discount % / brand logo (`--label-right-top`). See `.tamar-image-labels` in globals.css.
+ * Render inside the image wrapper (`relative`). Fades out while the card is hovered (the quick-view / wishlist icons take its place).
  */
 export function ProductImageBadges({
   html,
   price,
-  className = "top-[6px] left-[6px] md:top-[10px] md:left-[10px]",
+  className = "top-[6px] left-[6px] w-[calc((100%-12px)/0.65)] md:top-[10px] md:left-[10px] md:w-[calc(100%-20px)]",
 }: {
   html?: string;
   price: string | number | undefined;
   className?: string;
 }) {
   return (
-    <div dir="ltr" className={`tamar-image-labels pointer-events-none absolute z-[2] flex max-w-[60%] origin-top-left flex-col max-md:scale-[0.65] items-start gap-[5px] ${className}`}>
+    <div dir="ltr" className={`tamar-image-labels pointer-events-none absolute z-[2] grid grid-cols-2 items-start origin-top-left max-md:scale-[0.65] transition-opacity duration-200 [@media(hover:hover)]:group-hover:opacity-0 ${className}`}>
       <ProductLabels html={html} />
-      <ShippingBadge price={price} className="!static" />
+      <div className="col-start-1 row-start-1 mb-[5px]">
+        <ShippingBadge price={price} className="!static" />
+      </div>
     </div>
   );
 }

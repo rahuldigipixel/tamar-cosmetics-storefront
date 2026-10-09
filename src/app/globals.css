@@ -241,3 +241,34 @@ input[type="radio"] {
 .berocket_better_labels_image .br_alabel > span b {
   line-height: 1.2 !important;
 }
+
+/* Product-list image badges (ProductImageBadges): BeRocket places each label with its own wp-admin margin offsets
+   (margin-top: 65px, negative side margins…), which made labels overlap each other and the free-shipping square.
+   Inside the shared stack, drop the overlay positioning and those offsets so everything flows in one left-aligned column. */
+.tamar-image-labels .berocket_better_labels.berocket_better_labels_image {
+  position: static !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_position {
+  float: none !important;
+  grid-area: auto !important;
+  width: auto !important;
+  align-items: flex-start !important;
+  gap: 5px;
+}
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_line,
+.tamar-image-labels .berocket_better_labels .berocket_better_labels_inline {
+  float: none !important;
+  clear: none !important;
+}
+.tamar-image-labels .berocket_better_labels .br_alabel,
+.tamar-image-labels .berocket_better_labels .br_alabel > span {
+  margin: 0 !important;
+}
+.tamar-image-labels .berocket_better_labels:before,
+.tamar-image-labels .berocket_better_labels:after {
+  display: none;
+}

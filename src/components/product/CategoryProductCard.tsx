@@ -9,7 +9,7 @@ import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
 import { ProductLabels } from "@/components/product/ProductLabels";
-import { ShippingBadge } from "@/components/product/ShippingBadge";
+import { ProductImageBadges } from "@/components/product/ProductImageBadges";
 import { Price } from "@/components/product/Price";
 
 function discountPercent(product: Product): number | null {
@@ -47,11 +47,12 @@ export function CategoryProductCard({
   const priceCls = wideMobile
     ? "text-[24px] font-bold leading-[26px] text-[#d52027]"
     : "text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px] md:leading-[26px]";
-  const regularCls = `relative ${
+  // Legacy struck-through price: 15px (regular weight — the legacy 300 was too thin to read) #535353 with a solid native line-through (the old half-opacity overlay line looked washed out).
+  const regularCls = `${
     wideMobile
-      ? "text-[15px] font-light leading-[17px] text-[#535353]"
-      : "text-[16px] font-normal leading-[1.1] text-[#444] md:text-[15px] md:font-light md:leading-[17px] md:text-[#535353]"
-  } after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-[#535353]/50 after:content-[''] [unicode-bidi:isolate]`;
+      ? "text-[15px] font-normal leading-[17px]"
+      : "text-[15px] font-normal leading-[1.1] md:leading-[17px]"
+  } text-[#535353] line-through decoration-[#535353] decoration-1 [unicode-bidi:isolate]`;
   const rowCls = (gap: string) =>
     // wideMobile: one row (sale price right, struck-through price beside it), bottom-aligned; otherwise stacked on mobile.
     wideMobile
@@ -106,8 +107,7 @@ export function CategoryProductCard({
             </div>
           ) : null}
         </Link>
-        <ProductLabels html={product.labelsHtml?.image} />
-        <ShippingBadge price={product.price} className="top-[100px] left-[12px]" />
+        <ProductImageBadges html={product.labelsHtml?.image} price={product.price} />
       </div>
       <ProductLabels html={product.labelsHtml?.label} />
 

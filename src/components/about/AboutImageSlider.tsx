@@ -67,7 +67,7 @@ export function AboutImageSlider({
             type="button"
             onClick={() => step(-1)}
             aria-label="הקודם"
-            className="absolute -start-13 max-md:-start-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
+            className="absolute start-0 top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
           >
             <ChevronRight className="h-5 w-5" strokeWidth={1.25} />
           </button>
@@ -75,7 +75,7 @@ export function AboutImageSlider({
             type="button"
             onClick={() => step(1)}
             aria-label="הבא"
-            className="absolute -end-13 max-md:-end-[11px] top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
+            className="absolute end-0 top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={1.25} />
           </button>

@@ -3,10 +3,20 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Expand, Pause, Play, X } from "lucide-react";
 import type { ProductImage } from "@/types/product";
 import { ProductLabels } from "@/components/product/ProductLabels";
 import { ShippingBadge } from "@/components/product/ShippingBadge";
+
+/** iframe src for a YouTube / Vimeo page url (autoplay), or null when the id can't be found. */
+function embedUrl(type: "youtube" | "vimeo", url: string): string | null {
+  if (type === "youtube") {
+    const id = url.match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/)([\w-]{11})/)?.[1];
+    return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : null;
+  }
+  const id = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)?.[1];
+  return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null;
+}
 
 // The wishlist heart lives in the details column (reference layout); the
 // brand logo is overlaid top-left here at the legacy label size (max 100×110,
@@ -35,10 +45,15 @@ export function ProductGallery({
   const [zoomed, setZoomed] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  // Index of the image whose video is playing; pausing/finishing or switching image drops back to the image.
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const current = images[active];
+  const video = current?.video;
+  const playing = Boolean(video) && playingIndex === active;
 
   function step(direction: 1 | -1) {
     if (images.length === 0) return;
+    setPlayingIndex(null);
     setActive((i) => (i + direction + images.length) % images.length);
   }
 
@@ -72,12 +87,35 @@ export function ProductGallery({
           const rect = e.currentTarget.getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width) * 100;
           const y = ((e.clientY - rect.top) / rect.height) * 100;
+          if (video) return;
           setZoomOrigin(`${x}% ${y}%`);
           setZoomed(true);
         }}
         onMouseLeave={() => setZoomed(false)}
       >
-        {current ? (
+        {playing && video ? (
+          video.type === "mp4" ? (
+            <video
+              key={video.url}
+              src={video.url}
+              poster={current.src}
+              autoPlay
+              playsInline
+              onClick={() => setPlayingIndex(null)}
+              onPause={() => setPlayingIndex(null)}
+              onEnded={() => setPlayingIndex(null)}
+              className={`absolute inset-0 z-10 h-full w-full bg-white ${video.size === "cover" ? "object-cover" : "object-contain"}`}
+            />
+          ) : (
+            <iframe
+              src={embedUrl(video.type, video.url) ?? undefined}
+              title={name}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 z-10 h-full w-full border-0 bg-black"
+            />
+          )
+        ) : current ? (
           <Image
             src={current.src}
             alt={current.alt || name}
@@ -87,6 +125,29 @@ export function ProductGallery({
             style={{ transformOrigin: zoomOrigin }}
             className={`object-cover transition-transform duration-300 ${zoomed ? "scale-[1.8]" : "scale-100"}`}
           />
+        ) : null}
+
+        {playing && video?.type === "mp4" ? (
+          <button
+            type="button"
+            onClick={() => setPlayingIndex(null)}
+            aria-label="עצירת וידאו"
+            className="absolute top-1/2 left-1/2 z-20 flex h-[80px] w-[80px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-opacity hover:bg-white [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/gallery:opacity-100"
+          >
+            <Pause className="h-8 w-8 fill-black/70 text-black/70" />
+          </button>
+        ) : null}
+
+        {video && !playing && (video.type === "mp4" || embedUrl(video.type, video.url)) ? (
+          <button
+            type="button"
+            onClick={() => setPlayingIndex(active)}
+            onMouseEnter={() => setZoomed(false)}
+            aria-label="הפעלת וידאו"
+            className="absolute top-1/2 left-1/2 z-20 flex h-[80px] w-[80px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-transform hover:scale-110 hover:bg-white"
+          >
+            <Play className="h-8 w-8 fill-black/70 text-black/70" />
+          </button>
         ) : null}
 
         {discount ? (
@@ -159,12 +220,20 @@ export function ProductGallery({
           {images.map((image, i) => (
             <button
               key={`${image.id}-${i}`}
-              onClick={() => setActive(i)}
+              onClick={() => {
+                setPlayingIndex(null);
+                setActive(i);
+              }}
               className={`relative h-16 w-16 shrink-0 overflow-hidden rounded border ${
                 i === active ? "border-brand-accent" : "border-black/10"
               }`}
             >
               <Image src={image.src} alt={image.alt || name} fill sizes="64px" className="object-cover" />
+              {image.video ? (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <Play className="h-5 w-5 fill-white text-white" />
+                </span>
+              ) : null}
             </button>
           ))}
         </div>

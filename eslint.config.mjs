@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude Code's own folder (settings, worktrees) is not app source.
+    ".claude/**",
   ]),
 ]);
 

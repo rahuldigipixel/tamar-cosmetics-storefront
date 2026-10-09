@@ -181,6 +181,7 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
   }
   image {
     id
+    databaseId
     sourceUrl
     altText
   }
@@ -192,9 +193,16 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
   galleryImages {
     nodes {
       id
+      databaseId
       sourceUrl
       altText
     }
+  }
+  tamarGalleryVideos {
+    imageId
+    type
+    url
+    size
   }
   productCategories {
     nodes {

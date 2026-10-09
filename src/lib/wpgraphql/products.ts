@@ -7,7 +7,7 @@ import {
   GET_PRODUCT_QUICK_VIEW,
 } from "./queries/products";
 import { getProductLabels, getProductTabs } from "./tamarApi";
-import type { Product, ProductAttribute, ProductVariation } from "@/types/product";
+import type { Product, ProductAttribute, ProductImage, ProductVariation } from "@/types/product";
 import type { HomePageFeature } from "./tamarApi";
 import type { Seo } from "@/lib/seo";
 
@@ -24,6 +24,7 @@ const TAMAR_CUSTOM_FIELDS_ENABLED = false;
 
 interface GqlImage {
   id: string;
+  databaseId?: number;
   sourceUrl: string;
   altText: string;
 }
@@ -51,6 +52,8 @@ export interface GqlProductNode {
   /** Unit price after YITH Dynamic Pricing rules (GraphQL `tamarDynamicPrice`); null when no rule applies. */
   tamarDynamicPrice?: string | null;
   galleryImages?: { nodes: GqlImage[] };
+  /** Per-image videos set in wp-admin (plugin field `tamarGalleryVideos`); detail query only. */
+  tamarGalleryVideos?: { imageId: number; type: string; url: string; size?: string | null }[] | null;
   /** Only requested on list queries: the first gallery image in wp-admin order (plugin field) — the hover-swap thumbnail, lighter than `galleryImages`. */
   tamarHoverImage?: GqlImage | null;
   productCategories?: { nodes: { id: string; name: string; slug: string; parent?: { node: { id: string; name: string; slug: string } } | null }[] };
@@ -104,10 +107,18 @@ export interface GqlProductNode {
 
 function fromGraphqlProduct(node: GqlProductNode): Product {
   const galleryNodes = node.galleryImages?.nodes ?? (node.tamarHoverImage ? [node.tamarHoverImage] : []);
-  const images = [
-    ...(node.image ? [{ id: node.image.id, src: node.image.sourceUrl, alt: node.image.altText }] : []),
-    ...galleryNodes.map((n) => ({ id: n.id, src: n.sourceUrl, alt: n.altText })),
-  ];
+  const videos = new Map((node.tamarGalleryVideos ?? []).map((v) => [v.imageId, v]));
+  const toImage = (n: GqlImage): ProductImage => {
+    const v = n.databaseId ? videos.get(n.databaseId) : undefined;
+    const type = v?.type === "mp4" || v?.type === "youtube" || v?.type === "vimeo" ? v.type : undefined;
+    return {
+      id: n.id,
+      src: n.sourceUrl,
+      alt: n.altText,
+      ...(v && type ? { video: { type, url: v.url, size: v.size === "cover" ? ("cover" as const) : ("contain" as const) } } : {}),
+    };
+  };
+  const images = [...(node.image ? [toImage(node.image)] : []), ...galleryNodes.map(toImage)];
 
   const attributes: ProductAttribute[] =
     node.attributes?.nodes.map((a) => ({

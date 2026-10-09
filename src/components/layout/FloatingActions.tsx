@@ -34,9 +34,19 @@ export function FloatingActions({ whatsappNumber }: { whatsappNumber: string }) 
         target="_blank"
         rel="noopener noreferrer"
         aria-label="שוחחו איתנו בוואטסאפ"
-        className="group fixed bottom-[80px] left-5 z-[80] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_-6px_rgba(37,211,102,0.6)] transition-transform duration-300 hover:scale-110 sm:left-6 lg:bottom-[84px]"
+        className="group fixed bottom-[80px] left-5 z-[80] flex items-center sm:left-6 lg:bottom-[84px]"
+        dir="ltr"
       >
-        <WhatsAppIcon className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4dc247] text-white shadow-[0_6px_20px_-4px_rgba(0,0,0,0.3)]">
+          <WhatsAppIcon className="h-7 w-7" />
+        </span>
+        <span
+          dir="rtl"
+          className="pointer-events-none absolute left-[52px] top-1/2 flex -translate-x-2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-4 py-1.5 text-[16px] font-normal leading-6 text-[#444] opacity-0 shadow-[0_2px_12px_rgba(0,0,0,0.15)] transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+        >
+          <span aria-hidden>💭</span>
+          <span>יש לך שאלה?</span>
+        </span>
       </a>
 
       <button

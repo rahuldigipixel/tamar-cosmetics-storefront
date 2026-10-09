@@ -2,6 +2,8 @@ export interface ProductImage {
   id: string;
   src: string;
   alt: string;
+  /** Video attached to this image in wp-admin; the gallery shows a play button over the image. */
+  video?: { type: "mp4" | "youtube" | "vimeo"; url: string; size: "contain" | "cover" };
 }
 
 export interface ProductLabel {

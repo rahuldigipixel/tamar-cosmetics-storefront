@@ -330,8 +330,8 @@ export function CheckoutForm({
         // GoCredit created the payment request; `redirect` is its payment page.
         if (!redirect) throw new Error("לא ניתן לפתוח את דף התשלום המאובטח כרגע. נסו שוב.");
         if (activePayment.paymentType === "paypal") {
-          // The loader stays up until the browser leaves for PayPal.
-          clearCart();
+          // The loader stays up until the browser leaves for PayPal. The cart stays until the order is paid
+          // (/checkout/success clears it) so a cancelled/failed PayPal payment comes back to a full cart.
           window.location.assign(redirect);
           return;
         }

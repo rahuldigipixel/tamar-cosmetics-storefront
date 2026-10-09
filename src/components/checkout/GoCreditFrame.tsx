@@ -88,7 +88,7 @@ export function GoCreditFrame({ iframeUrl, orderId, orderKey }: { iframeUrl: str
         title="תשלום מאובטח"
         onLoad={handleLoad}
         allow="payment *"
-        className="block h-[min(950px,calc(100vh-12rem))] min-h-[560px] w-full border-0"
+        className="block h-[min(665px,calc((100vh-12rem)*0.7))] min-h-[392px] w-full border-0"
       />
     </div>
   );

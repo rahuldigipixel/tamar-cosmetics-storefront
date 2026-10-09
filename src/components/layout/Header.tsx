@@ -370,7 +370,7 @@ export function Header({
     );
     const className =
       "flex h-[40px] items-center px-[10px] text-[14px] font-bold text-[#333] transition-colors hover:text-[rgba(51,51,51,.6)]";
-    return pathname === "/cart" || pathname === "/checkout" ? (
+    return /^\/(cart|checkout)\/?$/.test(pathname) ? (
       <Link href="/cart" dir="ltr" aria-label="עגלת קניות" className={className}>
         {content}
       </Link>

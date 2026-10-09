@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -10,7 +11,12 @@ import { formatPrice } from "@/lib/utils/formatPrice";
 import { renderShippingMessage, useFreeShipping } from "@/components/cart/FreeShippingProvider";
 
 export function CartDrawer() {
-  const isOpen = useCartStore((s) => s.isDrawerOpen);
+  // The side cart is redundant on the full cart / checkout pages, so it never opens there
+  // (whatever triggers it: header icon, bottom nav, add-to-cart).
+  const pathname = usePathname();
+  // trailingSlash is on, so the path arrives as "/cart/".
+  const onCartPage = /^\/(cart|checkout)\/?$/.test(pathname);
+  const isOpen = useCartStore((s) => s.isDrawerOpen) && !onCartPage;
   const closeDrawer = useCartStore((s) => s.closeDrawer);
   const cart = useCartStore((s) => s.cart);
   const updateItemQuantity = useCartStore((s) => s.updateItemQuantity);
@@ -21,6 +27,11 @@ export function CartDrawer() {
   const { threshold, msgRemaining, msgReachedDrawer } = useFreeShipping();
   const remaining = Math.max(0, threshold - cartTotal);
   const progress = Math.min(100, (cartTotal / threshold) * 100);
+
+  // Reset the stored flag on these pages so the drawer doesn't pop open after navigating away.
+  useEffect(() => {
+    if (onCartPage) closeDrawer();
+  }, [onCartPage, closeDrawer]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -48,7 +59,7 @@ export function CartDrawer() {
       />
 
       <aside
-        className={`fixed inset-y-0 end-0 z-[95] flex w-[90%] max-w-[400px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 end-0 z-[95] flex w-[90%] max-w-[340px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full"
         }`}
         role="dialog"
@@ -89,7 +100,12 @@ export function CartDrawer() {
                 return (
                   <li key={item.key} className="relative flex gap-[15px] border-b border-black/5 p-[15px] transition-colors hover:bg-black/[0.04]">
                     {item.product.image ? (
-                      <div className="relative h-[65px] w-[65px] shrink-0">
+                      <Link
+                        prefetch={false}
+                        href={`/product/${item.product.slug}`}
+                        onClick={closeDrawer}
+                        className="relative block h-[65px] w-[65px] shrink-0"
+                      >
                         <Image
                           src={item.product.image.src}
                           alt={item.product.image.alt || item.product.name}
@@ -97,11 +113,20 @@ export function CartDrawer() {
                           sizes="65px"
                           className="object-cover"
                         />
-                      </div>
+                      </Link>
                     ) : null}
 
                     <div className="min-w-0 flex-1 pe-5 text-start">
-                      <p className="mb-2 line-clamp-3 text-[16px] leading-[1.4] text-black">{item.product.name}</p>
+                      <p className="mb-2 line-clamp-3 text-[16px] leading-[1.4] text-black">
+                        <Link
+                          prefetch={false}
+                          href={`/product/${item.product.slug}`}
+                          onClick={closeDrawer}
+                          className="transition-colors hover:text-brand-accent"
+                        >
+                          {item.product.name}
+                        </Link>
+                      </p>
                       {item.variation ? (
                         <p className="text-[14.4px] leading-5 text-[#0c0c0c]">{item.variation.name}</p>
                       ) : null}
@@ -111,7 +136,7 @@ export function CartDrawer() {
                         </p>
                       ) : null}
 
-                      <div className="mb-2 flex h-8 w-fit items-center rounded-full border border-black/10 text-[13px] text-[#0c0c0c]">
+                      {item.locked ? null : <div className="mb-2 flex h-8 w-fit items-center rounded-full border border-black/10 text-[13px] text-[#0c0c0c]">
                         <button
                           type="button"
                           onClick={() => updateItemQuantity(item.key, item.quantity - 1)}
@@ -130,7 +155,7 @@ export function CartDrawer() {
                         >
                           <Plus className="h-3 w-3" />
                         </button>
-                      </div>
+                      </div>}
 
                       <p className="flex flex-wrap items-baseline gap-x-1.5 text-[14px] leading-6 text-[#bbb]">
                         <span>{item.quantity} ×</span>
@@ -139,16 +164,19 @@ export function CartDrawer() {
                           {formatPrice(unit.toFixed(2))}
                         </span>
                       </p>
+                      {item.offerName ? <p className="text-[13px] font-bold leading-5 text-[#0c0c0c]">{item.offerName}</p> : null}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.key)}
-                      aria-label="הסרה"
-                      className="absolute left-[10px] top-[13px] flex h-5 w-5 items-center justify-center rounded-full text-[#333] hover:bg-brand-accent/10"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+                    {item.locked ? null : (
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.key)}
+                        aria-label="הסרה"
+                        className="absolute left-[10px] top-[13px] flex h-5 w-5 items-center justify-center rounded-full text-[#333] hover:bg-brand-accent/10"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </li>
                 );
               })}

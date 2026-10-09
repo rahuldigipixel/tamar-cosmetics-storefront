@@ -43,7 +43,7 @@ export function MobileBottomNav() {
     ) : null;
 
   const active = (href: string) => (pathname === href || pathname.startsWith(`${href}/`) ? "text-brand-accent" : "");
-  const onCartPage = pathname === "/cart" || pathname === "/checkout";
+  const onCartPage = /^\/(cart|checkout)\/?$/.test(pathname);
 
   const cartInner = (
     <>

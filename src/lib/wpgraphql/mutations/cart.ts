@@ -13,6 +13,8 @@ const CART_FIELDS = /* GraphQL */ `
     nodes {
       key
       quantity
+      tamarOfferName
+      tamarOfferLocked
       total(format: RAW)
       subtotal(format: RAW)
       product {

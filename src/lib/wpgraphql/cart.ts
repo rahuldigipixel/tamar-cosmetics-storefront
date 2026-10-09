@@ -22,6 +22,8 @@ interface GqlCart {
     nodes: {
       key: string;
       quantity: number;
+      tamarOfferName?: string | null;
+      tamarOfferLocked?: boolean | null;
       total: string;
       subtotal: string;
       product: {
@@ -72,6 +74,8 @@ function normalizeCart(gqlCart: GqlCart | null): Cart {
       quantity: n.quantity,
       total: n.total,
       subtotal: n.subtotal,
+      offerName: n.tamarOfferName ?? undefined,
+      locked: n.tamarOfferLocked === true,
       regularPrice: n.variation?.node?.regularPrice ?? n.product.node.regularPrice ?? undefined,
       product: {
         id: n.product.node.id,

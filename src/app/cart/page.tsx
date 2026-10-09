@@ -186,14 +186,16 @@ export default function CartPage() {
                   >
                     {/* remove — top-left corner of the card on mobile */}
                     <td className="absolute left-[-7px] top-[-7px] flex text-center min-[769px]:static min-[769px]:table-cell min-[769px]:w-[40px] min-[769px]:border-b min-[769px]:border-black/[0.106] min-[769px]:align-middle">
-                      <button
-                        type="button"
-                        onClick={() => void track(["items", "totals"], () => removeItem(item.key)).catch(() => {})}
-                        aria-label="הסרה"
-                        className="mx-auto flex h-[30px] w-[30px] items-center justify-center text-[#333] transition-colors hover:text-brand-accent"
-                      >
-                        <X className="h-5 w-5" strokeWidth={1.2} />
-                      </button>
+                      {item.locked ? null : (
+                        <button
+                          type="button"
+                          onClick={() => void track(["items", "totals"], () => removeItem(item.key)).catch(() => {})}
+                          aria-label="הסרה"
+                          className="mx-auto flex h-[30px] w-[30px] items-center justify-center text-[#333] transition-colors hover:text-brand-accent"
+                        >
+                          <X className="h-5 w-5" strokeWidth={1.2} />
+                        </button>
+                      )}
                     </td>
                     {/* thumbnail — top-right of the card on mobile */}
                     <td className="absolute right-0 top-0 w-[100px] min-[769px]:static min-[769px]:table-cell min-[769px]:w-auto min-[769px]:border-b min-[769px]:border-black/[0.106] min-[769px]:px-3 min-[769px]:py-[15px] min-[769px]:align-middle min-[769px]:text-right">
@@ -230,7 +232,11 @@ export default function CartPage() {
                     </td>
                     <td data-title="כמות" className={`${TD} ${MOBILE_ROW} text-left min-[769px]:text-right`}>
                       {/* Controls sit at the top-left of a 45px box, as in the original */}
-                      <div className="flex h-[45px] items-start justify-end pl-[5px] min-[769px]:w-[110px]">
+                      {item.locked ? (
+                        <div className="flex h-[45px] items-start justify-end pl-[5px] min-[769px]:w-[110px]">
+                          <span className="h-[25px] min-w-[25px] text-center text-[14px] leading-[25px] tabular-nums">{item.quantity}</span>
+                        </div>
+                      ) : <div className="flex h-[45px] items-start justify-end pl-[5px] min-[769px]:w-[110px]">
                         <button
                           type="button"
                           onClick={() => setQty(item.key, shownQty - 1)}
@@ -250,10 +256,14 @@ export default function CartPage() {
                         >
                           +
                         </button>
-                      </div>
+                      </div>}
                     </td>
                     <td data-title="סכום ביניים" className={`${TD} ${MOBILE_ROW} max-[769px]:!mb-0 max-[769px]:border-b-0 text-left`}>
+                      {item.locked && onSale ? (
+                        <span className="me-[6px] inline-block text-[14px] text-[#777] line-through">{formatPrice(regularPrice * item.quantity)}</span>
+                      ) : null}
                       <span className="text-[16px] font-semibold text-brand-accent">{formatPrice(item.total)}</span>
+                      {item.offerName ? <p className="text-[14px] font-bold text-[#0c0c0c]">{item.offerName}</p> : null}
                     </td>
                   </tr>
                 );

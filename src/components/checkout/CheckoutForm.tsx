@@ -580,6 +580,7 @@ export function CheckoutForm({
                         </td>
                         <td className={`${TD} shrink-0 text-end`}>
                           <span className="text-[#777]">{formatPrice(item.total)}</span>
+                          {item.offerName ? <strong className="block text-[12px] font-bold leading-[16px] text-[#0c0c0c]">{item.offerName}</strong> : null}
                         </td>
                       </tr>
                     ))}

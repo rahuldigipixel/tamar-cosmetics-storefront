@@ -5,6 +5,10 @@ export interface CartItem {
   subtotal: string;
   /** Unit regular (pre-sale) price, raw number string. */
   regularPrice?: string;
+  /** YITH rule behind this line (free BOGO item, gift, special offer). */
+  offerName?: string;
+  /** Added by a dynamic-pricing rule (free BOGO item / gift): quantity and removal are managed by the rule. */
+  locked?: boolean;
   product: {
     id: string;
     databaseId: number;

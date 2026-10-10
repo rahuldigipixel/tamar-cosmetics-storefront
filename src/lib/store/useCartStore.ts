@@ -28,7 +28,8 @@ interface CartState {
   fetchCheckoutCart: () => Promise<void>;
   /** After a successful order the server cart is gone — drop the persisted copy too. */
   clearCart: () => void;
-  addItem: (productId: number, quantity?: number, variationId?: number) => Promise<void>;
+  /** `openDrawer: false` re-adds silently (the cart page's "undo remove"). */
+  addItem: (productId: number, quantity?: number, variationId?: number, openDrawer?: boolean) => Promise<void>;
   updateItemQuantity: (key: string, quantity: number) => Promise<void>;
   /** Applies several quantity changes in one request (the cart page's "update cart" button). */
   updateItemQuantities: (items: { key: string; quantity: number }[]) => Promise<void>;
@@ -161,7 +162,7 @@ export const useCartStore = create<CartState>()(
 
       clearCart: () => set({ cart: EMPTY_CART, paymentGateways: [] }),
 
-      addItem: async (productId, quantity = 1, variationId) => {
+      addItem: async (productId, quantity = 1, variationId, openDrawer = true) => {
         set({ loading: true });
         try {
           const { cart, sessionToken } = await cartFetch("/api/cart/add/", get().sessionToken, {
@@ -169,7 +170,7 @@ export const useCartStore = create<CartState>()(
             quantity,
             variationId,
           });
-          set({ cart, sessionToken, isDrawerOpen: true });
+          set({ cart, sessionToken, ...(openDrawer ? { isDrawerOpen: true } : {}) });
         } finally {
           set({ loading: false });
         }

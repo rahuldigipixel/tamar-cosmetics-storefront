@@ -40,6 +40,7 @@ export default function CartPage() {
   const shippingAddress = useCartStore((s) => s.shippingAddress);
   const changeShippingAddress = useCartStore((s) => s.changeShippingAddress);
   const removeItem = useCartStore((s) => s.removeItem);
+  const addItem = useCartStore((s) => s.addItem);
   const applyCoupon = useCartStore((s) => s.applyCoupon);
   const removeCoupon = useCartStore((s) => s.removeCoupon);
   const selectShippingMethod = useCartStore((s) => s.selectShippingMethod);
@@ -53,6 +54,9 @@ export default function CartPage() {
   // Quantity edits stay local until "לעדכן סל קניות" is pressed (same as the legacy cart).
   const [pendingQty, setPendingQty] = useState<Record<string, number>>({});
   const [updatingCart, setUpdatingCart] = useState(false);
+  // Last removed line, offered back through the green "removed — undo?" notice (like WooCommerce's).
+  const [removed, setRemoved] = useState<{ name: string; productId: number; variationId?: number; quantity: number } | null>(null);
+  const [undoing, setUndoing] = useState(false);
   // A request in flight dims only the section it changes behind a spinner (like the legacy cart's blockUI):
   // "items" = the left items table, "totals" = the right totals box. Counters, so overlapping requests keep
   // a section dimmed until the last one ends.
@@ -101,6 +105,50 @@ export default function CartPage() {
     }
   }
 
+  function handleRemove(item: (typeof cart.items)[number]) {
+    const snapshot = {
+      name: item.product.name,
+      productId: item.product.databaseId,
+      variationId: item.variation?.databaseId,
+      quantity: item.quantity,
+    };
+    // Hide a previous notice while the cart reloads; show the new one only once the removal has finished.
+    setRemoved(null);
+    void track(["items", "totals"], () => removeItem(item.key))
+      .then(() => setRemoved(snapshot))
+      .catch(() => {});
+  }
+
+  async function handleUndo() {
+    if (!removed || undoing) return;
+    setUndoing(true);
+    try {
+      await track(["items", "totals"], () => addItem(removed.productId, removed.quantity, removed.variationId, false));
+      setRemoved(null);
+    } catch (err) {
+      setCouponError((err as Error).message || "לא ניתן להחזיר את המוצר לסל, נסו שוב.");
+    } finally {
+      setUndoing(false);
+    }
+  }
+
+  const removedNotice = removed ? (
+    <div
+      role="status"
+      dir="rtl"
+      className="mb-[30px] flex items-center justify-start gap-[14px] bg-[#3d9341] px-[30px] py-[20.5px] text-[12px] font-normal leading-[19px] text-white max-[768px]:text-[18px] max-[768px]:leading-[26px]"
+    >
+      {/* RTL: the first child sits on the right, as in the legacy notice (icon, then text) */}
+      <Check aria-hidden className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
+      <span className="text-right">
+        “{removed.name}” הוסר.{" "}
+        <button type="button" onClick={() => void handleUndo()} disabled={undoing} className="underline disabled:opacity-60">
+          לבטל?
+        </button>
+      </span>
+    </div>
+  ) : null;
+
   async function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
     setCouponError(null);
@@ -135,6 +183,7 @@ export default function CartPage() {
   if (cart.items.length === 0) {
     return (
       <div className="mx-auto max-w-[1600px] px-[25px] py-20 text-center">
+        {removedNotice}
         <ShoppingBag className="mx-auto h-16 w-16 text-black/15" />
         <h1 className="mt-4 text-2xl font-bold">סל הקניות שלך ריק כרגע.</h1>
         <Link href="/shop" className={`${PRIMARY_BTN} mt-6 px-8 py-3 text-base font-semibold`}>
@@ -149,6 +198,7 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-[25px] pb-12 pt-[50px] text-left text-[12px] leading-[1.6] text-black max-[768px]:text-[18px]">
+      {removedNotice}
       <div className="grid grid-cols-[minmax(0,1fr)] min-[1025px]:grid-cols-[57%_minmax(0,1fr)] min-[1025px]:gap-x-[30px] min-[1200px]:grid-cols-[calc(66.6667%-15px)_calc(33.3333%-15px)]">
         {/* ── items column ── */}
         <div className="relative order-1 mb-[40px] min-w-0 min-[1025px]:mb-0">
@@ -189,7 +239,7 @@ export default function CartPage() {
                       {item.locked ? null : (
                         <button
                           type="button"
-                          onClick={() => void track(["items", "totals"], () => removeItem(item.key)).catch(() => {})}
+                          onClick={() => handleRemove(item)}
                           aria-label="הסרה"
                           className="mx-auto flex h-[30px] w-[30px] items-center justify-center text-[#333] transition-colors hover:text-brand-accent"
                         >

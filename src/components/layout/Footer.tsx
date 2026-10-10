@@ -64,8 +64,8 @@ const SOCIAL: Record<string, SocialIcon> = {
   },
 };
 
-const HEADING = "text-[16px] font-bold leading-[1.2] text-black md:text-[21px] md:leading-[25.2px]";
-const TEXT = "[font-family:sans-serif] text-[15px] leading-[19.5px] text-[#242424] md:text-[16px] md:leading-[21px]";
+const HEADING = "text-[16px] font-bold leading-[1.2] text-black md:text-[21px] md:leading-[25.2px] lg:text-[17px] lg:leading-[21px] min-[1280px]:text-[21px] min-[1280px]:leading-[25.2px]";
+const TEXT = "[font-family:sans-serif] text-[15px] leading-[19.5px] text-[#242424] md:text-[16px] md:leading-[21px] lg:text-[14px] lg:leading-[18px] min-[1280px]:text-[16px] min-[1280px]:leading-[21px]";
 const LINK_HOVER = "transition-colors hover:text-brand-accent";
 
 /** Internal paths go through next/link (no prefetch — dynamic routes re-run their backend query); others are plain anchors. */
@@ -237,11 +237,11 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
       style={footer.background ? { backgroundImage: `url(${footer.background.url})` } : undefined}
     >
       <div
-        className="mx-auto grid max-w-[1642px] grid-cols-1 gap-x-5 gap-y-8 px-[15px] pb-[14px] pt-[52px] md:grid-cols-2 md:pt-[62px] xl:[grid-template-columns:var(--footer-cols)] xl:gap-y-0 xl:ps-[27px] xl:pe-1"
+        className="mx-auto grid max-w-[1642px] grid-cols-1 gap-x-5 gap-y-8 px-[15px] lg:gap-x-3 min-[1280px]:gap-x-5 pb-[14px] pt-[52px] md:grid-cols-2 md:pt-[62px] lg:[grid-template-columns:var(--footer-cols)] lg:gap-y-0 lg:ps-[15px] lg:pe-[10px] min-[1280px]:ps-[27px] min-[1280px]:pe-1"
         style={{ "--footer-cols": gridCols } as React.CSSProperties}
       >
         {/* Logo + social + round service badge */}
-        <div className="order-1 flex flex-col items-center md:col-span-2 xl:order-none xl:col-span-1 xl:w-[120px]">
+        <div className="order-1 flex flex-col items-center md:col-span-2 lg:order-none lg:col-span-1 lg:w-[120px]">
           {logo ? (
             <Image
               src={logo.url}
@@ -292,7 +292,7 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
           <div
             key={column.id}
             style={{ "--mo": COLUMN_MOBILE_ORDER[i] ?? 50 } as React.CSSProperties}
-            className={`order-(--mo) xl:order-none ${column.groups.length > 1 ? "md:col-span-2 xl:col-span-1" : ""}`}
+            className={`order-(--mo) lg:order-none ${column.groups.length > 1 ? "md:col-span-2 lg:col-span-1" : ""}`}
           >
             {column.title || column.mobileTitle ? (
               <h3 className={HEADING}>
@@ -308,7 +308,7 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
               
             ) : null}
             <div
-              className={`mt-[20px] grid grid-cols-1 gap-x-[14px] ${column.groups.length > 1 ? "md:[grid-template-columns:repeat(var(--groups),minmax(0,1fr))] xl:pe-[39px]" : ""}`}
+              className={`mt-[20px] grid grid-cols-1 gap-x-[14px] ${column.groups.length > 1 ? "md:[grid-template-columns:repeat(var(--groups),minmax(0,1fr))] lg:pe-[12px] min-[1280px]:pe-[39px]" : ""}`}
               style={{ "--groups": column.groups.length } as React.CSSProperties}
             >
               {column.groups.map((items, i) => (

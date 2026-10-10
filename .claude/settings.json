@@ -547,7 +547,13 @@
       "Bash(node _m.mjs)",
       "Bash(sed -i 's#const r = await p.evaluate\\(\\(\\) => {#const r = await p.evaluate\\(\\(\\) => {\\\\n const t=[...document.querySelectorAll\\(\"*\"\\)].filter\\(e=>e.children.length==0\\\\&\\\\&e.textContent.trim\\(\\)==\"מוצרים לציפורניים\"\\);\\\\n return t.map\\(e=>{const o=[];let n=e;for\\(let i=0;i<3\\\\&\\\\&n;i++\\){const c=getComputedStyle\\(n\\),r=n.getBoundingClientRect\\(\\);o.push\\([n.tagName,n.className,c.fontSize,c.fontWeight,c.fontFamily.slice\\(0,14\\),c.color,c.backgroundColor,c.padding,c.borderRadius,c.lineHeight,Math.round\\(r.width\\),Math.round\\(r.height\\)].join\\(\"|\"\\)\\);n=n.parentElement}return o.join\\(\"\\\\\\\\n\"\\)}\\).join\\(\"\\\\\\\\n---\\\\\\\\n\"\\);#' _m.mjs)",
       "Bash(cp \"C:/Users/user/AppData/Local/Temp/claude/e--tamar-cosmetic/cd1855cf-efcd-4749-bd13-fd1d10d8712d/scratchpad/m.mjs\" _m.mjs)",
-      "Bash(sed -i 's#console.log\\(r.join\\(.\\\\\\\\n.\\)\\);#console.log\\(r\\);#' _m.mjs)"
+      "Bash(sed -i 's#console.log\\(r.join\\(.\\\\\\\\n.\\)\\);#console.log\\(r\\);#' _m.mjs)",
+      "Bash(curl -s https://tamar-cosmetics-storefront-six.vercel.app/checkout/)",
+      "Bash(grep -o \"לידיעתך[^<]\\\\{0,60\\\\}\")",
+      "Bash(curl -s https://tamar-cosmetics-storefront-six.vercel.app/)",
+      "Bash(grep -o \"https\\\\?://[^\\\\\"' \\)\\\\\\\\]*wp-content[^\\\\\"' \\)\\\\\\\\]\\\\{0,10\\\\}\")",
+      "Bash(sed -E 's/=.*//')",
+      "Bash(curl -s -m 30 -L -X POST http://tamarcosmetics-co-il-dev.s808.upress.link/graphql -H 'Content-Type: application/json' -d '{\"query\":\"{ tamarCheckoutSettings { noticePopupMessage noticeText } }\"}')"
     ],
     "deny": [
       "Read(node_modules/**)",

@@ -611,7 +611,21 @@ export function CheckoutForm({
                           <strong className="font-semibold">&times;&nbsp;{item.quantity}</strong>
                         </td>
                         <td className={`${TD} shrink-0 text-end`}>
-                          <span className="text-[#777]">{formatPrice(item.total)}</span>
+                          {(() => {
+                            const regular = Number(item.regularPrice);
+                            const unit = item.quantity > 0 ? Number(item.subtotal) / item.quantity : 0;
+                            // Like the cart page: only rule-added (free BOGO/gift) lines show their regular price
+                            // struck through; ordinary sale products show just the price charged.
+                            const freeByRule = !!item.locked && Number.isFinite(regular) && regular > unit + 0.001;
+                            return (
+                              <>
+                                {freeByRule ? (
+                                  <span className="me-[6px] inline-block text-[#777] line-through">{formatPrice(regular * item.quantity)}</span>
+                                ) : null}
+                                <span className="text-[#777]">{formatPrice(item.total)}</span>
+                              </>
+                            );
+                          })()}
                           {item.offerName ? <strong className="block text-[12px] font-bold leading-[16px] text-[#0c0c0c]">{item.offerName}</strong> : null}
                         </td>
                       </tr>

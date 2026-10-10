@@ -19,7 +19,7 @@ export function ProductImageBadges({
   return (
     <div dir="ltr" className={`tamar-image-labels pointer-events-none absolute z-[2] grid grid-cols-2 items-start origin-top-left max-md:scale-[0.65] transition-opacity duration-200 [@media(hover:hover)]:group-hover:opacity-0 ${className}`}>
       <ProductLabels html={html} />
-      <div className="col-start-1 row-start-1 mb-[5px]">
+      <div className="col-start-1 row-start-1 mb-[5px] max-md:pt-[55px]">
         <ShippingBadge price={price} className="!static" />
       </div>
     </div>

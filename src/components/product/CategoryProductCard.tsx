@@ -46,7 +46,7 @@ export function CategoryProductCard({
   const [quantity, setQuantity] = useState(1);
   const priceCls = wideMobile
     ? "text-[24px] font-bold leading-[26px] text-[#d52027]"
-    : "text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px] md:leading-[26px]";
+    : "text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px] md:leading-[26px] lg:max-[1279px]:text-[21px]";
   // Legacy struck-through price: 15px (regular weight — the legacy 300 was too thin to read) #535353 with a solid native line-through (the old half-opacity overlay line looked washed out).
   const regularCls = `${
     wideMobile
@@ -66,11 +66,11 @@ export function CategoryProductCard({
   // Right-side labels start below the top-right stack (discount badge, brand logo).
   const labelRightTop = (discount ? 24 : 0) + (product.brandLogoUrl ? 50 : 0) + (discount || product.brandLogoUrl ? 6 : 0);
   const couponBar = product.coupon ? (
-    <p className="border border-brand-accent p-[2px] text-center text-[11px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px]">
+    <p className="border border-brand-accent p-[2px] text-center text-[11px] leading-[1.4] font-normal whitespace-nowrap text-brand-accent md:border-2 md:p-[2px] md:text-[12px] lg:max-[1279px]:p-[1px] lg:max-[1279px]:text-[10px]">
       <span dir="rtl">השתמש בקוד</span> <strong className="font-bold">{product.coupon.code}</strong>
       {product.coupon.label ? (
         <>
-          <span className="mx-[2px] text-black/40 md:mx-[5px]">|</span>
+          <span className="mx-[2px] text-black/40 md:mx-[5px] lg:max-[1279px]:mx-[2px]">|</span>
           <span dir="ltr">{product.coupon.label}</span>
         </>
       ) : null}
@@ -130,11 +130,11 @@ export function CategoryProductCard({
       </div>
 
       {/* Quick view + wishlist — shown on hover. */}
-      <ProductHoverActions product={product} hideWishlist={wishlist} className={wishlist ? "top-0 left-0" : standalone ? "top-[11px] left-[6px]" : "top-[11px] left-[11px] md:top-[21px] md:left-[21px]"} />
+      <ProductHoverActions product={product} hideWishlist={wishlist} className={wishlist ? "top-0 left-0" : standalone ? "top-[11px] left-[6px]" : "top-[11px] left-[11px] md:top-[21px] md:left-[21px] lg:max-[1279px]:top-[14px] lg:max-[1279px]:left-[10px]"} />
 
       <Link prefetch={false}
         href={`/product/${product.slug}`}
-        className="mt-[8px] md:mt-[12px] line-clamp-3 md:min-h-[36px] text-[15px] leading-[18px] text-black transition-colors group-hover:text-[#d52027]"
+        className="mt-[8px] md:mt-[12px] line-clamp-3 md:min-h-[36px] text-[15px] leading-[18px] lg:max-[1279px]:text-[14px] lg:max-[1279px]:leading-[17px] text-black transition-colors group-hover:text-[#d52027]"
       >
         {product.name}
       </Link>
@@ -144,7 +144,7 @@ export function CategoryProductCard({
         <div className="-mt-[5px] mb-[10px] empty:hidden md:mt-0 md:mb-0"><FlashyStarRating rating={product.averageRating} count={product.reviewCount} className="h-[20px] md:mb-[10px]" /></div>
         {product.type === "simple" ? (
           <>
-            <div className="flex items-start justify-between gap-1 md:items-center">
+            <div className="flex items-start justify-between gap-1 md:items-center lg:max-[1279px]:flex-col lg:max-[1279px]:items-stretch lg:max-[1279px]:gap-[8px]">
               {/* Prices (one line) with SKU underneath, on the right (RTL start) */}
               <div className={`flex shrink-0 flex-col md:gap-[6px] ${wideMobile ? "gap-[6px]" : "gap-[2px]"}`}>
                 <div className={rowCls("md:gap-x-[6px]")}>
@@ -162,7 +162,7 @@ export function CategoryProductCard({
                 ) : null}
               </div>
               {/* Qty + cart on the left (RTL end) */}
-              <div className="flex min-w-0 items-center gap-[2px] md:gap-1">
+              <div className="flex min-w-0 items-center gap-[2px] md:gap-1 lg:max-[1279px]:justify-between">
                 <QuantityStepper quantity={quantity} onChange={setQuantity} size={wideMobile ? "rowWide" : "row"} />
                 <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
               </div>

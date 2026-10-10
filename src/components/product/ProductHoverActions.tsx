@@ -11,7 +11,7 @@ const subscribeNoop = () => () => {};
 // Reference's quick-view glyph: an open eye with lashes on top that swaps to a
 // closed (lashes-down) eye while its button is hovered.
 function QuickViewIcon() {
-  const svg = "h-[22px] w-[22px] fill-none stroke-current stroke-[1.5] [stroke-linecap:round] [stroke-linejoin:round]";
+  const svg = "h-[22px] w-[22px] lg:max-[1279px]:h-[18px] lg:max-[1279px]:w-[18px] fill-none stroke-current stroke-[1.5] [stroke-linecap:round] [stroke-linejoin:round]";
   return (
     <>
       <svg viewBox="0 0 24 24" className={`${svg} group-hover/action:hidden`} aria-hidden>
@@ -47,7 +47,7 @@ function ActionButton({
         onClick={onClick}
         aria-label={label}
         aria-pressed={pressed}
-        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777] max-md:h-[35px] max-md:w-[35px] max-md:rounded-full max-md:shadow-[0_0_4px_rgba(0,0,0,.15)]"
+        className="flex h-[45px] w-[50px] items-center justify-center bg-white text-[#333] transition-colors hover:text-[#777] max-md:h-[28px] max-md:w-[28px] max-md:bg-transparent lg:max-[1279px]:h-[34px] lg:max-[1279px]:w-[38px]"
       >
         {children}
       </button>
@@ -87,7 +87,7 @@ export function ProductHoverActions({ product, className = "", hideWishlist = fa
           pressed={inWishlist}
           onClick={() => toggleWishlist(product.databaseId)}
         >
-          <Heart className={`h-[20px] w-[20px] max-md:h-[16px] max-md:w-[16px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
+          <Heart className={`h-[20px] w-[20px] max-md:h-[16px] max-md:w-[16px] lg:max-[1279px]:h-[17px] lg:max-[1279px]:w-[17px] stroke-[1.5] ${inWishlist ? "fill-[#d52027] text-[#d52027]" : ""}`} />
         </ActionButton>
       )}
     </div>

@@ -410,7 +410,7 @@ export function Header({
               link rows centered on the same line, search box 71–117px,
               service icons bottom-aligned with it, logo bottom at 127px. */}
           <div className={`flex flex-col ${compact ? "justify-center" : "justify-between pt-[16px] pb-[16px]"}`}>
-            <div className={`h-[40px] items-center gap-[30px] ${compact ? "hidden" : "flex"}`}>
+            <div className={`h-[40px] items-center gap-[12px] min-[1301px]:gap-[30px] ${compact ? "hidden" : "flex"}`}>
               {linksRight.map((link) => (
                 <TopBarLink key={link.id} link={link} variant="nav" />
               ))}
@@ -418,7 +418,7 @@ export function Header({
 
             {/* Service icons — admin-managed (wp-admin → כותרת (Header) →
                 פס עליון). */}
-            <div className={`flex h-[46px] justify-between pl-[1.5vw] ${compact ? "items-center" : "items-end"}`}>
+            <div className={`flex h-[46px] justify-between gap-[6px] pl-0 min-[1301px]:gap-0 min-[1301px]:pl-[1.5vw] ${compact ? "items-center" : "items-end"}`}>
               {serviceIcons.map((item) => {
                 const iconImage = SERVICE_ICON_IMAGES[item.icon];
                 const Icon = SERVICE_ICON_MAP[item.icon] ?? Tag;
@@ -433,14 +433,14 @@ export function Header({
                     </span>
                     {/* Legacy site computes this stack on the service texts (approved per-place exception to the one-font rule). */}
                     <span style={{ fontFamily: '"Open Sans Hebrew", sans-serif' }}>
-                      <span className="mb-[2px] block text-[12px] font-normal leading-[1.2em]">{item.title}</span>
+                      <span className="mb-[2px] block text-[11px] min-[1301px]:text-[12px] font-normal leading-[1.2em]">{item.title}</span>
                       {item.subtitle ? (
-                        <span className="block text-[12px] font-bold leading-[16px]">{item.subtitle}</span>
+                        <span className="block text-[11px] min-[1301px]:text-[12px] font-bold leading-[15px] min-[1301px]:leading-[16px]">{item.subtitle}</span>
                       ) : null}
                     </span>
                   </>
                 );
-                const itemClass = "flex items-center gap-[1vw] text-black";
+                const itemClass = "flex items-center gap-[5px] min-[1301px]:gap-[1vw] text-black";
                 if (!item.url) {
                   return (
                     <div key={item.id} className={itemClass}>
@@ -484,12 +484,12 @@ export function Header({
               ))}
             </div>
 
-            <div className="flex items-center gap-[3%]">
+            <div className="flex items-center gap-[1%] min-[1301px]:gap-[3%]">
               {/* Results dropdown spans the whole header container (the
                   grid below is its positioned ancestor), like the reference. */}
               <HeaderSearch
                 columns="row"
-                formClassName="relative flex h-[46px] flex-1 items-center pr-[calc(4vw+5px)]"
+                formClassName="relative flex h-[46px] flex-1 items-center pr-[4px] min-[1301px]:pr-[calc(4vw+5px)]"
                 inputClassName="h-full w-full rounded-[35px] border border-[#eee] bg-[#eee] pe-[50px] ps-[15px] text-[14px] text-black outline-none placeholder:text-black"
                 buttonClassName="absolute left-0 flex h-[46px] w-[50px] items-center justify-center text-black transition-colors hover:text-[rgba(51,51,51,.6)]"
                 iconClassName="h-5 w-5 stroke-[2]"
@@ -580,7 +580,7 @@ export function Header({
             // live nav break after the same item at every width. 18px-tall
             // rgba(255,255,255,.25) separators, hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center text-[14px] font-bold leading-[17px] transition-colors after:relative after:left-[calc(var(--nav-gap)/-2)] after:block after:h-[18px] after:w-px after:bg-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center text-[11px] min-[1211px]:text-[12px] min-[1425px]:text-[13px] min-[1500px]:text-[14px] font-bold leading-[17px] transition-colors after:relative after:left-[calc(var(--nav-gap)/-2)] after:block after:h-[18px] after:w-px after:bg-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 
@@ -699,7 +699,7 @@ export function Header({
                 size exactly (182×42 / 140×42 pills). */}
             <div className="flex gap-[40px] px-[30px] pt-[20px] pb-[40px]">
               <div className="min-w-0 flex-1">
-                <p className="mb-[10px] text-center text-[28px] font-light leading-[30px] text-black">
+                <p className="mb-[10px] text-center text-[22px] font-light leading-[26px] min-[1301px]:text-[28px] min-[1301px]:leading-[30px] text-black">
                   {decodeHtml(panelMega?.title || panelItem.label)}
                 </p>
 
@@ -720,7 +720,7 @@ export function Header({
                   className={`grid ${
                     imagesMode
                       ? "grid-cols-7 gap-x-[15px] gap-y-[20px] pt-[20px]"
-                      : `gap-x-[24px] gap-y-[18px] pt-[40px] ${panelFeature ? "grid-cols-4" : "grid-cols-5"}`
+                      : `gap-x-[16px] gap-y-[12px] pt-[24px] min-[1301px]:gap-x-[24px] min-[1301px]:gap-y-[18px] min-[1301px]:pt-[40px] ${panelFeature ? "grid-cols-4" : "grid-cols-5"}`
                   }`}
                 >
                   {panelLinks.map((child, index) =>
@@ -758,7 +758,7 @@ export function Header({
                           href={child.url || "#"}
                           prefetch={false}
                           onClick={() => setMenuVisible(false)}
-                          className={`flex items-center gap-[12px] text-[17px] font-light leading-[28px] transition-colors hover:text-[#d52027] ${
+                          className={`flex items-center gap-[8px] text-[14px] font-light leading-[22px] min-[1301px]:gap-[12px] min-[1301px]:text-[17px] min-[1301px]:leading-[28px] transition-colors hover:text-[#d52027] ${
                             isActiveHref(child.url) ? "text-[#d52027]" : "text-black"
                           }`}
                         >

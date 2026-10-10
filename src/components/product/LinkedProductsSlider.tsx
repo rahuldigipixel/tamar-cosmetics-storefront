@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
@@ -94,6 +94,14 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   // setHeight = one full copy of the list; viewHeight = exactly the two rows currently shown, so no third product ever peeks in.
   const [setHeight, setSetHeight] = useState(0);
   const [viewHeight, setViewHeight] = useState(VIEW_FALLBACK);
+  // False for the server render / hydration pass: one copy of the list, natural height, only the first rows shown (CSS below),
+  // so the pre-hydration HTML already looks like the final layout. Flipped before first paint on the client.
+  // useSyncExternalStore: false on the server and during hydration, true right after, with no setState-in-effect.
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   function rowEls(): HTMLElement[] {
     return Array.from(listRef.current?.querySelectorAll<HTMLElement>("[data-row]") ?? []);
@@ -121,6 +129,7 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
   }, []);
 
   useLayoutEffect(() => {
+    if (!ready) return;
     function measure() {
       const rows = rowEls();
       if (rows.length === 0) return;
@@ -131,17 +140,36 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
       setSetHeight(sh);
       const idx = scrollable && el && el.scrollTop >= sh ? nearest(offsets, el.scrollTop) : scrollable ? n : 0;
       setViewHeight(windowFor(rows, offsets, idx));
+      // Always sit exactly on a row boundary: layout shifts after first paint (images, fonts) otherwise leave the window
+      // part-way through the previous row's gap, which is what clipped the first load until an arrow was clicked.
+      if (scrollable && el) el.scrollTop = offsets[idx];
     }
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    window.addEventListener("load", measure);
+    // Rows change height after first paint (images, review stars, fonts) — re-measure so the window never clips a row.
+    const ro = new ResizeObserver(measure);
+    if (listRef.current) ro.observe(listRef.current);
+    // Webfont swap / late layout: measure again once fonts are ready and on the next two frames.
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) measure();
+    });
+    const raf = requestAnimationFrame(() => requestAnimationFrame(measure));
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("load", measure);
+      ro.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, visible]);
+  }, [products, visible, ready]);
 
   // Start on the second copy so there is content both above and below (re-anchored if the measurements change).
   useLayoutEffect(() => {
-    if (scrollable && viewport.current) viewport.current.scrollTop = setHeight;
-  }, [scrollable, setHeight]);
+    if (ready && scrollable && viewport.current) viewport.current.scrollTop = setHeight;
+  }, [ready, scrollable, setHeight]);
 
   function step(dir: 1 | -1) {
     const el = viewport.current;
@@ -159,7 +187,11 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
 
   // Same box + icon size for the top and bottom arrows.
   const chevron = "mx-auto flex h-[32px] w-[48px] items-center justify-center text-black transition-colors hover:text-brand-accent";
-  const copies = scrollable ? COPIES : 1;
+  const copies = scrollable && ready ? COPIES : 1;
+  // Pre-ready only: show just the rows that fit (2 desktop / 1 mobile) and drop the trailing gap of the last one.
+  const preReady = ready
+    ? ""
+    : "[&>li:nth-child(n+3)]:hidden max-md:[&>li:nth-child(n+2)]:hidden [&>li:nth-child(2)]:!pb-0 max-md:[&>li:nth-child(1)]:!pb-0 [&>li:only-child]:!pb-0";
 
   return (
     <section className="mx-auto w-full max-w-[336px] rounded-[12px] border border-[#F3C3CC] bg-white px-[10px] pt-[20px] pb-[20px] text-right max-md:max-w-none md:mx-0" aria-label="מוצרים קשורים">
@@ -171,8 +203,14 @@ export function LinkedProductsSlider({ products }: { products: SliderProduct[] }
         </button>
       ) : null}
 
-      <div ref={viewport} className="my-[10px] overflow-hidden transition-[height] duration-300 ease-out" style={{ height: viewHeight }}>
-        <ul ref={listRef}>
+      <div ref={viewport} className={`my-[10px] overflow-hidden [overflow-anchor:none] ${ready ? "transition-[height] duration-300 ease-out" : ""}`} style={ready ? { height: viewHeight } : undefined}
+        // The window animates its height; once it settles, re-seat on the row boundary in case layout moved meanwhile.
+        onTransitionEnd={() => {
+          const rows = rowEls();
+          if (scrollable && viewport.current && rows.length > products.length) viewport.current.scrollTop = offsetsOf(rows)[nearest(offsetsOf(rows), viewport.current.scrollTop)];
+        }}
+      >
+        <ul ref={listRef} className={preReady}>
           {Array.from({ length: copies }, (_, c) =>
             products.map((p) => <LinkedProductRow key={`${c}-${p.databaseId}`} product={p} />)
           )}

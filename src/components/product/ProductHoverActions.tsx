@@ -1,9 +1,12 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { Heart } from "lucide-react";
 import type { Product } from "@/types/product";
 import { useQuickViewStore } from "@/lib/store/useQuickViewStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
+
+const subscribeNoop = () => () => {};
 
 // Reference's quick-view glyph: an open eye with lashes on top that swaps to a
 // closed (lashes-down) eye while its button is hovered.
@@ -64,7 +67,11 @@ function ActionButton({
  */
 export function ProductHoverActions({ product, className = "", hideWishlist = false }: { product: Product; className?: string; /** Quick view only (the wishlist page itself). */ hideWishlist?: boolean }) {
   const openQuickView = useQuickViewStore((s) => s.open);
-  const inWishlist = useWishlistStore((s) => s.has(product.databaseId));
+  // The store can already hold ids when this hydrates (guest cookie, earlier
+  // page in the session) while the server always renders "not in wishlist";
+  // report false until mounted so the first client render matches the HTML.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const inWishlist = useWishlistStore((s) => s.has(product.databaseId)) && mounted;
   const toggleWishlist = useWishlistStore((s) => s.toggle);
 
   return (

@@ -21,7 +21,7 @@ const OUTER = "mx-auto max-w-[1570px] px-[25px] lg:px-[10px]";
 
 // Shared by every page: black text, 20px paragraph spacing, 10px list-item spacing, embeds and images.
 const COMMON =
-  "!text-right font-[family-name:Arial,Helvetica,sans-serif] [&_p]:!mb-5 [&_p:last-child]:!mb-0 [&_li]:!mb-[10px] [&_ul]:!mb-5 [&_ol]:!mb-5 [&_strong]:!font-semibold [&_b]:!font-bold [&_hr]:my-5 [&_img]:!my-0 [&_img]:!rounded-none [&_img]:mx-auto [&_img]:block [&_img]:h-auto [&_img]:max-w-full [&_iframe]:h-[450px] [&_iframe]:w-full [&_.video]:mx-auto [&_.video]:max-w-[775px] [&_.video_iframe]:aspect-[4/3] [&_.video_iframe]:h-auto";
+  "!text-right font-[family-name:Arial,Helvetica,sans-serif] [&_p]:!mb-5 [&_*:last-child]:!mb-0 [&_li]:!mb-[10px] [&_ul]:!mb-5 [&_ol]:!mb-5 [&_strong]:!font-semibold [&_b]:!font-bold [&_hr]:my-5 [&_img]:!my-0 [&_img]:!rounded-none [&_img]:mx-auto [&_img]:block [&_img]:h-auto [&_img]:max-w-full [&_iframe]:h-[450px] [&_iframe]:w-full [&_.video]:mx-auto [&_.video]:max-w-[775px] [&_.video_iframe]:aspect-[4/3] [&_.video_iframe]:h-auto";
 
 // A paragraph holding 2+ consecutive images (editor output: <p><img><img>…</p> or linked images) becomes a swipeable strip.
 const STRIP_IMG =
@@ -58,7 +58,7 @@ export const CONTENT_PROFILES: Record<string, ContentProfile> = {
     text: `${COMMON} ${T21} [&_h1]:!mb-0 [&_h1]:!text-[28px] [&_h1]:!font-bold [&_h1]:!leading-[39.2px] [&_h1]:!text-[#0c0c0c] [&_h2]:!mb-5 [&_h2]:!mt-0 [&_h2]:!text-[24px] [&_h2]:!font-bold [&_h2]:!leading-[33.6px] [&_h2]:!text-[#0c0c0c] [&_h3]:!mb-5 [&_h3]:!text-[22px] [&_h3]:!font-bold [&_h3]:!leading-[30.8px] [&_h3]:!text-[#0c0c0c] [&_h1_img]:!inline-block [&_h1_img]:!mx-0 [&_h1_img]:!w-[27px] [&_ul]:list-none [&_ul]:pr-0 ${STRIP_LINK}`,
   },
   // תשלומים בכרטיס אשראי: centered 19px/26.22px with 16px paragraph margins; key lines are 24px bold Arial spans (red #ba0000 counts) in the page content
-  creditCard: { top: PAGE_TOP, bottom: PAGE_BOTTOM, outer: OUTER, text: `${COMMON} !text-[18px] !leading-[26.22px] !text-black lg:!text-[19px] [&_p:not([data-x])]:!mb-4` },
+  creditCard: { top: PAGE_TOP, bottom: PAGE_BOTTOM, outer: OUTER, text: `${COMMON} !text-[18px] !leading-[26.22px] !text-black lg:!text-[19px] [&_p:not([data-x])]:!mb-4 [&_p:not([data-x]):last-child]:!mb-0` },
   // תו אמון הציבור: centered 200px badge, 19px/30px intro lines, 15px/24px list (18px on mobile)
   trustSeal: {
     top: PAGE_TOP,

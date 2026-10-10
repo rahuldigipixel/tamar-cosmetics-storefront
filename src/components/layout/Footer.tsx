@@ -233,7 +233,7 @@ export function Footer({ logo = null, data }: { logo?: SiteLogo | null; data?: F
 
   return (
     <footer
-      className="mt-8 bg-white bg-cover bg-[position:50%_100%] bg-no-repeat sm:mt-15 md:bg-[position:0%_100%]"
+      className="mt-[50px] bg-white bg-cover bg-[position:50%_100%] bg-no-repeat md:bg-[position:0%_100%]"
       style={footer.background ? { backgroundImage: `url(${footer.background.url})` } : undefined}
     >
       <div

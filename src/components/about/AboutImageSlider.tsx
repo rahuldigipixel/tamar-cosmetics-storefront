@@ -31,6 +31,10 @@ export function AboutImageSlider({
   });
   const count = images.length;
   if (count === 0) return null;
+  // Flagship page: arrows sit beside the photos exactly like the wholesale
+  // slider; the plain About slider keeps them overlaid on the edges.
+  const startPos = rounded ? "-start-[11px] min-[1704px]:-start-13" : "start-0";
+  const endPos = rounded ? "-end-[11px] min-[1704px]:-end-13" : "end-0";
   return (
     <div className="relative">
       <div
@@ -67,7 +71,7 @@ export function AboutImageSlider({
             type="button"
             onClick={() => step(-1)}
             aria-label="הקודם"
-            className="absolute start-0 top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
+            className={`absolute ${startPos} top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent`}
           >
             <ChevronRight className="h-5 w-5" strokeWidth={1.25} />
           </button>
@@ -75,7 +79,7 @@ export function AboutImageSlider({
             type="button"
             onClick={() => step(1)}
             aria-label="הבא"
-            className="absolute end-0 top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent"
+            className={`absolute ${endPos} top-1/2 z-10 flex h-10 w-10 max-md:h-8 max-md:w-8 -translate-y-1/2 items-center justify-center rounded-none bg-[#fff0ef] text-black transition-colors hover:text-brand-accent`}
           >
             <ChevronLeft className="h-5 w-5" strokeWidth={1.25} />
           </button>

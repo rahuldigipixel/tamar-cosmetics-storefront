@@ -64,7 +64,7 @@ export default async function WholesalePage() {
  </div>
 
  {sliderImages.length > 0 ? (
- <div className="mx-auto max-w-[1600px] px-[15px] py-10 sm:py-14">
+ <div className="mx-auto max-w-[1600px] px-[15px] pt-10 sm:pt-14">
  <WholesaleImageSlider images={sliderImages} />
  </div>
  ) : null}

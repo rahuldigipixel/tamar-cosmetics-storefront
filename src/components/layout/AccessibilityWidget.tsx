@@ -388,13 +388,24 @@ export function AccessibilityWidget() {
           display: flex;
           direction: ltr;
           justify-content: flex-end;
-          /* below the same-size WhatsApp FAB (right-5, elevated), flush with
-             the true bottom edge like the scroll-top button on the left */
-          padding: 0 20px 20px;
+          /* closed: same distance from the bottom as the WhatsApp FAB on the
+             left (--a11y-bottom). open: the FAB rides just above the bar. */
+          --a11y-bottom: 80px;
+          padding: 0 20px var(--a11y-bottom);
+          transition: padding-bottom 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .a11y-wrap--open .a11y-fab-row {
+          padding-bottom: 12px;
         }
         @media (min-width: 640px) {
           .a11y-fab-row {
-            padding: 0 24px 24px;
+            padding-left: 24px;
+            padding-right: 24px;
+          }
+        }
+        @media (min-width: 1024px) {
+          .a11y-fab-row {
+            --a11y-bottom: 65px;
           }
         }
         .a11y-fab {

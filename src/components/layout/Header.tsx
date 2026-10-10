@@ -582,7 +582,7 @@ export function Header({
             // live nav break after the same item at every width. 18px-tall
             // rgba(255,255,255,.25) separators, hover/active rgba(255,255,255,.8).
             const itemClass = (active: boolean) =>
-              `relative flex min-h-[22px] shrink-0 items-center [font-family:Arial,Helvetica,sans-serif] [text-rendering:optimizeLegibility] text-[11px] font-bold leading-[16.8px] transition-colors min-[1211px]:text-[12px] min-[1425px]:text-[13px] min-[1508px]:text-[14px] after:relative after:left-[calc(var(--nav-gap)/-2)] after:block after:h-[18px] after:w-px after:bg-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
+              `relative flex min-h-[22px] shrink-0 items-center text-[14px] font-bold leading-[17px] transition-colors after:relative after:left-[calc(var(--nav-gap)/-2)] after:block after:h-[18px] after:w-px after:bg-white/25 after:content-[''] last:after:hidden hover:text-white/80 ${
                 active ? "text-white/80" : "text-white"
               }`;
 

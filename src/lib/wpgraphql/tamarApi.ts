@@ -319,6 +319,21 @@ export const getWholesalePage = cache(function getWholesalePage() {
   });
 });
 
+/**
+ * Per-form "send to" addresses managed in wp-admin (includes/class-form-recipients.php).
+ * Server-only: the route needs FORM_MAIL_KEY (= TAMAR_MAIL_KEY in wp-config.php) and
+ * returns null otherwise, so callers fall back to the MAIL_TO env var.
+ */
+export function getFormRecipients() {
+  const key = process.env.FORM_MAIL_KEY;
+  if (!key) return Promise.resolve(null);
+  return tamarFetch<Record<string, string>>(`/form-recipients`, {
+    headers: { "X-Tamar-Mail-Key": key },
+    revalidate: 60,
+    tags: ["form-recipients"],
+  });
+}
+
 export interface WholesaleLeadInput {
   name: string;
   email: string;

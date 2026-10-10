@@ -12,6 +12,8 @@ import { resolveFreeShipping } from "@/lib/utils/freeShipping";
 import { sanitizeLabelsCss } from "@/lib/utils/labelsCss";
 import { ShippingBadgeProvider } from "@/components/product/ShippingBadge";
 import { resolveShippingBadge } from "@/lib/utils/shippingBadge";
+import { MarketingConsentProvider } from "@/components/marketing/MarketingConsentProvider";
+import { resolveMarketingConsent } from "@/lib/utils/marketingConsent";
 import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
@@ -68,6 +70,7 @@ export default async function RootLayout({
   const integrations = resolveIntegrations(siteSettings);
   const freeShipping = resolveFreeShipping(siteSettings?.freeShipping);
   const shippingBadge = resolveShippingBadge(siteSettings?.shippingBadge);
+  const marketingConsent = resolveMarketingConsent(siteSettings?.flashyConsent);
   const labelsCss = sanitizeLabelsCss(global?.labelsCss);
 
   return (
@@ -85,7 +88,9 @@ export default async function RootLayout({
         <Header menu={menu} logo={siteSettings?.headerLogo ?? null} stickyLogo={siteSettings?.headerStickyLogo ?? null} bar={bar} />
         <main className="flex-1">
           <ShippingBadgeProvider config={shippingBadge}>
-            <FreeShippingProvider config={freeShipping}>{children}</FreeShippingProvider>
+            <FreeShippingProvider config={freeShipping}>
+              <MarketingConsentProvider config={marketingConsent}>{children}</MarketingConsentProvider>
+            </FreeShippingProvider>
           </ShippingBadgeProvider>
         </main>
         <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} />

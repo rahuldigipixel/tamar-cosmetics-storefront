@@ -28,7 +28,7 @@ interface LoginResponse {
 }
 
 export async function POST(request: NextRequest) {
-  const { username, email, password } = await request.json();
+  const { username, email, password, accept_marketing } = await request.json();
 
   if (!username || !email || !password) {
     return NextResponse.json({ error: "יש למלא שם משתמש, אימייל וסיסמה." }, { status: 400 });
@@ -55,6 +55,14 @@ export async function POST(request: NextRequest) {
     });
     if (loginRes.ok) {
       const login = (await loginRes.json()) as LoginResponse;
+      if (accept_marketing) {
+        // Ticked Flashy box: the plugin subscribes the new contact to its list (best effort — never blocks signup).
+        await fetch(`${wpEnv.wordpressUrl}/wp-json/tamar/v1/flashy-consent`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${login.token}` },
+          cache: "no-store",
+        }).catch(() => undefined);
+      }
       return NextResponse.json({ token: login.token, customer: login.customer });
     }
   } catch {

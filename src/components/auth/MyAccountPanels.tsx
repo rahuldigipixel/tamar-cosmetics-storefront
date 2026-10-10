@@ -10,6 +10,7 @@ import { AUTH_BUTTON_CLASS } from "@/components/auth/authStyles";
 import { AccountDashboard } from "@/components/auth/AccountDashboard";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { TextField } from "@/components/auth/TextField";
+import { useMarketingConsent } from "@/components/marketing/MarketingConsentProvider";
 
 type Mode = "login" | "register";
 
@@ -104,10 +105,14 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [optIn, setOptIn] = useState(false);
+  const marketing = useMarketingConsent();
+  // null = shopper hasn't touched the box → follow Flashy's "ticked by default" setting.
+  const [optInChoice, setOptInChoice] = useState<boolean | null>(null);
+  const optIn = marketing.signup && (optInChoice ?? marketing.checked);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const isValid = username.trim() !== "" && email.trim() !== "" && password !== "" && optIn;
+  // The box is an optional marketing opt-in (Flashy), not a condition for registering.
+  const isValid = username.trim() !== "" && email.trim() !== "" && password !== "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -117,7 +122,7 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
       const res = await fetch("/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, accept_marketing: optIn }),
       });
       const json: { token?: string; customer?: Customer | null; error?: string } = await res.json();
       if (!res.ok) {
@@ -172,15 +177,17 @@ function RegisterPanel({ onRegistered }: { onRegistered: (notice: string) => voi
           onChange={setPassword}
         />
 
-        <label className="flex items-start gap-2 text-[16px] leading-[26px] text-black">
-          <input
-            type="checkbox"
-            checked={optIn}
-            onChange={(e) => setOptIn(e.target.checked)}
-            className="mt-1 h-4 w-4 shrink-0 rounded border-black/30 text-brand-accent focus:ring-brand-accent"
-          />
-          <span>אני מסכימה לקבל דיוור פרסומי באמצעות מייל וסמס מחברת ע.צ.ת. תמר קוסמטיקס בע&quot;מ</span>
-        </label>
+        {marketing.signup ? (
+          <label className="flex items-start gap-2 text-[16px] leading-[26px] text-black">
+            <input
+              type="checkbox"
+              checked={optIn}
+              onChange={(e) => setOptInChoice(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 rounded border-black/30 text-brand-accent focus:ring-brand-accent"
+            />
+            <span>{marketing.text}</span>
+          </label>
+        ) : null}
 
         {error ? <p className="text-[16px] leading-[26px] text-brand-accent">{error}</p> : null}
 

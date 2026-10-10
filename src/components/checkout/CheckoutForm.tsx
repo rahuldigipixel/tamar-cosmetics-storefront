@@ -15,6 +15,7 @@ import { PRIMARY_BTN } from "@/components/cart/cartStyles";
 import { CheckoutLoginBox } from "@/components/checkout/CheckoutLoginBox";
 import { StreetSelect } from "@/components/checkout/StreetSelect";
 import { loadShippingCities, type City } from "@/lib/data/shippingCities";
+import { useMarketingConsent } from "@/components/marketing/MarketingConsentProvider";
 import { GoCreditFrame } from "@/components/checkout/GoCreditFrame";
 import type { GoCreditPaymentType } from "@/lib/wpgraphql/checkoutPage";
 
@@ -109,7 +110,10 @@ export function CheckoutForm({
   const [stateCode, setStateCode] = useState<string | null>(null); // null = follow the cart's shipping city
   const [street, setStreet] = useState("");
   const [note, setNote] = useState("");
-  const [acceptMarketing, setAcceptMarketing] = useState(false);
+  const marketing = useMarketingConsent();
+  // null = shopper hasn't touched the box → follow Flashy's "ticked by default" setting.
+  const [marketingChoice, setMarketingChoice] = useState<boolean | null>(null);
+  const acceptMarketing = marketing.checkout && (marketingChoice ?? marketing.checked);
   const [terms, setTerms] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [termsDoc, setTermsDoc] = useState<{ heading: string; html: string } | null>(null);
@@ -574,15 +578,17 @@ export function CheckoutForm({
                 rows={5}
                 className={`${INPUT} h-[100px] resize-y py-[10px]`}
               />
-              <label className={`${CHECK_LABEL} mt-[15px]`}>
-                <input
-                  type="checkbox"
-                  checked={acceptMarketing}
-                  onChange={(e) => setAcceptMarketing(e.target.checked)}
-                  className={CHECKBOX}
-                />
-                <span>אני מסכימה לקבל דיוור פרסומי באמצעות מייל וסמס מחברת ע.צ.ת. תמר קוסמטיקס בע&quot;מ</span>
-              </label>
+              {marketing.checkout ? (
+                <label className={`${CHECK_LABEL} mt-[15px]`}>
+                  <input
+                    type="checkbox"
+                    checked={acceptMarketing}
+                    onChange={(e) => setMarketingChoice(e.target.checked)}
+                    className={CHECKBOX}
+                  />
+                  <span>{marketing.text}</span>
+                </label>
+              ) : null}
             </div>
 
             {/* ── order review column (receipt box) ── */}

@@ -93,12 +93,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  const parentCategory = primaryCategory?.parent;
  const productUrl = `${wpEnv.siteUrl}/product/${product.slug}`;
 
+ // Full ancestor chain (root → … → deepest), e.g. מוצרים לציפורניים / מוצרי פדיקור / משייפים לכף הרגל.
+ const grandParent = parentCategory?.parent?.node;
+ const categoryChain = primaryCategory
+ ? [
+ ...(grandParent ? [{ name: grandParent.name, slug: grandParent.slug }] : []),
+ ...(parentCategory ? [{ name: parentCategory.name, slug: parentCategory.slug }] : []),
+ { name: primaryCategory.name, slug: primaryCategory.slug },
+ ]
+ : [];
+ const categoryCrumbs = categoryChain.map((c, i) => ({
+ name: c.name,
+ path: `/product-category/${categoryChain
+ .slice(0, i + 1)
+ .map((x) => x.slug)
+ .join("/")}/`,
+ }));
+
  const breadcrumbLd = breadcrumbJsonLd([
  { name: "תמר קוסמטיקס", path: "/" },
- ...(parentCategory ? [{ name: parentCategory.name, path: `/product-category/${parentCategory.slug}/` }] : []),
- ...(primaryCategory
- ? [{ name: primaryCategory.name, path: `/product-category/${parentCategory ? `${parentCategory.slug}/` : ""}${primaryCategory.slug}/` }]
- : []),
+ ...categoryCrumbs,
  { name: product.name, path: `/product/${product.slug}` },
  ]);
 
@@ -236,26 +250,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <Link href="/" className="hover:text-brand-accent">
  עמוד הבית
  </Link>
- {parentCategory ? (
- <>
+ {categoryCrumbs.map((c) => (
+ <span key={c.path} className="contents">
  <span>/</span>
- <Link href={`/product-category/${parentCategory.slug}/`} prefetch={false} className="hover:text-brand-accent">
- {parentCategory.name}
+ <Link href={c.path} prefetch={false} className="hover:text-brand-accent">
+ {c.name}
  </Link>
- </>
- ) : null}
- {primaryCategory ? (
- <>
- <span>/</span>
- <Link
- href={`/product-category/${parentCategory ? `${parentCategory.slug}/` : ""}${primaryCategory.slug}/`}
- prefetch={false}
- className="hover:text-brand-accent"
- >
- {primaryCategory.name}
- </Link>
- </>
- ) : null}
+ </span>
+ ))}
  <span>/</span>
  <span className="font-semibold text-[#333]">{product.name}</span>
  </nav>
@@ -276,7 +278,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  {/* The mobile <h1> above is the only real h1 in the DOM; this desktop variant is a level-1 heading role so crawlers see one <h1>. */}
  <div role="heading" aria-level={1} className="hidden md:block md:text-[26px] md:leading-[32px] lg:text-[34px] lg:leading-[41px] md:font-normal text-black">{product.name}</div>
 
- <FlashyStarRating rating={product.averageRating} count={product.reviewCount} />
+ <FlashyStarRating rating={product.averageRating} count={product.reviewCount} legacy />
 
  {product.shortDescription ? <ProductShortDescription html={product.shortDescription} /> : null}
 

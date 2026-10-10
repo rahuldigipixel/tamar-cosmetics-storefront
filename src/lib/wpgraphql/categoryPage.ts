@@ -100,6 +100,7 @@ export async function getCategoryPageData(
     name: c.name,
     slug: c.slug,
     count: c.count ?? 0,
+    image: c.image?.sourceUrl,
     parentId: c.parent?.node.id,
   }));
 

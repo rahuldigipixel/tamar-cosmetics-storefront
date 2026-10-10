@@ -202,7 +202,6 @@ export function Header({
   // rendered, instead of blanking the instant it closes.
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [pinY, setPinY] = useState(0);
   const [menuTop, setMenuTop] = useState(0);
   const [simpleLeft, setSimpleLeft] = useState(0);
   const [overlayHeight, setOverlayHeight] = useState(0);
@@ -280,10 +279,9 @@ export function Header({
       const docBottom = footerEl ? footerEl.getBoundingClientRect().bottom + window.scrollY : document.documentElement.scrollHeight;
       setOverlayHeight(Math.max(0, docBottom - navBottomInDoc));
     }
-    // Compact header is `fixed`, so a tall panel could never be scrolled
-    // into view. While the menu is open, anchor the header at the current
-    // scroll position instead, so the page itself scrolls past the panel.
-    if (compact && !menuVisible) setPinY(window.scrollY);
+    // The compact header stays `fixed` while the menu is open (switching it
+    // to absolute made it jump and scroll away); the panel is capped to the
+    // viewport and scrolls internally instead.
     setOpenItemId(item.id);
     setMenuVisible(true);
   }
@@ -385,19 +383,16 @@ export function Header({
     <div style={compact && fullHeight ? { height: fullHeight } : undefined}>
     <header
       ref={headerRef}
-      style={compact && menuVisible ? { top: pinY } : undefined}
       className={`z-40 bg-white ${
         compact
-          ? `animate-header-slide-down inset-x-0 shadow-[0_1px_3px_rgba(0,0,0,.12)] ${
-              menuVisible ? "absolute" : "fixed top-0"
-            }`
+          ? "animate-header-slide-down fixed inset-x-0 top-0 shadow-[0_1px_3px_rgba(0,0,0,.12)]"
           : "relative"
       }`}
     >
       {/* Announcement bar — admin-managed rotating messages (wp-admin →
           כותרת (Header) → פס עליון). Hidden in the compact sticky header. */}
-      <div className={`bg-[#d52027] text-white ${compact ? "hidden" : ""}`}>
-        <div className="mx-auto flex h-[30px] max-w-[1600px] items-center justify-center overflow-hidden px-[40px] text-[15px] font-normal leading-[20px]">
+      <div className={`bg-[#d52027] text-white ${compact ? "hidden max-lg:block" : ""}`}>
+        <div className="mx-auto flex h-[30px] max-w-[1600px] items-center justify-center overflow-hidden px-[40px] text-[12px] font-normal leading-[20px] lg:text-[15px]">
           <AnnouncementSlider messages={announcements} />
         </div>
       </div>
@@ -535,17 +530,20 @@ export function Header({
       {/* Mobile/tablet — "כל הקטגוריות" menu on the right, centered logo,
           cart icon on the left; always-visible search row below. */}
       <div className="border-b border-[rgba(129,129,129,.2)] lg:hidden">
-        <div className="grid h-[61px] grid-cols-[1fr_auto_1fr] items-center px-[15px]">
+        <div className={`grid grid-cols-[1fr_auto_1fr] items-center px-[15px] ${compact ? "h-[61px]" : "h-[84px]"}`}>
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="תפריט"
             className="flex items-center justify-self-start text-[#333]"
           >
             <Menu className="h-5 w-5 stroke-[1.75]" />
-            <span className="mr-[2px] text-[12px] font-normal tracking-[-0.3px] [word-spacing:-0.5px]">כל הקטגוריות</span>
+            <span className="mr-[2px] text-[12px] font-normal leading-[12px] tracking-[-0.3px] [word-spacing:-0.5px]">כל הקטגוריות</span>
           </button>
 
-          {logoImage("w-[120px] max-h-[55px] object-contain")}
+          {/* Like desktop: main logo by default, the admin's sticky logo (wide wordmark, 111×61 as on the live site) once the header is pinned. */}
+          {compact
+            ? logoImage("h-[61px]! w-[111px] object-contain", stickyLogo ?? logo)
+            : logoImage("h-[76px]! w-auto max-w-[150px] object-contain")}
 
           <div className="justify-self-end">{cartTrigger(false)}</div>
         </div>
@@ -641,7 +639,7 @@ export function Header({
           aria-hidden
           onMouseEnter={scheduleCloseMenu}
           onClick={() => setMenuVisible(false)}
-          style={{ height: overlayHeight }}
+          style={{ height: compact ? "100vh" : overlayHeight }}
           className={`absolute inset-x-0 top-full bg-black/70 transition-opacity duration-200 ${
             menuVisible && panelItem ? "visible opacity-100" : "invisible opacity-0"
           }`}
@@ -682,7 +680,12 @@ export function Header({
           <div
             onMouseEnter={cancelCloseMenu}
             onMouseLeave={scheduleCloseMenu}
-            style={{ top: menuTop, width: 1590, minHeight: 570 }}
+            style={{
+              top: menuTop,
+              width: 1590,
+              minHeight: 570,
+              ...(compact ? { maxHeight: `calc(100vh - ${menuTop + 65}px)`, overflowY: "auto" as const } : null),
+            }}
             className={`absolute inset-x-0 z-50 mx-auto max-w-full bg-white shadow-[0_0_3px_rgba(0,0,0,.15)] transition-opacity duration-200 before:absolute before:inset-x-0 before:-top-[10px] before:h-[10px] before:content-[''] ${
               menuVisible ? "visible opacity-100" : "invisible opacity-0"
             }`}

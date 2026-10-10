@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 
-const COLLAPSED_HEIGHT = 63; // 3 lines × 21px
+const COLLAPSED_HEIGHT = 84; // 4 lines × 21px (legacy `.ee-unfold__mask` height)
 
 /**
- * Short description clamped to 3 lines (last line fading out, like the
- * reference) with a "קראו עוד" / "סגירה" toggle. Expanding/collapsing
+ * Short description clamped to 4 lines (no fade overlay) with a "קראו עוד" / "סגירה" toggle. Expanding/collapsing
  * animates the height instead of jumping. The toggle only appears when the
- * text is actually taller than 3 lines.
+ * text is actually taller than 4 lines.
  */
 export function ProductShortDescription({ html }: { html: string }) {
   const [expanded, setExpanded] = useState(false);
@@ -36,14 +35,6 @@ export function ProductShortDescription({ html }: { html: string }) {
           className="max-w-none overflow-hidden text-right text-[15px] leading-[21px] text-[#0c0c0c] md:text-[16px] transition-[max-height] duration-500 ease-in-out [&_p]:mb-0"
           dangerouslySetInnerHTML={{ __html: html }}
         />
-        {overflowing ? (
-          <div
-            aria-hidden
-            className={`pointer-events-none absolute inset-x-0 bottom-0 h-[32px] bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ${
-              expanded ? "opacity-0" : "opacity-100"
-            }`}
-          />
-        ) : null}
       </div>
       {overflowing ? (
         <button

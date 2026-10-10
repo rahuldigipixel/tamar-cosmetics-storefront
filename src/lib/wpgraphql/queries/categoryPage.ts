@@ -86,6 +86,9 @@ export const GET_CATEGORY_PAGE_DATA = /* GraphQL */ `
         name
         slug
         count
+        image {
+          sourceUrl
+        }
         parent {
           node {
             id

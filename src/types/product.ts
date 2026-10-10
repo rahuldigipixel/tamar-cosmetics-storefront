@@ -83,7 +83,7 @@ export interface Product {
   inStock: boolean;
   currency: string;
   images: ProductImage[];
-  categories: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string } }[];
+  categories: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string; parent?: { node: { name: string; slug: string } } | null } }[];
   labels: ProductLabel[];
   /** Ready-made HTML of the product's Advanced Product Labels by placement (GraphQL `tamarLabels`); styled by GlobalData.labelsCss. */
   labelsHtml?: { image?: string; label?: string };

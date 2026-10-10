@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cookie, ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Cookie, ShieldCheck } from "lucide-react";
 
 const STORAGE_KEY = "tamar-cookie-consent";
 
 interface Consent {
   necessary: true;
   marketing: boolean;
+  statistics?: boolean;
 }
 
 function readConsent(): Consent | null {
@@ -35,15 +36,49 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange?: 
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange?.(!checked)}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+      className={`relative h-[14px] w-[28px] shrink-0 rounded-full transition-colors ${
         checked ? "bg-brand-accent" : "bg-black/15"
       } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
     >
       <span
-        className="absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-[inset-inline-start]"
-        style={{ insetInlineStart: checked ? "1.5rem" : "0.25rem" }}
+        className="absolute top-[2px] h-[10px] w-[10px] rounded-full bg-white shadow-sm transition-[inset-inline-start]"
+        style={{ insetInlineStart: checked ? "16px" : "2px" }}
       />
     </button>
+  );
+}
+
+function AccordionRow({
+  title,
+  checked,
+  onChange,
+  children,
+}: {
+  title: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="bg-black/[0.03]">
+      <div className="flex items-center justify-between gap-3 px-4 py-4">
+        <p className="text-[13px] font-semibold text-black/80">{title}</p>
+        <div className="flex items-center gap-3">
+          <Toggle checked={checked} onChange={onChange} />
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-label={title}
+            onClick={() => setOpen((o) => !o)}
+            className="text-black/80"
+          >
+            {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+      {open ? <p className="px-4 pb-4 text-[12px] leading-snug text-black/70">{children}</p> : null}
+    </div>
   );
 }
 
@@ -51,11 +86,17 @@ export function CookieConsent() {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
   const [marketing, setMarketing] = useState(true);
+  const [statistics, setStatistics] = useState(true);
 
   useEffect(() => {
-    if (readConsent()) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- gates the client-only render (no localStorage during SSR) before the entrance transition starts
+    if (readConsent()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only (no localStorage during SSR)
+      setHasConsent(true);
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- gates the client-only render before the entrance transition starts
     setMounted(true);
     const timer = window.setTimeout(() => setVisible(true), 300);
     return () => window.clearTimeout(timer);
@@ -63,20 +104,41 @@ export function CookieConsent() {
 
   function close() {
     setVisible(false);
-    window.setTimeout(() => setMounted(false), 300);
+    window.setTimeout(() => {
+      setMounted(false);
+      setHasConsent(true);
+    }, 300);
+  }
+
+  function reopen() {
+    setShowSettings(false);
+    setMounted(true);
+    window.setTimeout(() => setVisible(true), 20);
   }
 
   function acceptAll() {
-    writeConsent({ necessary: true, marketing: true });
+    writeConsent({ necessary: true, marketing: true, statistics: true });
     close();
   }
 
   function savePreferences() {
-    writeConsent({ necessary: true, marketing });
+    writeConsent({ necessary: true, marketing, statistics });
     close();
   }
 
-  if (!mounted) return null;
+  if (!mounted) {
+    if (!hasConsent) return null;
+    return (
+      <button
+        type="button"
+        onClick={reopen}
+        aria-label="ניהול הסכמה"
+        className="fixed bottom-1 start-12 z-40 after:absolute after:inset-x-0 after:top-full after:h-1 after:bg-white h-10 translate-y-[calc(100%-8px)] rounded-t-lg bg-white px-4 text-[13px] font-semibold text-black shadow-[0_0_10px_rgba(0,0,0,0.15)] transition-transform duration-300 ease-out hover:translate-y-0 focus-visible:translate-y-0"
+      >
+        ניהול הסכמה
+      </button>
+    );
+  }
 
   return (
     <div
@@ -99,25 +161,21 @@ export function CookieConsent() {
         </div>
 
         {showSettings ? (
-          <div className="flex flex-col gap-2.5 border-t border-black/5 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[15px] font-semibold">עוגיות הכרחיות</p>
-                <p className="text-[12px] text-black/50">נדרשות לתפקוד תקין של האתר</p>
-              </div>
-              <Toggle checked disabled />
+          <div className="flex flex-col gap-3 px-4 pb-3">
+            <div className="flex items-center justify-between gap-3 bg-black/[0.03] px-4 py-4">
+              <p className="text-[13px] font-semibold text-black/80">פונקציונלי</p>
+              <span className="text-[12px] font-semibold text-[#008000]">תמיד פעיל</span>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[15px] font-semibold">עוגיות שיווק ואנליטיקה</p>
-                <p className="text-[12px] text-black/50">עוזרות לנו להתאים מבצעים ותוכן עבורך</p>
-              </div>
-              <Toggle checked={marketing} onChange={setMarketing} />
-            </div>
+            <AccordionRow title="סטטיסטיקות" checked={statistics} onChange={setStatistics}>
+              האחסון הטכני או הגישה המשמשים אך ורק למטרות סטטיסטיות.
+            </AccordionRow>
+            <AccordionRow title="שיווק" checked={marketing} onChange={setMarketing}>
+              האחסון הטכני או הגישה נדרשים ליצירת פרופילי משתמשים לשליחת פרסום, או למעקב המשתמש באתר אינטרנט או במספר אתרים למטרות שיווק דומות.
+            </AccordionRow>
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-1.5 border-t border-black/5 p-3 sm:flex-row-reverse">
+        <div className="flex flex-col gap-1.5 border-t border-black/5 p-3 sm:flex-row">
           <button
             type="button"
             onClick={acceptAll}
@@ -131,7 +189,7 @@ export function CookieConsent() {
             onClick={() => (showSettings ? savePreferences() : setShowSettings(true))}
             className="w-full rounded-full border border-black/10 px-4 py-2 text-[15px] font-semibold text-black/70 transition-colors hover:border-brand-accent hover:text-brand-accent sm:w-auto sm:flex-1"
           >
-            {showSettings ? "שמור העדפות" : "ראה העדפות"}
+            {showSettings ? "שמר העדפה" : "ראה העדפות"}
           </button>
         </div>
       </div>

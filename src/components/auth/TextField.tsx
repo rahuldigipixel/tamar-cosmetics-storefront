@@ -7,12 +7,13 @@ interface TextFieldProps {
   onChange: (value: string) => void;
   autoComplete?: string;
   required?: boolean;
+  labelClassName?: string;
 }
 
-export function TextField({ id, name, label, type = "text", value, onChange, autoComplete, required }: TextFieldProps) {
+export function TextField({ id, name, label, type = "text", value, onChange, autoComplete, required, labelClassName }: TextFieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-[16px] leading-[26px] font-normal text-black">
+      <label htmlFor={id} className={labelClassName ?? "text-[16px] leading-[26px] font-normal text-black"}>
         {label} {required ? <span className="text-brand-accent">*</span> : null}
       </label>
       <input

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { cleanEditorHtml } from "@/lib/utils/editorHtml";
 import { seoToMetadata, jsonLdString, breadcrumbJsonLd } from "@/lib/seo";
 import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
-import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
+import { CategoryProductGrid, MobileCategoryBar } from "@/components/product/CategoryProductGrid";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
 import { CategoryCarousel } from "@/components/product/CategoryCarousel";
@@ -118,6 +118,29 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  href: `/product-category/${[...optionParentPath, c.slug].join("/")}/`,
  }));
 
+ // Mobile sticky "סינון מוצרים" dropdown (legacy wc_sub_categories_mobile_filter): the parent
+ // category (the page's own when top-level) followed by its sub-categories, minus the current
+ // one — each with its thumbnail.
+ const mobileParent = category ? (allCategories.find((c) => c.id === category.parentId) ?? category) : null;
+ const mobileParentPath = category && mobileParent !== category ? slugPath.slice(0, -1) : slugPath;
+ const mobileOthers = mobileParent
+ ? allCategories.filter((c) => c.parentId === mobileParent.id && c.id !== category?.id)
+ : [];
+ // Legacy only renders the dropdown when there is something besides the parent to list.
+ const mobileCategories =
+ mobileParent && mobileOthers.length > 0
+ ? [
+ { c: mobileParent, path: mobileParentPath },
+ ...mobileOthers.map((c) => ({ c, path: [...mobileParentPath, c.slug] })),
+ ].map(({ c, path }) => ({
+ id: c.id,
+ name: c.name,
+ slug: c.slug,
+ image: c.image,
+ href: `/product-category/${path.join("/")}/`,
+ }))
+ : [];
+
  const title =
  category?.name ?? info?.name ?? categoryFromProducts?.name ?? decodeURIComponent(activeSlug).replace(/-/g, " ");
  // Prefer the WordPress-rendered description (paragraphs/line breaks
@@ -150,15 +173,16 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  // description → horizontal filter bar → product grid.
  <div>
  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(breadcrumbLd) }} />
+ {mobileCategories.length > 0 ? <MobileCategoryBar options={mobileCategories} /> : null}
  {banner ? <CategoryBanner banner={banner} title={title} /> : null}
 
  <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">
- <h1 className="text-[28px] font-bold leading-[1.2] text-[#242424] md:text-[40px] md:leading-[48px]">{title}</h1>
+ <h1 className="font-[Arial,Helvetica,sans-serif] text-[24px] font-bold leading-[28.8px] text-[#242424] md:font-[family-name:var(--font-heading)] md:text-[40px] md:leading-[48px]">{title}</h1>
  </div>
 
  <nav
  aria-label="breadcrumb"
- className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[8px] text-[12px] leading-[19px] text-[#333]"
+ className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-[6px] px-[15px] py-[7.4px] text-[12px] leading-[19.2px] text-[#333]"
  >
  <Link href="/" className="text-[#777] transition-colors hover:text-[#333]">
  עמוד הבית
@@ -193,6 +217,7 @@ export default async function ProductCategoryPage({ params }: CategoryPageProps)
  ) : null
  }
  categorySlug={activeSlug}
+ categoryName={title}
  initialProducts={shownProducts}
  initialHasNextPage={categoryMissing ? false : hasNextPage}
  initialEndCursor={categoryMissing ? null : endCursor}

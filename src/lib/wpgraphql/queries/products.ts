@@ -214,6 +214,12 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
           id
           name
           slug
+          parent {
+            node {
+              name
+              slug
+            }
+          }
         }
       }
     }

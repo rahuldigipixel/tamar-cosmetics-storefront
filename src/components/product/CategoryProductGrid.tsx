@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2, Minus, Plus, X } from "lucide-react";
 import type { Brand, CountryOption, Product } from "@/types/product";
@@ -20,6 +21,85 @@ export interface CategoryFilterOption {
   href?: string;
   /** Nesting level, for the indented hierarchy list on the brand page. */
   depth?: number;
+  image?: string;
+}
+
+/**
+ * Mobile category pages: the filter accordion is replaced by this sticky bar under the header
+ * (legacy `wc_sub_categories_mobile_filter`) — pink strip, bold "סינון מוצרים" + chevron, opening
+ * a scrolling list of the parent/sibling categories with their thumbnails.
+ */
+export function MobileCategoryBar({ options }: { options: CategoryFilterOption[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  // The site header scrolls away and a compact copy is pinned (`position: fixed`) later — stick flush under
+  // whichever is showing: top 0 while the header is out of view, its height once the pinned one is there.
+  const [top, setTop] = useState(0);
+
+  useEffect(() => {
+    let raf = 0;
+    function sync() {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const header = document.querySelector("header");
+        setTop(header && getComputedStyle(header).position === "fixed" ? header.offsetHeight : 0);
+      });
+    }
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    // The header flips to `fixed` a render after the scroll event — watch it so the offset never goes stale.
+    const header = document.querySelector("header");
+    const observer = new MutationObserver(sync);
+    if (header) observer.observe(header, { attributes: true, attributeFilter: ["class", "style"] });
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: Event) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [open]);
+
+  return (
+    // Rendered as a direct child of the page root (right under the header) so `sticky` spans the whole page.
+    <div ref={ref} style={{ top }} className="sticky z-30 -mb-[4px] border-b-2 border-black/10 bg-[#fde7eb] font-[Arial,Helvetica,sans-serif] transition-[top] duration-300 ease-out md:hidden">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-[40px] w-full items-center justify-between px-[15px] text-[16px] font-semibold leading-[16px] text-black"
+      >
+        <span>סינון מוצרים</span>
+        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open ? (
+        <ul className="absolute inset-x-0 top-full max-h-[49vh] overflow-y-auto bg-white shadow-[0_6px_9px_rgba(0,0,0,.12)]">
+          {options.map((o) => (
+            <li key={o.id} className="border-b border-[#ababab]">
+              <Link
+                href={o.href ?? `/product-category/${o.slug}/`}
+                prefetch={false}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-[5px] px-[15px] py-[4px] text-[16px] font-normal leading-[21px] text-[#777]"
+              >
+                {o.image ? <Image src={o.image} alt="" width={50} height={50} sizes="50px" className="h-[50px] w-[50px] shrink-0 object-contain" /> : null}
+                {o.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
 }
 
 // `categorySlug` can arrive still percent-encoded (nested /parent/child/
@@ -234,7 +314,7 @@ function FilterDropdown({
       >
         <span className="shrink-0">{title}</span>
         {value ? (
-          <span className="ms-auto min-w-0 truncate rounded-[3px] bg-[#f1f1f1] px-[8px] py-[2px] text-[13px] text-[#333]">{value}</span>
+          <span className="ms-auto min-w-0 truncate rounded-[3px] bg-[#f1f1f1] px-[7px] py-[4px] font-[Arial,Helvetica,sans-serif] text-[12px] font-semibold leading-[12px] text-[#333]">{value}</span>
         ) : null}
         <ChevronDown className={`${value ? "" : "ms-auto"} h-4 w-4 shrink-0 text-black/40 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -278,6 +358,7 @@ function OptionList<T extends string>({
 
 export function CategoryProductGrid({
   categorySlug,
+  categoryName,
   brandSlug,
   search,
   hideFilters = false,
@@ -292,6 +373,8 @@ export function CategoryProductGrid({
 }: {
   /** Exactly one of categorySlug/brandSlug should be passed. */
   categorySlug?: string;
+  /** The page's category title, shown as the "קטגוריות" chip when it isn't one of the options. */
+  categoryName?: string;
   brandSlug?: string;
   /** Search-results mode: query the product list by this term. */
   search?: string;
@@ -464,7 +547,9 @@ export function CategoryProductGrid({
   const onCategoryPage = Boolean(categorySlug);
   const currentCategorySlug = categorySlug ? normalizeSlug(categorySlug) : null;
   // The page's own category when it's one of the options (i.e. not when the options are its children).
-  const currentCategoryName = categories?.find((c) => normalizeSlug(c.slug) === (currentCategorySlug ?? selectedCategory))?.name;
+  // Falls back to the page's own title so the chip still shows (as on the reference) when it isn't an option.
+  const currentCategoryName =
+    categories?.find((c) => normalizeSlug(c.slug) === (currentCategorySlug ?? selectedCategory))?.name ?? categoryName;
 
   function pickCategory(slug: string) {
     if (!categories) return;
@@ -497,7 +582,8 @@ export function CategoryProductGrid({
           one dropdown per filter across the full width, above the grid.
           On mobile it collapses into a "סינון מוצרים" +/− accordion that sits above the description. */}
       {noFilters ? null : (
-      <div className="max-md:order-1">
+      <>
+      <div className={`max-md:order-1 ${onCategoryPage ? "max-md:hidden" : ""}`}>
       <button
         type="button"
         aria-expanded={filtersOpen}
@@ -534,12 +620,12 @@ export function CategoryProductGrid({
           )}
         </FilterDropdown>
 
-        {categories && categories.length > 0 ? (
+        {(categories && categories.length > 0) || currentCategoryName ? (
           <FilterDropdown title="קטגוריות" value={currentCategoryName}>
             {(close) => (
               <OptionList
                 options={[
-                  ...categories.map((c) => ({ value: normalizeSlug(c.slug), label: c.name, depth: c.depth })),
+                  ...(categories ?? []).map((c) => ({ value: normalizeSlug(c.slug), label: c.name, depth: c.depth })),
                 ]}
                 selected={currentCategorySlug ?? selectedCategory}
                 onSelect={(slug) => {
@@ -609,6 +695,7 @@ export function CategoryProductGrid({
       </div>
       </div>
       </div>
+      </>
       )}
 
       <div className={`max-md:order-3 ${noFilters ? "" : intro ? "mt-[35px] max-md:mt-[20px]" : "mt-[35px]"}`}>

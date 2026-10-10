@@ -528,7 +528,26 @@
       "Bash(curl -s -m 60 'https://tamarcosmetics-co-il-dev.s808.upress.link/wp-json/wc/store/v1/products/311578' -o p311578.json -w '%{http_code}\\\\n')",
       "Bash(head -c 300 p311578.json)",
       "Bash(curl -s -m 60 'http://tamarcosmetics-co-il-dev.s808.upress.link/wp-json/wp/v2/product/311578?_fields=slug,link,featured_media' -w '\\\\n%{http_code}\\\\n')",
-      "Bash(curl -s -m 90 'http://tamarcosmetics-co-il-dev.s808.upress.link/?s=skin+trix+360&post_type=product' -o dev-s.html -w '%{http_code}\\\\n')"
+      "Bash(curl -s -m 90 'http://tamarcosmetics-co-il-dev.s808.upress.link/?s=skin+trix+360&post_type=product' -o dev-s.html -w '%{http_code}\\\\n')",
+      "Bash(sed -i 's#const q = .*#const q = src.split\\(\"/* GraphQL */ `\"\\)[1].split\\(\"`;\"\\)[0];#' /tmp/q.mjs)",
+      "Bash(cp /tmp/q.mjs ./q_tmp.mjs)",
+      "Bash(node q_tmp.mjs)",
+      "Bash(sed -i 's/^function MobileCategoryBar/export function MobileCategoryBar/; s/sticky top-\\\\[112px\\\\] z-30 -mx-\\\\[15px\\\\] bg-\\\\[#fde7eb\\\\] max-md:order-1 md:hidden/sticky top-[112px] z-30 bg-[#fde7eb] md:hidden/; s#// Direct child of the \\(tall\\) grid wrapper so `sticky` has room to stick; 112px = compact mobile header.#// Rendered as a direct child of the page root \\(right under the header\\) so `sticky` spans the whole page; 112px = compact mobile header.#' src/components/product/CategoryProductGrid.tsx)",
+      "Bash(sed -i '/{onCategoryPage && mobileCategories && mobileCategories.length > 0 ? <MobileCategoryBar/d' src/components/product/CategoryProductGrid.tsx)",
+      "Bash(sed -i 's/^import { CategoryProductGrid } from/import { CategoryProductGrid, MobileCategoryBar } from/; s#^ {banner ? <CategoryBanner# {mobileCategories.length > 0 ? <MobileCategoryBar options={mobileCategories} /> : null}\\\\n {banner ? <CategoryBanner#; /^ mobileCategories={mobileCategories}$/d' \"src/app/product-category/[...slug]/page.tsx\")",
+      "Bash(sed -i '/mobileCategories,$/d; /Category pages only: on mobile the filter accordion/d; /mobileCategories?: CategoryFilterOption/d' src/components/product/CategoryProductGrid.tsx)",
+      "Bash(cat > *)",
+      "Bash(sed -i 's/text-\\\\[24px\\\\] font-bold leading-\\\\[29px\\\\] text-\\\\[#242424\\\\] md:text-\\\\[40px\\\\]/font-[Arial,Helvetica,sans-serif] text-[24px] font-bold leading-[29px] text-[#242424] md:font-[family-name:var\\(--font-heading\\)] md:text-[40px]/' \"src/app/product-category/[...slug]/page.tsx\" && grep -c 'font-\\\\[Arial,Helvetica,sans-serif\\\\] text-\\\\[24px\\\\]' \"src/app/product-category/[...slug]/page.tsx\"; grep -n \"font-heading\" src/app/globals.css | head -3; npx tsc --noEmit | head -3)",
+      "Bash(curl -s -m 20 http://192.168.0.107/tamarcosmetics/wp-json/tamar/v1/global-data)",
+      "Bash(curl -s -m 20 \"http://192.168.0.107/tamarcosmetics/wp-json/tamar/v1/global-data\")",
+      "Bash(curl -s -m 30 \"http://192.168.0.107/tamarcosmetics/wp-json/tamar/v1/global-data\" -o /tmp/g.json)",
+      "Bash(grep -o 'ogo[^,]\\\\{0,120\\\\}' /tmp/g.json)",
+      "Bash(node /tmp/edit6.mjs)",
+      "Bash(curl -s -X POST http://192.168.0.107/tamarcosmetics/graphql -H \"Content-Type: application/json\" -d '{\"query\":\"{ tamarCheckoutSettings { noticeText } }\"}')",
+      "Bash(node _m.mjs)",
+      "Bash(sed -i 's#const r = await p.evaluate\\(\\(\\) => {#const r = await p.evaluate\\(\\(\\) => {\\\\n const t=[...document.querySelectorAll\\(\"*\"\\)].filter\\(e=>e.children.length==0\\\\&\\\\&e.textContent.trim\\(\\)==\"מוצרים לציפורניים\"\\);\\\\n return t.map\\(e=>{const o=[];let n=e;for\\(let i=0;i<3\\\\&\\\\&n;i++\\){const c=getComputedStyle\\(n\\),r=n.getBoundingClientRect\\(\\);o.push\\([n.tagName,n.className,c.fontSize,c.fontWeight,c.fontFamily.slice\\(0,14\\),c.color,c.backgroundColor,c.padding,c.borderRadius,c.lineHeight,Math.round\\(r.width\\),Math.round\\(r.height\\)].join\\(\"|\"\\)\\);n=n.parentElement}return o.join\\(\"\\\\\\\\n\"\\)}\\).join\\(\"\\\\\\\\n---\\\\\\\\n\"\\);#' _m.mjs)",
+      "Bash(cp \"C:/Users/user/AppData/Local/Temp/claude/e--tamar-cosmetic/cd1855cf-efcd-4749-bd13-fd1d10d8712d/scratchpad/m.mjs\" _m.mjs)",
+      "Bash(sed -i 's#console.log\\(r.join\\(.\\\\\\\\n.\\)\\);#console.log\\(r\\);#' _m.mjs)"
     ],
     "deny": [
       "Read(node_modules/**)",
@@ -546,7 +565,8 @@
       "e:\\tamar-cosmetic\\src\\components\\layout",
       "E:\\tamar-cosmetic\\src\\app\\shop\\[[...category]]",
       "E:\\tamar-cosmetic\\src\\app\\product\\[slug]",
-      "E:\\tamar-cosmetic\\.next-prod"
+      "E:\\tamar-cosmetic\\.next-prod",
+      "E:\\tamar-cosmetic\\src\\app\\product-category\\[...slug]"
     ]
   }
 }

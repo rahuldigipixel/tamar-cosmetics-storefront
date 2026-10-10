@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Minus, Plus, ShoppingBag, X } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 
@@ -79,15 +79,29 @@ export function CartDrawer() {
         </div>
 
         {cart.items.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-            <ShoppingBag className="h-12 w-12 text-black/20" />
-            <p className="text-lg font-medium text-black/60">העגלה שלך ריקה</p>
+          <div className="flex flex-1 flex-col items-center px-6 pt-9 text-center">
+            <svg
+              viewBox="0 0 120 110"
+              className="h-[66px] w-[72px] text-[#e6e6e6]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 18h16l10 52h58l12-38H28" />
+              <circle cx="40" cy="90" r="6" />
+              <circle cx="82" cy="90" r="6" />
+              <path d="M60 4v10M44 8l5 8M76 8l-5 8" />
+            </svg>
+            <p className="mt-[26px] text-[16px] font-bold leading-[22px] text-[#0c0c0c]">אין מוצרים בסל הקניות.</p>
             <Link
               href="/shop"
               onClick={closeDrawer}
-              className="mt-2 rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-6 py-2.5 text-base font-semibold text-white"
+              className="mt-[30px] flex h-9 items-center rounded-full bg-gradient-to-l from-brand-accent to-[#ff6b72] px-[14px] text-[14px] font-semibold leading-none text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:from-[#ff6b72] hover:to-brand-accent hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)]"
             >
-              המשך בקניות
+              חזרה לחנות
             </Link>
           </div>
         ) : (

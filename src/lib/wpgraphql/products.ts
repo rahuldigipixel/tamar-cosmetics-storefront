@@ -56,7 +56,7 @@ export interface GqlProductNode {
   tamarGalleryVideos?: { imageId: number; type: string; url: string; size?: string | null }[] | null;
   /** Only requested on list queries: the first gallery image in wp-admin order (plugin field) — the hover-swap thumbnail, lighter than `galleryImages`. */
   tamarHoverImage?: GqlImage | null;
-  productCategories?: { nodes: { id: string; name: string; slug: string; parent?: { node: { id: string; name: string; slug: string } } | null }[] };
+  productCategories?: { nodes: { id: string; name: string; slug: string; parent?: { node: { id: string; name: string; slug: string; parent?: { node: { name: string; slug: string } } | null } } | null }[] };
   allPaBrand?: { nodes: { name: string; slug: string; thumbnailUrl?: string | null }[] };
   attributes?: {
     nodes: {
@@ -359,11 +359,17 @@ export const getProductBySlug = cache(async (slug: string): Promise<ProductWithR
   if (!data) throw new Error(`Product request for "${slug}" failed (backend unreachable or timed out).`);
   if (!data.product) return null;
 
-  const [product, related, upsells] = await Promise.all([
+  const [product, relatedRaw, upsellsRaw] = await Promise.all([
     withCustomFields(fromGraphqlProduct(data.product)),
     mapProductListNodes(data.product.related?.nodes ?? []),
     mapProductListNodes(data.product.upsell?.nodes ?? []),
   ]);
+
+  const upsells = upsellsRaw.filter((p, i) => upsellsRaw.findIndex((q) => q.databaseId === p.databaseId) === i);
+  // "לקוחות שקנו גם" (WooCommerce related): no repeats, and never the current product or anything already shown in the
+  // linked-products/upsell sliders. (WC picks related products at random per load, so the order can't mirror the legacy site.)
+  const seen = new Set<number>([product.databaseId, ...upsells.map((p) => p.databaseId)]);
+  const related = relatedRaw.filter((p) => !seen.has(p.databaseId) && seen.add(p.databaseId));
 
   // Everything shows unless the admin explicitly switched it off (also the fallback if the backend plugin is older).
   const v = data.pageSettings?.visibility;

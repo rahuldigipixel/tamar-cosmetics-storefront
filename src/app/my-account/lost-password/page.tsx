@@ -35,8 +35,9 @@ export default function LostPasswordPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[480px] px-[15px] py-16">
-      <p className="text-right text-[22px] font-normal leading-[34px] text-black">
+    // Arial 400 / 23px / 37px / #0c0c0c — measured from the legacy lost-password page at the user's request.
+    <div className="mx-auto max-w-[480px] px-[15px] py-16 font-[family-name:Arial,Helvetica,sans-serif]">
+      <p className="text-right text-[23px] font-normal leading-[37px] text-[#0c0c0c]">
         שכחת את הסיסמה? יש להזין את שם המשתמש או כתובת האימייל. הוראות איפוס הסיסמה ישלחו באימייל.
       </p>
 
@@ -48,13 +49,14 @@ export default function LostPasswordPage() {
           name="user_login"
           label="שם משתמש או כתובת אימייל"
           required
+          labelClassName="text-[23px] leading-[37px] font-normal text-[#0c0c0c]"
           autoComplete="username"
           value={userLogin}
           onChange={setUserLogin}
         />
 
         {status ? (
-          <p className={`text-[16px] leading-[26px] ${sent ? "text-green-700" : "text-brand-accent"}`}>{status}</p>
+          <p className={`text-[23px] leading-[37px] ${sent ? "text-green-700" : "text-brand-accent"}`}>{status}</p>
         ) : null}
 
         <button type="submit" disabled={submitting || userLogin.trim() === ""} className={AUTH_BUTTON_CLASS}>

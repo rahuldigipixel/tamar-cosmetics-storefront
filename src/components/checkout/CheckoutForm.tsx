@@ -12,6 +12,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { PRIMARY_BTN } from "@/components/cart/cartStyles";
+import { CheckoutLoginBox } from "@/components/checkout/CheckoutLoginBox";
 import { StreetSelect } from "@/components/checkout/StreetSelect";
 import { loadShippingCities, type City } from "@/lib/data/shippingCities";
 import { GoCreditFrame } from "@/components/checkout/GoCreditFrame";
@@ -122,10 +123,12 @@ export function CheckoutForm({
   const [shippingUpdating, setShippingUpdating] = useState(false);
 
   const [couponOpen, setCouponOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [removingCoupon, setRemovingCoupon] = useState(false);
 
   // GoCredit sent the shopper back (cancelled / failed) — say so, then drop the query string.
   useEffect(() => {
@@ -245,6 +248,16 @@ export function CheckoutForm({
     }
   }
 
+  async function handleRemoveCoupon(code: string) {
+    setRemovingCoupon(true);
+    setCouponSuccess(null);
+    try {
+      await removeCoupon(code);
+    } finally {
+      setRemovingCoupon(false);
+    }
+  }
+
   async function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
     if (!couponInput.trim()) return;
@@ -254,7 +267,8 @@ export function CheckoutForm({
     try {
       await applyCoupon(couponInput.trim());
       setCouponInput("");
-      setCouponSuccess("קוד הקופון הוחל בהצלחה.");
+      setCouponSuccess("קוד קופון הוחל בהצלחה.");
+      setCouponOpen(false);
     } catch (err) {
       setCouponError((err as Error).message || "קוד קופון לא תקין");
     } finally {
@@ -387,48 +401,60 @@ export function CheckoutForm({
       >
         {/* login + coupon toggles */}
         {loggedIn ? null : (
-          <div className={`${TOGGLE} text-[21px] leading-[33.6px] max-[767px]:mb-[10px] max-[767px]:text-[16px] max-[767px]:leading-[18px]`}>
-            קנית כאן בעבר?{" "}
-            <Link prefetch={false} href="/account/login" className={LINK_BTN}>
-              יש ללחוץ כאן כדי להתחבר
-            </Link>
-          </div>
+          <>
+            <div className={`${TOGGLE} text-[21px] leading-[33.6px] max-[767px]:mb-[10px] max-[767px]:text-[16px] max-[767px]:leading-[18px]`}>
+              קנית כאן בעבר?{" "}
+              <button type="button" aria-expanded={loginOpen} onClick={() => setLoginOpen((o) => !o)} className={LINK_BTN}>
+                יש ללחוץ כאן כדי להתחבר
+              </button>
+            </div>
+            <CheckoutLoginBox open={loginOpen} />
+          </>
         )}
         <div className={`${TOGGLE} text-[16px] leading-[25.6px]`}>
           יש לך קופון?{" "}
-          <button type="button" aria-expanded={couponOpen} onClick={() => setCouponOpen((o) => !o)} className={LINK_BTN}>
+          <button type="button" aria-expanded={couponOpen} onClick={() => {
+              setCouponOpen((o) => !o);
+              setCouponSuccess(null);
+            }} className={LINK_BTN}>
             לחצו כאן
           </button>
         </div>
-        {couponOpen ? (
-          <form onSubmit={handleApplyCoupon} className="mb-[25px] border-2 border-black/[0.075] p-[30px] max-[767px]:p-[20px]">
-            <p className="mb-[15px]">אם יש לך קוד קופון, אנא הזן אותו להלן.</p>
-            <div className="flex flex-col gap-[10px] min-[481px]:flex-row min-[481px]:items-center min-[481px]:gap-[20px]">
+        <div
+          inert={!couponOpen}
+          aria-hidden={!couponOpen}
+          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none ${couponOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+        >
+          <div className="min-h-0 overflow-hidden">
+          <form onSubmit={handleApplyCoupon} className="relative mb-[25px] w-full border-2 border-black/[0.075] bg-white p-[30px] min-[768px]:w-[470px] max-[767px]:p-[20px]">
+            <div className="flex flex-wrap items-center gap-[15px]">
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                placeholder="קוד קופון"
-                aria-label="קוד קופון"
-                className={`${INPUT} min-[481px]:w-[230px]`}
+                placeholder="קופון:"
+                aria-label="קופון"
+                className="order-1 h-[42px] w-full rounded-[35px] border-2 border-[#d9d9d9] bg-transparent px-[15px] text-[14px] leading-[22.4px] text-[#0c0c0c] outline-none transition-colors placeholder:text-[#0c0c0c] focus:border-brand-accent min-[481px]:w-[290px]"
               />
+              {couponError ? (
+                <p role="alert" className="order-2 w-full text-[21px] leading-[34px] text-[#0c0c0c]">
+                  {couponError}
+                </p>
+              ) : null}
               <button
                 type="submit"
                 disabled={applyingCoupon || !couponInput.trim()}
-                className={`${PRIMARY_BTN} h-[42px] px-5 text-[13px] font-semibold leading-[15.6px]`}
+                className={`${PRIMARY_BTN} order-3 h-[42px] shrink-0 px-[20px] text-[13px] font-bold leading-[15.6px]`}
               >
-                {applyingCoupon ? "מחיל..." : "החלת קופון"}
+                החלת קופון
               </button>
             </div>
+            <BusyOverlay active={applyingCoupon} />
           </form>
-        ) : null}
-        {couponError ? (
-          <p role="alert" className="mb-[25px] rounded-[6px] border border-brand-accent/30 bg-brand-soft px-4 py-3 text-[14px] font-semibold text-brand-accent">
-            {couponError}
-          </p>
-        ) : null}
+          </div>
+        </div>
         {couponSuccess ? (
-          <p role="status" className="mb-[25px] flex items-center gap-2 rounded-[6px] border border-[#2e7d32]/30 bg-[#e8f5e9] px-4 py-3 text-[14px] font-semibold text-[#2e7d32]">
-            <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+          <p role="status" className="mb-[25px] flex items-center gap-[15px] bg-[#468847] px-[20px] py-[14px] text-[21px] leading-[32px] text-white">
+            <Check className="h-[22px] w-[22px] shrink-0" strokeWidth={2.5} />
             {couponSuccess}
           </p>
         ) : null}
@@ -602,9 +628,14 @@ export function CheckoutForm({
                       <tr key={c.code} className="flex">
                         <th className={`${ROW_TH} shrink-0`}>קופון: {c.code}</th>
                         <td className={`${TD} min-w-0 flex-1 text-end`}>
-                          <span className="text-brand-accent">-{formatPrice(c.discountAmount)}</span>{" "}
-                          <button type="button" onClick={() => void removeCoupon(c.code)} className="text-[#333] underline hover:text-brand-accent">
-                            [הסרה]
+                          <span className="font-semibold text-brand-accent" dir="rtl">-{formatPrice(c.discountAmount)}</span>
+                          <button
+                            type="button"
+                            aria-label={`הסרת קופון ${c.code}`}
+                            onClick={() => void handleRemoveCoupon(c.code)}
+                            className="ms-[15px] inline-block align-middle text-[21px] leading-none text-[#999] hover:text-brand-accent"
+                          >
+                            ×
                           </button>
                         </td>
                       </tr>
@@ -747,7 +778,7 @@ export function CheckoutForm({
                     {submitting ? "מבצע הזמנה..." : "לתשלום"}
                   </button>
                 </div>
-                <BusyOverlay active={shippingUpdating || applyingCoupon} />
+                <BusyOverlay active={shippingUpdating || applyingCoupon || removingCoupon} />
               </div>
             </div>
           </div>

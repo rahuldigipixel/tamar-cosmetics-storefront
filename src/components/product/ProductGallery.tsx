@@ -166,20 +166,20 @@ export function ProductGallery({
           />
         ) : null}
 
-        <div className="group/expand absolute bottom-3 start-3 z-20">
+        <div className="absolute bottom-3 start-3 z-20">
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
             onMouseEnter={() => setZoomed(false)}
             onMouseMove={(e) => e.stopPropagation()}
             aria-label="הגדלת התמונה"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all hover:scale-110 hover:bg-white"
+            className="group/expand flex h-[52px] items-center justify-center rounded-full bg-white px-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all hover:bg-white"
           >
-            <Expand className="h-4 w-4 text-black/60" />
+            <Expand className="h-5 w-5 shrink-0 text-[#333]" />
+            <span className="max-w-0 overflow-hidden whitespace-nowrap text-[20px] leading-[28px] font-normal text-[#333] opacity-0 transition-all duration-300 group-hover/expand:ms-[12px] group-hover/expand:max-w-[160px] group-hover/expand:opacity-100 group-focus-visible/expand:ms-[12px] group-focus-visible/expand:max-w-[160px] group-focus-visible/expand:opacity-100">
+              לחצו להגדלה
+            </span>
           </button>
-          <span className="pointer-events-none absolute bottom-full start-0 mb-2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1 text-[13px] leading-[18px] font-medium text-white opacity-0 transition-opacity group-hover/expand:opacity-100">
-            הגדלת תמונה
-          </span>
         </div>
 
         {images.length > 1 ? (

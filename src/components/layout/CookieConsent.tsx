@@ -96,7 +96,6 @@ export function CookieConsent() {
       setHasConsent(true);
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- gates the client-only render before the entrance transition starts
     setMounted(true);
     const timer = window.setTimeout(() => setVisible(true), 300);
     return () => window.clearTimeout(timer);

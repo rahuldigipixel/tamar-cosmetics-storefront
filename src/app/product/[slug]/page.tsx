@@ -269,7 +269,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </div>
 
  <div className="mx-auto w-full max-w-[500px] md:max-w-[640px] md:sticky md:top-[100px] md:px-[10px] lg:px-[30px] min-[1640px]:px-[70px] md:py-[10px] md:col-start-2 md:row-start-2 md:mx-auto">
- <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} price={product.price} />
+ <ProductGallery images={product.images} name={product.name} brandName={brandName} brandLogoUrl={brandLogoUrl} labelsHtml={product.labelsHtml?.image} discount={discount} price={product.price} productVideoUrl={product.videoUrl} />
  </div>
 
  <div className="px-0 text-right md:px-[10px] md:col-start-1 md:row-start-2">
@@ -324,10 +324,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  </p>
  ) : null}
 
- {product.videoUrl ? (
- <video controls className="mt-6 w-full rounded-lg" src={product.videoUrl} />
- ) : null}
-
  <div className="hidden md:block">{shareBlock}</div>
  </div>
 
@@ -348,8 +344,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
  <ProductTabs
  description={product.description}
- attributes={product.attributes}
  tabs={product.tabs}
+ lastTabs={product.customTabs}
  aboutBrand={show.aboutBrandTab ? { html: brandAttribute?.optionDescriptions?.[0] ?? "" } : undefined}
  shippingReturnsHtml={show.shippingTab ? pageSettings.shippingReturns : undefined}
  />

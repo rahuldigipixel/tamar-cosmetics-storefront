@@ -204,6 +204,13 @@ const PRODUCT_DETAIL_FIELDS = /* GraphQL */ `
     url
     size
   }
+  # wp-admin "Tamar extra fields": custom tabs (after the shipping tab) + the single product video button.
+  tamarCustomTabs {
+    id
+    title
+    content
+  }
+  tamarProductVideoUrl
   productCategories {
     nodes {
       id

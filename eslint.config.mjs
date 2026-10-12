@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    // Production build output (NEXT_DIST_DIR=.next-prod, see next.config.ts) — generated bundles, not source.
+    ".next-prod/**",
     "next-env.d.ts",
     // Claude Code's own folder (settings, worktrees) is not app source.
     ".claude/**",

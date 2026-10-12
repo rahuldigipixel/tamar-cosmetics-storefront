@@ -90,6 +90,8 @@ export interface GqlProductNode {
       }[]
     | null;
   tamarTabs?: { id: number; title?: string | null; content?: string | null }[] | null;
+  tamarCustomTabs?: { id: number; title?: string | null; content?: string | null }[] | null;
+  tamarProductVideoUrl?: string | null;
   variations?: {
     nodes: {
       id: string;
@@ -192,6 +194,10 @@ function fromGraphqlProduct(node: GqlProductNode): Product {
     tabs: (node.tamarTabs ?? [])
       .filter((t) => t.title && t.content)
       .map((t) => ({ title: t.title as string, content: t.content as string })),
+    customTabs: (node.tamarCustomTabs ?? [])
+      .filter((t) => t.title && t.content)
+      .map((t) => ({ title: t.title as string, content: t.content as string })),
+    videoUrl: node.tamarProductVideoUrl || undefined,
     brand: node.allPaBrand?.nodes[0]?.name,
     brandLogoUrl: node.allPaBrand?.nodes[0]?.thumbnailUrl ?? undefined,
     weight: node.weight || undefined,

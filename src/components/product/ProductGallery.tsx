@@ -9,13 +9,22 @@ import { ProductLabels } from "@/components/product/ProductLabels";
 import { ShippingBadge } from "@/components/product/ShippingBadge";
 
 /** iframe src for a YouTube / Vimeo page url (autoplay), or null when the id can't be found. */
-function embedUrl(type: "youtube" | "vimeo", url: string): string | null {
+function embedUrl(type: "youtube" | "vimeo", url: string, autoplay = true): string | null {
+  const ap = autoplay ? 1 : 0;
   if (type === "youtube") {
     const id = url.match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/)([\w-]{11})/)?.[1];
-    return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : null;
+    return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=${ap}&rel=0` : null;
   }
   const id = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)?.[1];
-  return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null;
+  return id ? `https://player.vimeo.com/video/${id}?autoplay=${ap}` : null;
+}
+
+/** Product-level video popup: never autoplays — the visitor presses play inside the player. */
+function productVideoSource(url: string): { kind: "mp4" | "embed"; src: string } | null {
+  if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) return { kind: "mp4", src: url };
+  const type = /vimeo\.com/i.test(url) ? "vimeo" : "youtube";
+  const src = embedUrl(type, url, false);
+  return src ? { kind: "embed", src } : null;
 }
 
 // The wishlist heart lives in the details column (reference layout); the
@@ -29,7 +38,10 @@ export function ProductGallery({
   labelsHtml,
   discount,
   price,
+  productVideoUrl,
 }: {
+  /** Product-level video URL (YouTube / Vimeo / mp4); adds a "צפייה בוידאו" button. */
+  productVideoUrl?: string;
   /** Current price, for the free-shipping badge. */
   price?: string;
   images: ProductImage[];
@@ -45,6 +57,9 @@ export function ProductGallery({
   const [zoomed, setZoomed] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
+  // The product-level video (single URL from wp-admin "Tamar extra fields"), opened in a popup like the legacy button.
+  const videoSrc = productVideoUrl ? productVideoSource(productVideoUrl) : null;
   // Index of the image whose video is playing; pausing/finishing or switching image drops back to the image.
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const current = images[active];
@@ -166,7 +181,22 @@ export function ProductGallery({
           />
         ) : null}
 
-        <div className="absolute bottom-3 start-3 z-20">
+        <div className="absolute bottom-3 start-3 z-20 flex flex-col items-start gap-[8px]">
+          {videoSrc ? (
+            <button
+              type="button"
+              onClick={() => setVideoOpen(true)}
+              onMouseEnter={() => setZoomed(false)}
+              onMouseMove={(e) => e.stopPropagation()}
+              aria-label="צפייה בוידאו"
+              className="group/video flex h-[52px] items-center justify-center rounded-full bg-white px-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all hover:bg-white"
+            >
+              <Play className="h-5 w-5 shrink-0 text-[#333]" />
+              <span className="max-w-0 overflow-hidden whitespace-nowrap text-[20px] leading-[28px] font-semibold text-[#333] opacity-0 transition-all duration-300 group-hover/video:ms-[12px] group-hover/video:max-w-[160px] group-hover/video:opacity-100 group-focus-visible/video:ms-[12px] group-focus-visible/video:max-w-[160px] group-focus-visible/video:opacity-100">
+                צפייה בוידאו
+              </span>
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
@@ -237,6 +267,28 @@ export function ProductGallery({
             </button>
           ))}
         </div>
+      ) : null}
+
+      {videoOpen && videoSrc ? createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-4" onClick={() => setVideoOpen(false)}>
+          <div className="relative aspect-video w-full max-w-[900px]" onClick={(e) => e.stopPropagation()}>
+            {/* Close sits at the top-left corner of the video frame, just above it. */}
+            <button
+              type="button"
+              onClick={() => setVideoOpen(false)}
+              aria-label="סגירה"
+              className="absolute -top-11 left-0 flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            {videoSrc.kind === "mp4" ? (
+              <video src={videoSrc.src} controls playsInline className="h-full w-full bg-black" />
+            ) : (
+              <iframe src={videoSrc.src} title={name} allow="fullscreen; picture-in-picture" allowFullScreen className="h-full w-full border-0 bg-black" />
+            )}
+          </div>
+        </div>,
+        document.body,
       ) : null}
 
       {lightboxOpen && current ? createPortal(

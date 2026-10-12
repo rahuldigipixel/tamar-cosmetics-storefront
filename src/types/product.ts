@@ -92,7 +92,10 @@ export interface Product {
   /** YITH Tab Manager tabs with content for this product (GraphQL `tamarTabs`); detail query only. */
   tabs: { title: string; content: string }[];
   /** Populated once ACF video field is mapped; empty until then. */
+  /** Product video URL from wp-admin "Tamar extra fields" (GraphQL `tamarProductVideoUrl`); detail query only. */
   videoUrl?: string;
+  /** Custom tabs from "Tamar extra fields" (GraphQL `tamarCustomTabs`); shown after "משלוחים והחזרות". */
+  customTabs?: { title: string; content: string }[];
   /** First assigned product brand, if any — most products aren't tagged yet. */
   brand?: string;
   /** Logo/thumbnail of the first assigned brand term, if set in the pa_brand taxonomy. */

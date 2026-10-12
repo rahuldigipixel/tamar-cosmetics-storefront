@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { ProductAttribute } from "@/types/product";
 
 interface Tab {
   title: string;
@@ -15,23 +14,7 @@ export interface AboutBrand {
 
 type Section =
   | { title: string; kind: "html"; content: string }
-  | { title: string; kind: "brand"; content: string }
-  | { title: string; kind: "specs"; content: "" };
-
-const SPECS_TITLE = "מפרט טכני";
-
-// WPGraphQL returns each option of a global (taxonomy-based) attribute as
-// the term's raw slug rather than its display name (e.g.
-// "d7%a4...-france-beauty" — itself the percent-encoded slug), while local
-// attributes come through as plain text already. Decoding + de-hyphenating
-// turns the former into readable text without a schema change.
-function humanizeAttributeOption(value: string) {
-  try {
-    return decodeURIComponent(value).replace(/-/g, " ").trim();
-  } catch {
-    return value;
-  }
-}
+  | { title: string; kind: "brand"; content: string };
 
 /** True when the HTML has no visible text and no media — e.g. "<p>&nbsp;</p>". */
 function isBlankHtml(html: string | undefined) {
@@ -58,28 +41,26 @@ function cleanHeadings(html: string) {
 
 export function ProductTabs({
   description,
-  attributes,
   tabs,
   aboutBrand,
   shippingReturnsHtml,
+  lastTabs = [],
 }: {
+  /** Custom tabs from wp-admin "Tamar extra fields"; legacy shows them after "משלוחים והחזרות". */
+  lastTabs?: Tab[];
   description?: string;
-  attributes?: ProductAttribute[];
   tabs: Tab[];
   aboutBrand?: AboutBrand;
   shippingReturnsHtml?: string;
 }) {
   // Tabs come from YITH Tab Manager (backend already drops empty ones; the
   // blank check here also covers whitespace-only editor output). The WooCommerce
-  // description and the attribute table only fill in when they have content,
-  // and the attribute table yields to a YITH "מפרט טכני" tab of its own.
+  // description only shows when it has content. There is no generated "מפרט טכני"
+  // tab: it appears only when the YITH tab of that name has content for the product, like the legacy site.
   const customTabs = tabs.filter((t) => !isBlankHtml(t.content));
-  const hasCustomSpecs = customTabs.some((t) => t.title.trim() === SPECS_TITLE);
-  const hasSpecs = Boolean(attributes && attributes.length > 0) && !hasCustomSpecs;
 
   const sections: Section[] = [
     ...(isBlankHtml(description) ? [] : [{ title: "תיאור", kind: "html" as const, content: description ?? "" }]),
-    ...(hasSpecs ? [{ title: SPECS_TITLE, kind: "specs" as const, content: "" as const }] : []),
     ...customTabs.map((t) => ({ title: t.title, kind: "html" as const, content: t.content })),
     // Always last, in this order: אודות המותג, משלוחים והחזרות.
     ...(aboutBrand && !isBlankHtml(aboutBrand.html)
@@ -87,6 +68,7 @@ export function ProductTabs({
       : []),
     // Shown whenever the admin toggle is on, even if its content is empty.
     ...(shippingReturnsHtml !== undefined ? [{ title: "משלוחים והחזרות", kind: "html" as const, content: shippingReturnsHtml ?? "" }] : []),
+    ...lastTabs.filter((t) => !isBlankHtml(t.content)).map((t) => ({ title: t.title, kind: "html" as const, content: t.content })),
   ];
   const [active, setActive] = useState(0);
 
@@ -125,21 +107,6 @@ export function ProductTabs({
           className="py-[20px] text-[16px] leading-[34px] text-[#0c0c0c] [&_div]:my-[16px] [&_h1]:my-[16px] [&_h1]:text-[28px] [&_h1]:leading-[1.3] [&_h1]:font-bold [&_h2]:my-[16px] [&_h2]:text-[24px] [&_h2]:leading-[1.3] [&_h2]:font-bold [&_h3]:my-[16px] [&_h3]:text-[16px] [&_h3]:leading-[34px] [&_h3]:font-bold [&_h4]:my-[8px] [&_h4]:text-[16px] [&_h4]:font-bold [&_img]:inline-block [&_img]:h-auto [&_img]:max-w-full [&_p]:my-[16px] [&_strong]:font-bold [&_a]:text-brand-accent"
           dangerouslySetInnerHTML={{ __html: cleanHeadings(section.content) }}
         />
-      ) : section.kind === "specs" ? (
-        <div className="py-[20px]">
-          <table className="w-full max-w-2xl text-right text-[21px] leading-[34px] text-[#0c0c0c]">
-            <tbody>
-              {attributes?.map((attr) => (
-                <tr key={attr.id} className="border-b border-black/5">
-                  <td className="py-2.5 pe-4 font-semibold text-[#0c0c0c]">{attr.label || attr.name}</td>
-                  <td className="py-2.5 text-[#0c0c0c]">
-                    {(attr.optionNames?.length ? attr.optionNames : attr.options.map(humanizeAttributeOption)).join(", ")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       ) : (
         <div
           className="max-w-none py-[20px] text-right text-[21px] leading-[34px] text-[#0c0c0c] [&_a]:text-brand-accent [&_h1]:my-[10px] [&_h1]:text-[24px] [&_h1]:font-bold [&_h2]:my-[10px] [&_h2]:text-[20px] [&_h2]:font-bold [&_h3]:my-[10px] [&_h3]:text-[17px] [&_h3]:font-bold [&_img]:h-auto [&_img]:max-w-full [&_li]:my-[6px] [&_ol]:my-[12px] [&_ol]:list-decimal [&_ol]:ps-[25px] [&_p]:my-[10px] [&_strong]:font-bold [&_table]:w-full [&_td]:border-b [&_td]:border-black/10 [&_td]:py-[8px] [&_ul]:my-[12px] [&_ul]:list-disc [&_ul]:ps-[25px]"

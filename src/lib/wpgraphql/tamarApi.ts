@@ -88,6 +88,26 @@ export interface SiteLogo {
   alt: string;
 }
 
+export interface PromoPopupConfig {
+  title: string;
+  /** Editor HTML (already wpautop'd). */
+  content: string;
+  /** ms before it opens. */
+  delay: number;
+  hideOnMobile: boolean;
+  /** Bumped in wp-admin to show the popup again to visitors who closed it. */
+  version: number;
+}
+
+export interface AgeVerifyConfig {
+  title: string;
+  text: string;
+  allowLabel: string;
+  denyLabel: string;
+  errorTitle: string;
+  errorText: string;
+}
+
 export interface SiteSettings {
   headerLogo: SiteLogo | null;
   /** Compact sticky-header logo (wp-admin → כותרת → "לוגו כותרת מוקטנת (בגלילה)"); null = reuse headerLogo. */
@@ -105,6 +125,11 @@ export interface SiteSettings {
   shippingBadge?: Partial<import("@/lib/utils/shippingBadge").ShippingBadgeConfig> | null;
   /** Flashy plugin's marketing checkbox (wp-admin → Flashy); use resolveMarketingConsent() for defaults. */
   flashyConsent?: Partial<import("@/lib/utils/marketingConsent").MarketingConsentConfig> | null;
+  /** Promo + age-verify popups (wp-admin → General Site Settings); each null when disabled. */
+  popups?: {
+    promo: PromoPopupConfig | null;
+    ageVerify: AgeVerifyConfig | null;
+  } | null;
   integrations?: {
     flashyAccountId: string;
     flashyReviewsElementId: string;

@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FlashyTracker } from "@/components/layout/FlashyTracker";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { SitePopups } from "@/components/layout/SitePopups";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FreeShippingProvider } from "@/components/cart/FreeShippingProvider";
 import { resolveFreeShipping } from "@/lib/utils/freeShipping";
@@ -72,6 +73,7 @@ export default async function RootLayout({
   const shippingBadge = resolveShippingBadge(siteSettings?.shippingBadge);
   const marketingConsent = resolveMarketingConsent(siteSettings?.flashyConsent);
   const labelsCss = sanitizeLabelsCss(global?.labelsCss);
+  const popups = siteSettings?.popups ?? null;
 
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} h-full antialiased`}>
@@ -96,6 +98,7 @@ export default async function RootLayout({
         <Footer logo={siteSettings?.footerLogo ?? null} data={global?.footer ?? null} />
         <FlashyTracker />
         <CookieConsent />
+        {popups?.promo || popups?.ageVerify ? <SitePopups promo={popups.promo} ageVerify={popups.ageVerify} /> : null}
         <FreeShippingProvider config={freeShipping}>
           <CartDrawer />
         </FreeShippingProvider>

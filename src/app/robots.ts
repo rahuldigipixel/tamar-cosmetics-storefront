@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
       // Private / transactional / thin pages that should never be indexed.
       disallow: ["/cart", "/checkout", "/my-account", "/account", "/wishlist", "/search", "/api/"],
     },
-    sitemap: absoluteUrl("/sitemap.xml"),
+    sitemap: absoluteUrl("/sitemap_index.xml"),
   };
 }

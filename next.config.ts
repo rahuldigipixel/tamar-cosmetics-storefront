@@ -40,6 +40,11 @@ const nextConfig: NextConfig = {
   // request path, confirmed against the dev server.
   async rewrites() {
     const afterFiles = [
+      // Sitemaps, same URLs as the WordPress (Rank Math) site: /sitemap_index.xml + /<type>-sitemap.xml (+ /sitemap.xml as an alias
+      // of the index). One route handler serves them all — see src/app/sitemap-xml/[type]/route.ts.
+      { source: "/sitemap_index.xml", destination: "/sitemap-xml/index" },
+      { source: "/sitemap.xml", destination: "/sitemap-xml/index" },
+      { source: "/:type(post|page|product|category|product_cat|pa_brand)-sitemap.xml", destination: "/sitemap-xml/:type" },
       { source: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA", destination: "/wishlist" },
       { source: "/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%A9%D7%90%D7%9C%D7%95%D7%AA/", destination: "/wishlist" },
       { source: "/%D7%9E%D7%95%D7%AA%D7%92", destination: "/brand-list" },

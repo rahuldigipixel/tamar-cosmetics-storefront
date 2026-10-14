@@ -911,15 +911,19 @@ export async function checkoutPaymentRequest<T>(
 }
 
 export interface SitemapData {
-  /** [slug, last-modified ISO] pairs, slugs decoded. */
-  products: [string, string][];
-  posts: [string, string][];
-  /** Category paths, root → leaf ("parent/child"). */
-  categories: string[];
-  brands: string[];
+  /** [slug, last-modified ISO, featured image path under wp-content/uploads] — slugs decoded. */
+  products: [string, string, string?][];
+  posts: [string, string, string?][];
+  /** Published WordPress pages: [slug, last-modified]. */
+  pages?: [string, string][];
+  /** Category paths, root → leaf ("parent/child"), with last-modified (an older plugin sends bare path strings). */
+  categories: ([string, string] | string)[];
+  /** Blog (post) categories. */
+  postCategories?: [string, string][];
+  brands: ([string, string] | string)[];
 }
 
-/** Whole catalogue for sitemap.xml in ONE request (plugin: Tamar_Seo::get_sitemap_data). null on an older plugin. */
+/** Whole catalogue for the sitemaps in ONE request (plugin: Tamar_Seo::get_sitemap_data). null on an older plugin. */
 export const getSitemapData = cache(function getSitemapData() {
   return tamarFetch<SitemapData>(`/sitemap-data`, { tags: ["sitemap", "products"], revalidate: 3600 });
 });

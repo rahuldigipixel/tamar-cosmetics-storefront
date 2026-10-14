@@ -2,8 +2,12 @@ import type { MetadataRoute } from "next";
 import { fetchGraphQLSafe } from "@/lib/wpgraphql/client";
 import { absoluteUrl, PUBLIC_PATHS, SITEMAP_STATIC_ROUTES } from "@/lib/seo";
 
-// Regenerated at most hourly — the sitemap is fetched by crawlers, never on a shopper's page load.
-export const revalidate = 3600;
+// Built on request, never at `next build`: ~50 sequential 100-row GraphQL pages for the whole catalogue take longer
+// than Vercel's 60s per-page build limit against the remote backend and failed the deploy. Each page of results is
+// still served from the fetch cache (`revalidate: 3600` below), so only the first crawler hit after an hour pays for
+// it — and it is crawlers only, never a shopper's page load.
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const PAGE_SIZE = 100; // WPGraphQL's per-request cap
 const MAX_PRODUCT_PAGES = 100;

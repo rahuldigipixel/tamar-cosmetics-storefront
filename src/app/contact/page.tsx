@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
@@ -11,7 +13,7 @@ const FALLBACK_TITLE = "שירות לקוחות - תמר קוסמטיקס";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getContactPage();
-  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/contact" });
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/contact", seo: page?.seo });
 }
 
 // Sizes measured from the legacy /contact page: pink band + 72px/35px 800
@@ -24,6 +26,7 @@ export default async function ContactPage() {
 
   return (
     <div className={`font-[family-name:Arial,Helvetica,sans-serif] ${PAGE_BOTTOM}`}>
+      <JsonLd data={pageJsonLd({ name: page?.heading || FALLBACK_TITLE, path: "/contact" })} />
       <div className="bg-[#fde7eb]">
         <div className="mx-auto max-w-[1600px] px-[10px] py-5 text-center sm:px-[15px]">
           <h1 className="font-[family-name:'Times_New_Roman',serif] text-[35px] font-extrabold leading-[35px] text-black lg:text-[72px] lg:leading-[72px]">

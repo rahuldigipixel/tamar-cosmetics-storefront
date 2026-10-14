@@ -55,6 +55,8 @@ export function ProductSlider({
     items: products,
     stepSize: compact ? pageSize : 1,
     autoplayMs: effectiveAutoplay,
+    // Below the fold: server-render one copy of the cards, the loop copies arrive after hydration (a third of the HTML).
+    lazyCopies: true,
   });
 
   if (products.length === 0) return null;

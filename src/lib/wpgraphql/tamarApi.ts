@@ -3,9 +3,11 @@ import { wpEnv } from "./env";
 import { logApiCall } from "./apiAuditLog";
 import { localizeMediaUrls } from "./mediaUrl";
 import type { ProductLabel } from "@/types/product";
+import { PUBLIC_PATHS, type Seo } from "@/lib/seo";
 
 const TAMAR_API_BASE = `${wpEnv.wordpressUrl}/wp-json/tamar/v1`;
-const REQUEST_TIMEOUT_MS = 10_000;
+// Same budget as fetchGraphQL (client.ts): the remote backend needs 10–19s on a cold request.
+const REQUEST_TIMEOUT_MS = 20_000;
 
 interface TamarFetchOptions extends RequestInit {
   /** Cache tags for on-demand revalidation via revalidateTag() (see /api/revalidate). */
@@ -14,7 +16,26 @@ interface TamarFetchOptions extends RequestInit {
   revalidate?: number | false;
 }
 
-async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Promise<T | null> {
+// wp-admin "page" endpoints whose REST route is not simply `/<storefront-route>-page`.
+const PAGE_ENDPOINT_ROUTES: Record<string, string> = {
+  "terms-page": "/terms-and-conditions",
+  "shipping-method-page": "/tamar-cosmetics-shipping-method",
+};
+
+/**
+ * Page endpoints (`/contact-page`, `/jerusalem-delivery-page`, …) get `?seo_slug=<WordPress page slug>`; the plugin
+ * (class-seo.php, `rest_post_dispatch`) then adds the page's Rank Math `seo` to the same response — no extra request.
+ * The WordPress slug is the public (legacy) path of the storefront route.
+ */
+function withSeoSlug(path: string, method?: string): string {
+  const m = /^\/([a-z0-9-]+-page)$/.exec(path);
+  if (!m || (method && method !== "GET")) return path;
+  const route = PAGE_ENDPOINT_ROUTES[m[1]] ?? `/${m[1].replace(/-page$/, "")}`;
+  const slug = (PUBLIC_PATHS[route] ?? route).replace(/^\//, "");
+  return `${path}?seo_slug=${encodeURIComponent(slug)}`;
+}
+
+async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Promise<(T & { seo?: Seo | null }) | null> {
   logApiCall("REST", path);
   const { tags, revalidate, cache, ...rest } = options;
 
@@ -24,7 +45,7 @@ async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Pro
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const res = await fetch(`${TAMAR_API_BASE}${path}`, {
+    const res = await fetch(`${TAMAR_API_BASE}${withSeoSlug(path, rest.method)}`, {
       ...rest,
       headers: { "Content-Type": "application/json", ...rest.headers },
       cache: cache ?? (tags || revalidate !== undefined ? undefined : "no-store"),
@@ -32,7 +53,7 @@ async function tamarFetch<T>(path: string, options: TamarFetchOptions = {}): Pro
       signal: controller.signal,
     });
     if (!res.ok) return null;
-    return JSON.parse(localizeMediaUrls(await res.text())) as T;
+    return JSON.parse(localizeMediaUrls(await res.text())) as T & { seo?: Seo | null };
   } catch {
     // tamar-headless-api plugin may not be installed/activated yet on this backend,
     // or the request timed out — either way, callers treat null as "fall back".
@@ -888,3 +909,17 @@ export async function checkoutPaymentRequest<T>(
     clearTimeout(timer);
   }
 }
+
+export interface SitemapData {
+  /** [slug, last-modified ISO] pairs, slugs decoded. */
+  products: [string, string][];
+  posts: [string, string][];
+  /** Category paths, root → leaf ("parent/child"). */
+  categories: string[];
+  brands: string[];
+}
+
+/** Whole catalogue for sitemap.xml in ONE request (plugin: Tamar_Seo::get_sitemap_data). null on an older plugin. */
+export const getSitemapData = cache(function getSitemapData() {
+  return tamarFetch<SitemapData>(`/sitemap-data`, { tags: ["sitemap", "products"], revalidate: 3600 });
+});

@@ -151,7 +151,10 @@ export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null
       | null;
   }>(GET_POST_BY_SLUG, { slug: queryableSlug, seoSlug: queryableSlug }, { tags: ["posts", `post:${slug}`], revalidate: 300 });
 
-  if (!data?.post) return null;
+  // null = request failed/timed out (not "no such post") — throw so the page errors (and ISR keeps serving the last
+  // good copy) instead of rendering — and caching — a false 404.
+  if (!data) throw new Error(`Post request for "${slug}" failed (backend unreachable or timed out).`);
+  if (!data.post) return null;
 
   return {
     ...toSummary(data.post),

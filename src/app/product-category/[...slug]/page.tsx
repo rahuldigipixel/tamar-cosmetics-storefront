@@ -1,9 +1,8 @@
-﻿import { cache } from "react";
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { cleanEditorHtml } from "@/lib/utils/editorHtml";
 import { seoToMetadata, jsonLdString, breadcrumbJsonLd } from "@/lib/seo";
-import { getCategoryPageData } from "@/lib/wpgraphql/categoryPage";
+import { categoryPathKey, loadCategoryPage, normalizeCategorySlug } from "@/lib/wpgraphql/categoryRoute";
 import { CategoryProductGrid, MobileCategoryBar } from "@/components/product/CategoryProductGrid";
 import { FaqAccordion } from "@/components/product/FaqAccordion";
 import { CategoryBanner } from "@/components/product/CategoryBanner";
@@ -15,31 +14,10 @@ interface CategoryPageProps {
  params: Promise<{ slug: string[] }>;
 }
 
-// Hebrew URL segments can reach this page still percent-encoded (observed
-// for nested /parent/child/ paths — Next.js doesn't reliably decode every
-// catch-all segment) and/or under a different Unicode normalization form
-// than the plain text WPGraphQL returns for `slug` (visually identical,
-// byte-different). A bare `===` silently never matches either way, which
-// was breaking the category lookup below (title, image, and description
-// all fell back to a crude decoded-slug guess) even though the separate
-// product-list query still matched fine server-side. decodeURIComponent()
-// is a no-op on already-decoded text, so it's safe to always apply.
-function normalizeSlug(slug: string) {
- try {
- return decodeURIComponent(slug).normalize("NFC");
- } catch {
- return slug.normalize("NFC");
- }
-}
-
-// One request per render for generateMetadata() + the page body (keyed by the URL path string, since
-// getCategoryPageData() takes an array, which React cache() would compare by identity).
-const loadCategoryPage = cache((pathKey: string) => {
- const parts = pathKey.split("/");
- return getCategoryPageData(parts[parts.length - 1], 20, parts.slice(0, -1));
-});
-
-const pathKeyOf = (slugPath: string[]) => slugPath.map(normalizeSlug).join("/");
+// Slug normalisation (percent-encoding / Unicode form of Hebrew segments) and the per-render cached loader live in
+// lib/wpgraphql/categoryRoute.ts, shared with ./layout.tsx (the real-404 check).
+const normalizeSlug = normalizeCategorySlug;
+const pathKeyOf = categoryPathKey;
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
  const { slug: slugPath } = await params;

@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getTermsPage } from "@/lib/wpgraphql/tamarApi";
@@ -8,7 +10,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getTermsPage();
-  return pageMetadata({ title: page?.heading || "תקנון אתר תמר קוסמטיקס", description: page?.contentHtml, route: "/terms-and-conditions" });
+  return pageMetadata({ title: page?.heading || "תקנון אתר תמר קוסמטיקס", description: page?.contentHtml, route: "/terms-and-conditions", seo: page?.seo });
 }
 
 // Public path /terms-and-conditions (same as the live site and the footer link).
@@ -19,6 +21,7 @@ export default async function TermsPage() {
 
   return (
     <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/terms-and-conditions" })} />
       {/* Measured from the legacy page: pink band #fde7eb, black 800-weight title (72px desktop / 35px mobile). The legacy Hebrew title falls back to the browser serif (Open Sans has no Hebrew glyphs there), so it is reproduced with a serif stack. */}
       <div className="bg-[#fde7eb]">
         <div className="mx-auto max-w-[1600px] px-[15px] py-[10px] text-center">

@@ -145,6 +145,29 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   };
 }
 
+/**
+ * WebPage / CollectionPage + BreadcrumbList for plain pages (heading/editor pages, shop, blog list) — the generic
+ * entities Rank Math prints on every page of the legacy site. Pass `type: "CollectionPage"` for listings.
+ */
+export function pageJsonLd({ name, description, path, type = "WebPage", parents = [] }: { name: string; description?: string; path: string; type?: "WebPage" | "CollectionPage"; parents?: { name: string; path: string }[] }) {
+  // The public (legacy) path is what Google has indexed and what the canonical points at — same mapping as pageMetadata.
+  const publicPath = PUBLIC_PATHS[path] ?? path;
+  const url = absoluteUrl(publicPath);
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": type,
+      "@id": `${url}#webpage`,
+      url,
+      name,
+      ...(description ? { description } : {}),
+      inLanguage: "he-IL",
+      isPartOf: { "@id": `${absoluteUrl("/")}#website` },
+    },
+    breadcrumbJsonLd([{ name: "בית", path: "/" }, ...parents, { name, path: publicPath }]),
+  ];
+}
+
 export function organizationJsonLd() {
   return [
     {
@@ -233,9 +256,13 @@ export function toDescription(html: string | null | undefined, max = 155) {
 /** Appends the site name unless the title already carries it. */
 export const withBrand = (title: string) => (title.includes("תמר קוסמטיקס") ? title : `${title} | תמר קוסמטיקס`);
 
-/** Metadata for a wp-admin-managed page that has no Rank Math record (heading + editor pages, forms, lists). */
-export function pageMetadata({ title, description, route }: { title?: string | null; description?: string | null; route: string }): Metadata {
-  return seoToMetadata(null, {
+/**
+ * Metadata for a wp-admin-managed page. `seo` is the page's Rank Math record (the REST page endpoints return it —
+ * see `withSeoSlug` in tamarApi.ts) and wins; `title`/`description` (the wp-admin heading / content) are only the
+ * fallback for a page without one, or a backend whose plugin predates the `seo` field.
+ */
+export function pageMetadata({ title, description, route, seo }: { title?: string | null; description?: string | null; route: string; seo?: Seo | null }): Metadata {
+  return seoToMetadata(seo ?? null, {
     path: PUBLIC_PATHS[route] ?? route,
     fallback: {
       title: title ? withBrand(title) : undefined,

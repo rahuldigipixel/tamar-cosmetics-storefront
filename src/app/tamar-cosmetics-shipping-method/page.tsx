@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getShippingMethodPage } from "@/lib/wpgraphql/tamarApi";
@@ -8,7 +10,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getShippingMethodPage();
-  return pageMetadata({ title: page?.heading || "שיטת משלוחים תמר קוסמטיקס", description: page?.contentHtml, route: "/tamar-cosmetics-shipping-method" });
+  return pageMetadata({ title: page?.heading || "שיטת משלוחים תמר קוסמטיקס", description: page?.contentHtml, route: "/tamar-cosmetics-shipping-method", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/שיטת-שילוח-תמר-קוסמטיקס" (matching the live
@@ -20,6 +22,7 @@ export default async function ShippingMethodPage() {
 
   return (
     <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/tamar-cosmetics-shipping-method" })} />
       {/* Measured from the legacy page: pink band #fde7eb, black 800-weight title (72px desktop / 35px mobile). The legacy Hebrew title falls back to the browser serif (Open Sans has no Hebrew glyphs there), so it is reproduced with a serif stack. */}
       <div className="bg-[#fde7eb]">
         <div className="mx-auto max-w-[1600px] px-[15px] py-[10px] text-center">

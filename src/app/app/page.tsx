@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
@@ -12,7 +14,7 @@ const RED = "bg-[#d52027]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAppPage();
-  return pageMetadata({ title: page?.heroTitle?.replace(/\s*\n\s*/g, " ") || FALLBACK_TITLE, description: page?.heroText, route: "/app" });
+  return pageMetadata({ title: page?.heroTitle?.replace(/\s*\n\s*/g, " ") || FALLBACK_TITLE, description: page?.heroText, route: "/app", seo: page?.seo });
 }
 
 /** YouTube watch / short / embed URL → video id. */
@@ -57,6 +59,7 @@ export default async function AppPage() {
 
   return (
     <div className={PAGE_BOTTOM}>
+      <JsonLd data={pageJsonLd({ name: page.heroTitle.replace(/\s*\n\s*/g, " "), path: "/app" })} />
       {/* 1. Hero — text on the right (RTL start), phone on the left */}
       <section className="bg-gradient-to-l from-white via-white to-[#fde7eb]">
         <div className="mx-auto grid max-w-[1600px] items-center gap-8 px-[15px] py-10 lg:grid-cols-2 lg:gap-0 lg:py-0">

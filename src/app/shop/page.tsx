@@ -1,16 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { pageMetadata, pageJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/PageJsonLd";
 import { getShopData } from "@/lib/wpgraphql/shop";
 import { CategoryProductGrid } from "@/components/product/CategoryProductGrid";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = pageMetadata({
-  title: "חנות",
-  description: "כל מוצרי תמר קוסמטיקס במקום אחד - לק ג׳ל, אקריל, ציוד לציפורניים, פדיקור, גבות והסרת שיער במחירי סיטונאי.",
-  route: "/shop",
-});
+// Rank Math's record for the WordPress "shop" page (one request, shared with the page body via cache());
+// the hand-written title/description are only the fallback.
+export async function generateMetadata(): Promise<Metadata> {
+  const { seo } = await getShopData(20);
+  return pageMetadata({
+    title: "חנות",
+    description: "כל מוצרי תמר קוסמטיקס במקום אחד - לק ג׳ל, אקריל, ציוד לציפורניים, פדיקור, גבות והסרת שיער במחירי סיטונאי.",
+    route: "/shop",
+    seo,
+  });
+}
 
 export default async function ShopPage() {
  const { products, hasNextPage, endCursor, categories, brands, countries, priceBounds } = await getShopData(20);
@@ -19,6 +26,7 @@ export default async function ShopPage() {
  // Same structure as the legacy /shop/ (and our category page): pink title band
  // (40px/700 #242424) → 12px breadcrumb → filter bar → product grid.
  <div>
+ <JsonLd data={pageJsonLd({ name: "חנות", path: "/shop", type: "CollectionPage" })} />
  <div className="bg-[#fde7eb] px-[15px] py-[15px] text-center">
  <h1 className="text-[28px] font-bold leading-[1.2] text-[#242424] md:text-[40px] md:leading-[48px]">חנות</h1>
  </div>

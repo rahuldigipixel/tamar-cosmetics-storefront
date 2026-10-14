@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { fetchGraphQLSafe } from "@/lib/wpgraphql/client";
+import { getSitemapData } from "@/lib/wpgraphql/tamarApi";
 import { absoluteUrl, PUBLIC_PATHS, SITEMAP_STATIC_ROUTES } from "@/lib/seo";
 
 // Built on request, never at `next build`: ~50 sequential 100-row GraphQL pages for the whole catalogue take longer
@@ -71,6 +72,20 @@ interface ProductsPage {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Fast path: the plugin's /sitemap-data returns the whole catalogue in one lean request (~1.5s).
+  const fast = await getSitemapData();
+  if (fast) {
+    return [
+      { url: absoluteUrl("/") },
+      ...SITEMAP_STATIC_ROUTES.map((route) => ({ url: absoluteUrl(PUBLIC_PATHS[route] ?? route) })),
+      ...fast.posts.map(([slug, modified]) => ({ url: absoluteUrl(`/${slug}`), lastModified: modified ? new Date(modified) : undefined })),
+      ...fast.categories.map((path) => ({ url: absoluteUrl(`/product-category/${path}/`) })),
+      ...fast.brands.map((slug) => ({ url: absoluteUrl(`/brand/${slug}/`) })),
+      ...fast.products.map(([slug, modified]) => ({ url: absoluteUrl(`/product/${slug}`), lastModified: modified ? new Date(modified) : undefined })),
+    ];
+  }
+
+  // Fallback for a backend whose plugin predates /sitemap-data: page through GraphQL (~50 requests, slow when cold).
   const opts = { tags: ["sitemap", "products"], revalidate: 3600 };
 
   const taxonomies = await fetchGraphQLSafe<{

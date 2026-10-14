@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getFlagshipPage } from "@/lib/wpgraphql/tamarApi";
@@ -14,7 +16,7 @@ const ARIAL = "font-[family-name:Arial,Helvetica,sans-serif]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getFlagshipPage();
-  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/flagship-branch" });
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/flagship-branch", seo: page?.seo });
 }
 
 /** YouTube watch / short / embed URL → video id. */
@@ -56,6 +58,7 @@ export default async function FlagshipBranchPage() {
 
   return (
     <div className={ARIAL}>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/flagship-branch" })} />
       <TitleBand heading={page?.heading || FALLBACK_TITLE} />
 
       <div className={`mx-auto max-w-[1570px] px-[25px] lg:px-[10px] ${PAGE_TOP} ${PAGE_BOTTOM}`}>

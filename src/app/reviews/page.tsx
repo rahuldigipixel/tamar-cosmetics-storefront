@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getGlobalData, getReviewsPage } from "@/lib/wpgraphql/tamarApi";
@@ -9,7 +11,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
  const page = await getReviewsPage();
- return pageMetadata({ title: page?.heading || "ביקורות לקוחות", description: page?.descriptionHtml, route: "/reviews" });
+ return pageMetadata({ title: page?.heading || "ביקורות לקוחות", description: page?.descriptionHtml, route: "/reviews", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/ביקורות-לקוחות-תמר-קוסמטיקס" (matching the
@@ -22,8 +24,9 @@ export default async function ReviewsPage() {
  const heading = page?.heading || "ביקורות לקוחות";
  const descriptionHtml = page?.descriptionHtml || "";
 
- return (
+  return (
  <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/reviews" })} />
  <div className="bg-[#fde7eb]">
  <div className="mx-auto max-w-[1600px] px-[15px] py-[10px] text-center lg:py-5">
  <h1 className="text-[43px] font-bold leading-[43px] text-brand-accent lg:text-[50px] lg:leading-[50px]">{heading}</h1>

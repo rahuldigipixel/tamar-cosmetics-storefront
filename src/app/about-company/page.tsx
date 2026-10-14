@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getAboutPage } from "@/lib/wpgraphql/tamarApi";
@@ -15,7 +17,7 @@ const ARIAL = "font-[family-name:Arial,Helvetica,sans-serif]";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getAboutPage();
-  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/about-company" });
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/about-company", seo: page?.seo });
 }
 
 /** YouTube watch / short / embed URL → video id. */
@@ -38,6 +40,7 @@ export default async function AboutPage() {
 
   return (
     <div className={ARIAL}>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/about-company" })} />
       <TitleBand heading={page?.heading || FALLBACK_TITLE} />
 
       <div className={`mx-auto max-w-[1570px] px-[25px] lg:px-[10px] ${PAGE_TOP} ${PAGE_BOTTOM}`}>

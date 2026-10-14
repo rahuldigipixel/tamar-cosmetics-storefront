@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getReturnPolicyPage } from "@/lib/wpgraphql/tamarApi";
@@ -8,7 +10,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getReturnPolicyPage();
-  return pageMetadata({ title: page?.heading || "מדיניות – החזר מוצר", description: page?.contentHtml, route: "/return-policy" });
+  return pageMetadata({ title: page?.heading || "מדיניות – החזר מוצר", description: page?.contentHtml, route: "/return-policy", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/מדיניות-החזר-מוצר" (matching the live
@@ -20,6 +22,7 @@ export default async function ReturnPolicyPage() {
 
   return (
     <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/return-policy" })} />
       {/* Measured from the legacy page: pink band #fde7eb, black 800-weight title (72px desktop / 35px mobile). The legacy Hebrew title falls back to the browser serif (Open Sans has no Hebrew glyphs there), so it is reproduced with a serif stack. */}
       <div className="bg-[#fde7eb]">
         <div className="mx-auto max-w-[1600px] px-[15px] py-[10px] text-center">

@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { getProductBySlug } from "@/lib/wpgraphql/products";
+import { getProductBySlug, normalizeProductSlug } from "@/lib/wpgraphql/products";
 import { wpEnv } from "@/lib/wpgraphql/env";
 import { seoToMetadata, jsonLdString, breadcrumbJsonLd, absoluteUrl, toDescription, priceValidUntil } from "@/lib/seo";
 import { ProductGallery } from "@/components/product/ProductGallery";
@@ -44,23 +44,9 @@ function humanizeOption(value: string) {
  }
 }
 
-// Next.js has been observed delivering this dynamic segment in different
-// forms to generateMetadata() vs. the page body for a non-ASCII slug (one
-// still percent-encoded, the other already decoded) — same root cause as
-// the fix in lib/wpgraphql/posts.ts's getPostBySlug. Since getProductBySlug
-// is only React `cache()`-deduped for identical string arguments, normalizing
-// here (not inside getProductBySlug) is what actually makes both call sites
-// share one request instead of firing two GraphQL queries with different
-// slug encodings.
-function normalizeSlug(slug: string) {
- // WordPress stores non-ASCII slugs percent-encoded in lowercase hex, and
- // WPGraphQL's SLUG lookup only matches that exact form — not decoded Hebrew.
- try {
- return encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
- } catch {
- return slug.toLowerCase();
- }
-}
+// Next.js has been observed delivering this dynamic segment in different forms to generateMetadata() vs. the page
+// body for a non-ASCII slug — see normalizeProductSlug (shared with ./layout.tsx so all three call sites share one request).
+const normalizeSlug = normalizeProductSlug;
 
 export async function generateMetadata({
  params,

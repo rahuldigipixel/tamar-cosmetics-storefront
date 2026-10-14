@@ -27,7 +27,18 @@ interface FetchGraphQLOptions {
 
 interface GraphQLResponse<T> {
   data?: T;
-  errors?: { message: string }[];
+  errors?: { message: string; path?: (string | number)[] }[];
+}
+
+/** True when `path` resolves to an explicit `null` inside `data` (a nullable field that errored out). */
+function isNullPath(data: unknown, path?: (string | number)[]): boolean {
+  if (!path?.length) return false;
+  let node: unknown = data;
+  for (const key of path) {
+    if (node === null || typeof node !== "object") return false;
+    node = (node as Record<string | number, unknown>)[key];
+  }
+  return node === null;
 }
 
 /**
@@ -37,7 +48,9 @@ interface GraphQLResponse<T> {
  * Returns the raw Response too, since cart mutations need to read the
  * `woocommerce-session` response header.
  */
-const REQUEST_TIMEOUT_MS = 10_000;
+// 20s: the remote (upress) backend needs 10–19s on a cold, uncached query; at 10s those requests were aborted and
+// the page rendered a false "not found". Pages cache the result (ISR), so this is only paid on a cold request.
+const REQUEST_TIMEOUT_MS = 20_000;
 
 export async function fetchGraphQL<T>(
   query: string,
@@ -83,7 +96,11 @@ export async function fetchGraphQL<T>(
     throw new Error(`GraphQL request to ${wpEnv.graphqlUrl} did not return JSON: ${text.slice(0, 300)}`);
   }
 
-  if (json.errors?.length) {
+  // WPGraphQL answers an unknown slug (`product(id: "x", idType: SLUG)`) with `data.product: null` PLUS an
+  // `errors` entry ("No product ID was found…"). That is "not found", not a failed request — otherwise a deleted
+  // product/post throws here and the page 500s instead of 404ing. Errors are tolerated only when every one of
+  // them points at a field that came back null.
+  if (json.errors?.length && !(json.data && json.errors.every((e) => isNullPath(json.data, e.path)))) {
     throw new GraphQLError(json.errors.map((e) => e.message).join("; "), json.errors);
   }
   if (!json.data) {

@@ -341,6 +341,19 @@ export interface ProductWithRelated {
  * (WooCommerce's native `related` field) so the product page needs only ONE
  * GraphQL call instead of a second query for the "similar products" slider.
  */
+/**
+ * Route param → the slug form WPGraphQL's SLUG lookup matches: WordPress stores non-ASCII slugs percent-encoded in
+ * lowercase hex, while Next may deliver the segment encoded or decoded (differently to generateMetadata, the page
+ * and the layout). Normalising before the React `cache()`d lookup makes all three share one request.
+ */
+export function normalizeProductSlug(slug: string) {
+  try {
+    return encodeURIComponent(decodeURIComponent(slug)).toLowerCase();
+  } catch {
+    return slug.toLowerCase();
+  }
+}
+
 export const getProductBySlug = cache(async (slug: string): Promise<ProductWithRelated | null> => {
   const data = await fetchGraphQLSafe<{
     seo: Seo | null;

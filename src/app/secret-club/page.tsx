@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { getSecretClubPage } from "@/lib/wpgraphql/tamarApi";
@@ -8,7 +10,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSecretClubPage();
-  return pageMetadata({ title: page?.heading || "הנבחרת הסודית", description: page?.contentHtml, route: "/secret-club" });
+  return pageMetadata({ title: page?.heading || "הנבחרת הסודית", description: page?.contentHtml, route: "/secret-club", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/הנבחרת-הסודית-תמר-קוסמטיקס" (see the rewrite in
@@ -27,6 +29,7 @@ export default async function SecretClubPage() {
 
   return (
     <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/secret-club" })} />
       <div className="border-b border-black/5 bg-gradient-to-br from-brand-soft/60 via-brand-soft/20 to-white">
         <div className="mx-auto max-w-[1600px] px-[15px] py-6 text-center sm:py-6">
           <h1 className="text-[40px] font-extrabold leading-[44px] text-[#d52027] lg:text-[72px] lg:leading-[72px]">{heading}</h1>

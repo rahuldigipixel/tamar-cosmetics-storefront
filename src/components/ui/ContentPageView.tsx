@@ -7,7 +7,7 @@ import { CONTENT_PROFILES } from "@/lib/contentPageProfiles";
 /** generateMetadata() for a wp-admin "heading + editor" page (shares the page's cached request). */
 export async function contentMetadata(route: string, fallbackTitle: string): Promise<Metadata> {
   const page = await getContentPage(route);
-  return pageMetadata({ title: page?.heading || fallbackTitle, description: page?.contentHtml, route: `/${route.replace(/-page$/, "")}` });
+  return pageMetadata({ title: page?.heading || fallbackTitle, description: page?.contentHtml, route: `/${route.replace(/-page$/, "")}`, seo: page?.seo });
 }
 
 /** Pink title band (#fde7eb, 72px/35px 800 serif title) shared by the content pages. */

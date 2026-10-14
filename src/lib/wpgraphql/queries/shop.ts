@@ -1,3 +1,4 @@
+import { SEO_FIELDS } from "@/lib/seo";
 import { PRODUCT_LIST_FIELDS } from "./products";
 import { PRICE_BOUND_FIELDS } from "../priceBounds";
 
@@ -9,6 +10,10 @@ import { PRICE_BOUND_FIELDS } from "../priceBounds";
  */
 export const GET_SHOP_DATA = /* GraphQL */ `
   query GetShopData($first: Int = 20) {
+    # Rank Math record of the WordPress "shop" page (title/description/OG) — same single request.
+    seo: tamarSeo(kind: "post", slug: "shop") {
+      ${SEO_FIELDS}
+    }
     shopProducts: products(first: $first, where: { status: "publish" }) {
       pageInfo {
         hasNextPage

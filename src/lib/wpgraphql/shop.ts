@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { fetchGraphQLSafe } from "./client";
 import { GET_SHOP_DATA } from "./queries/shop";
 import { categoryTree } from "./brandPage";
@@ -5,8 +6,10 @@ import { fromGraphqlBrand, type GqlBrandNode } from "./brands";
 import { toPriceBounds } from "./priceBounds";
 import { mapProductListNodes, type GqlProductNode } from "./products";
 import type { Brand, CountryOption, Product, ProductCategory } from "@/types/product";
+import type { Seo } from "@/lib/seo";
 
 export interface ShopData {
+  seo: Seo | null;
   products: Product[];
   hasNextPage: boolean;
   endCursor: string | null;
@@ -18,8 +21,9 @@ export interface ShopData {
 }
 
 /** One combined GraphQL call — see GET_SHOP_DATA. */
-export async function getShopData(first = 20): Promise<ShopData> {
+export const getShopData = cache(async (first = 20): Promise<ShopData> => {
   const data = await fetchGraphQLSafe<{
+    seo: Seo | null;
     shopProducts: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: GqlProductNode[] };
     priceLow: { nodes: { price?: string | null }[] };
     priceHigh: { nodes: { price?: string | null }[] };
@@ -34,6 +38,7 @@ export async function getShopData(first = 20): Promise<ShopData> {
   const brandSlugs = new Set((data.facets?.brands ?? []).map((b) => b.slug));
 
   return {
+    seo: data.seo ?? null,
     products: await mapProductListNodes(data.shopProducts.nodes),
     hasNextPage: data.shopProducts.pageInfo.hasNextPage,
     endCursor: data.shopProducts.pageInfo.endCursor,
@@ -42,4 +47,4 @@ export async function getShopData(first = 20): Promise<ShopData> {
     countries: data.facets?.countries ?? [],
     priceBounds: toPriceBounds(data.priceLow, data.priceHigh),
   };
-}
+});

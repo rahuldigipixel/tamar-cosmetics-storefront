@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Image from "next/image";
@@ -11,7 +13,7 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
  const page = await getWholesalePage();
- return pageMetadata({ title: page?.heading, description: page?.contentHtml, route: "/wholesale" });
+ return pageMetadata({ title: page?.heading, description: page?.contentHtml, route: "/wholesale", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/מכירה-סיטונאית-תמר-קוסמטיקס" (see the rewrite in
@@ -30,8 +32,9 @@ export default async function WholesalePage() {
  const ctaButtonLabel = page?.ctaButtonLabel ?? "";
  const sliderImages = page?.sliderImages ?? [];
 
- return (
+  return (
  <div>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/wholesale" })} />
  <TitleBand heading={heading} />
 
  <div className="mx-auto max-w-[1600px] px-[15px] py-10">

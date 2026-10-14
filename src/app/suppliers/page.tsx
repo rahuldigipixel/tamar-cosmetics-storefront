@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
@@ -11,7 +13,7 @@ const FALLBACK_TITLE = "שותפות עסקית ורכש - תמר קוסמטיק
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getSuppliersPage();
-  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/suppliers" });
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.description, route: "/suppliers", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/ספקים" (matching the live site) — see the rewrite
@@ -26,6 +28,7 @@ export default async function SuppliersPage() {
 
   return (
     <div className={`font-[family-name:Arial,Helvetica,sans-serif] ${PAGE_BOTTOM}`}>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/suppliers" })} />
       <div className="bg-[#fde7eb]">
         <div className="mx-auto max-w-[1600px] px-[10px] py-5 text-center sm:px-[15px]">
           <h1 className="font-[family-name:'Times_New_Roman',serif] text-[35px] font-extrabold leading-[35px] text-black lg:text-[72px] lg:leading-[72px]">

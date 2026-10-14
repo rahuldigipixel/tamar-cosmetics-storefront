@@ -26,20 +26,28 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
   stepSize = 1,
   autoplayMs,
   durationMs,
+  lazyCopies = false,
 }: {
   items: Item[];
   stepSize?: number;
   autoplayMs?: number;
   /** Animate each step over this many ms (eased) instead of the browser's short native smooth scroll. */
   durationMs?: number;
+  /**
+   * Server-render (and first-paint) a single copy of `items`, adding the other copies after hydration. Cuts the
+   * HTML of a below-the-fold row to a third (a home page product rail repeats every card COPIES times). Leave off
+   * for anything the first paint depends on (the hero: its LCP image is the middle copy).
+   */
+  lazyCopies?: boolean;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(El | null)[]>([]);
   const count = items.length;
   const middleStart = count * Math.floor(COPIES / 2);
 
-  const looped = count > 0 ? Array.from({ length: COPIES }, () => items).flat() : [];
-  const [position, setPosition] = useState(middleStart);
+  const [ready, setReady] = useState(!lazyCopies);
+  const looped = count > 0 ? Array.from({ length: ready ? COPIES : 1 }, () => items).flat() : [];
+  const [position, setPosition] = useState(lazyCopies ? 0 : middleStart);
   const pausedRef = useRef(false);
 
   function scrollTo(target: number, smooth: boolean) {
@@ -80,11 +88,21 @@ export function useInfiniteCarousel<Item, El extends HTMLElement>({
     }
   }
 
+  // lazyCopies: grow from the single server-rendered copy to all copies once hydrated; the position moves to the
+  // middle copy in the same batch, and the scroll effect below then lands the track there.
   useEffect(() => {
-    scrollTo(position, false);
-    // Only on mount — jumps the track to the middle copy before first paint settles.
+    if (!lazyCopies) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true);
+    setPosition(middleStart);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    scrollTo(position, false);
+    // On mount (or, for lazyCopies, once the extra copies exist) — jumps the track to the middle copy before first paint settles.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   // Pause autoplay while the pointer is over the track so the user can
   // read product details and adjust quantity without the row sliding away.

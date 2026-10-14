@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/seo/PageJsonLd";
+import { pageJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { PAGE_BOTTOM } from "@/lib/pageSpacing";
@@ -13,7 +15,7 @@ const CONTENT_ID = "faq-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getFaqPage();
-  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/faq" });
+  return pageMetadata({ title: page?.heading || FALLBACK_TITLE, description: page?.contentHtml, route: "/faq", seo: page?.seo });
 }
 
 // Public path is the Hebrew "/שאלות-נפוצות-אתר-תמר-קוסמטיקס" (matching the
@@ -27,6 +29,7 @@ export default async function FaqPage() {
 
   return (
     <div className={PAGE_BOTTOM}>
+      <JsonLd data={pageJsonLd({ name: page?.heading ?? "", path: "/faq" })} />
       <h1 className="px-[25px] py-5 text-center font-[family-name:'Times_New_Roman',serif] text-[20px] font-bold leading-[30px] text-[#d52027] lg:px-[15px] lg:text-[30px]">
         {heading}
       </h1>

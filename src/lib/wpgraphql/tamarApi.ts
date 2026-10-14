@@ -925,5 +925,6 @@ export interface SitemapData {
 
 /** Whole catalogue for the sitemaps in ONE request (plugin: Tamar_Seo::get_sitemap_data). null on an older plugin. */
 export const getSitemapData = cache(function getSitemapData() {
-  return tamarFetch<SitemapData>(`/sitemap-data`, { tags: ["sitemap", "products"], revalidate: 3600 });
+  // `?v=2` = response format version: a new format must not be served from an older cached response (the fetch cache outlives deploys).
+  return tamarFetch<SitemapData>(`/sitemap-data?v=2`, { tags: ["sitemap", "products"], revalidate: 3600 });
 });

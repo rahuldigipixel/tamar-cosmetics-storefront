@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
 import Script from "next/script";
 import { Open_Sans } from "next/font/google";
 import { resolveIntegrations } from "@/lib/integrations";
@@ -20,7 +19,6 @@ import { resolveMarketingConsent } from "@/lib/utils/marketingConsent";
 import { QuickViewHost } from "@/components/product/QuickViewHost";
 import { LoginDrawer } from "@/components/auth/LoginDrawer";
 import { LogoutOverlay } from "@/components/auth/LogoutOverlay";
-import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { FloatingActions } from "@/components/layout/FloatingActions";
 import { AccessibilityWidget } from "@/components/layout/AccessibilityWidget";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -114,10 +112,6 @@ export default async function RootLayout({
           <QuickViewHost />
         </PhoneOrderProvider>
         <LogoutOverlay />
-        {/* useSearchParams inside needs its own boundary so it can't push the whole page into client-side rendering. */}
-        <Suspense fallback={null}>
-          <NavigationProgress />
-        </Suspense>
         <FloatingActions whatsappNumber={integrations.whatsappNumber} />
         <AccessibilityWidget />
         <MobileBottomNav />

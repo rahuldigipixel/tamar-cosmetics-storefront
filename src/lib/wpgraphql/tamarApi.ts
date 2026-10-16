@@ -144,6 +144,8 @@ export interface SiteSettings {
   freeShipping?: Partial<import("@/lib/utils/freeShipping").FreeShippingConfig>;
   /** Free-shipping badge on product images (wp-admin → הגדרות עמוד מוצר); use resolveShippingBadge() for defaults. */
   shippingBadge?: Partial<import("@/lib/utils/shippingBadge").ShippingBadgeConfig> | null;
+  /** "Phone order only" products (WooCommerce → Settings → Extended Settings → Disable Add to Cart Settings); read by PhoneOrderProvider in AddToCartButton.tsx, which supplies the defaults. */
+  phoneOrder?: { enabled?: boolean; productIds?: number[]; message?: string } | null;
   /** Flashy plugin's marketing checkbox (wp-admin → Flashy); use resolveMarketingConsent() for defaults. */
   flashyConsent?: Partial<import("@/lib/utils/marketingConsent").MarketingConsentConfig> | null;
   /** Promo + age-verify popups (wp-admin → General Site Settings); each null when disabled. */

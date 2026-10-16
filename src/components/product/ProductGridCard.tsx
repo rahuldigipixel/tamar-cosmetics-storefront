@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { AddToCartButton, MoreInfoButton, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
@@ -29,6 +29,7 @@ export function ProductGridCard({
   widthClassName?: string;
 }) {
   const [quantity, setQuantity] = useState(1);
+  const { phoneOnly } = usePhoneOrder(product.databaseId);
   const image = product.images[0];
   const hoverImage = product.images[1];
 
@@ -110,13 +111,19 @@ export function ProductGridCard({
             </div>
 
             <div className="flex shrink-0 items-center gap-1">
-              <QuantityStepper quantity={quantity} onChange={setQuantity} size="xs" />
-              <AddToCartButton
-                productId={product.databaseId}
-                inStock={product.inStock}
-                quantity={quantity}
-                size="xs"
-              />
+              {phoneOnly ? (
+                <MoreInfoButton href={`/product/${product.slug}`} size="xs" />
+              ) : (
+                <>
+                  <QuantityStepper quantity={quantity} onChange={setQuantity} size="xs" />
+                  <AddToCartButton
+                    productId={product.databaseId}
+                    inStock={product.inStock}
+                    quantity={quantity}
+                    size="xs"
+                  />
+                </>
+              )}
             </div>
           </div>
         ) : (

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { Product } from "@/types/product";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { AddToCartButton, PhoneOrderBox, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { QuickViewShare } from "@/components/product/QuickViewShare";
 import { useQuickViewStore } from "@/lib/store/useQuickViewStore";
@@ -37,6 +37,7 @@ export function QuickViewModal({ product: cardProduct }: { product: Product }) {
   const [detailFor, setDetailFor] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [slide, setSlide] = useState(0);
+  const { phoneOnly, message: phoneMessage } = usePhoneOrder(cardProduct.databaseId);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,7 +176,9 @@ export function QuickViewModal({ product: cardProduct }: { product: Product }) {
           ) : null}
 
           <div className="mt-[20px] flex flex-wrap items-center gap-[10px]">
-            {cardProduct.type === "simple" ? (
+            {phoneOnly ? (
+              <PhoneOrderBox message={phoneMessage} />
+            ) : cardProduct.type === "simple" ? (
               <>
                 <QuantityStepper quantity={quantity} onChange={setQuantity} size="sm" />
                 <AddToCartButton

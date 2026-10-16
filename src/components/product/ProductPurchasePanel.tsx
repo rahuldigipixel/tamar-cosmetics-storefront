@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Minus, Plus } from "lucide-react";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { AddToCartButton, PhoneOrderBox, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { BackInStockForm } from "@/components/product/BackInStockForm";
 import { useCartStore } from "@/lib/store/useCartStore";
 
@@ -66,6 +66,11 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
 // RTL row, right → left: buy now, add to cart, quantity (matches the reference).
 export function ProductPurchasePanel({ productId, inStock }: { productId: number; inStock: boolean }) {
   const [quantity, setQuantity] = useState(1);
+  const { phoneOnly, message } = usePhoneOrder(productId);
+
+  // Phone-order-only product (wp-admin → Disable Add to Cart Settings): no buy now / add to cart / quantity — the phone box replaces them.
+  // Desktop only, like the legacy page (its box is hidden on phones). Same 25px gap under the price as the normal buttons row.
+  if (phoneOnly) return <PhoneOrderBox message={message} className="mt-[25px] hidden md:block" />;
 
   // Out of stock: no add-to-cart / quantity — the back-in-stock signup replaces them.
   if (!inStock) return <BackInStockForm productId={productId} />;

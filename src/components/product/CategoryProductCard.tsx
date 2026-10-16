@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { AddToCartButton, MoreInfoButton, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { QuantityStepper } from "@/components/product/QuantityStepper";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { ProductHoverActions } from "@/components/product/ProductHoverActions";
@@ -44,6 +44,7 @@ export function CategoryProductCard({
   wideMobile?: boolean;
 }) {
   const [quantity, setQuantity] = useState(1);
+  const { phoneOnly } = usePhoneOrder(product.databaseId);
   const priceCls = wideMobile
     ? "text-[24px] font-bold leading-[26px] text-[#d52027]"
     : "text-[18px] font-bold leading-[1.1] text-[#d52027] md:text-[24px] md:leading-[26px] lg:max-[1279px]:text-[21px]";
@@ -163,8 +164,14 @@ export function CategoryProductCard({
               </div>
               {/* Qty + cart on the left (RTL end) */}
               <div className="flex min-w-0 items-center gap-[2px] md:gap-1 lg:max-[1279px]:justify-between">
-                <QuantityStepper quantity={quantity} onChange={setQuantity} size={wideMobile ? "rowWide" : "row"} />
-                <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
+                {phoneOnly ? (
+                  <MoreInfoButton href={`/product/${product.slug}`} size={wideMobile ? "rowWide" : "row"} />
+                ) : (
+                  <>
+                    <QuantityStepper quantity={quantity} onChange={setQuantity} size={wideMobile ? "rowWide" : "row"} />
+                    <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
+                  </>
+                )}
               </div>
               </div>
             {couponBar ? <div className="mt-[8px]">{couponBar}</div> : null}

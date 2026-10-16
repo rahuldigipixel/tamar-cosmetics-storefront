@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { AddToCartButton, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { FlashyStarRating } from "@/components/product/FlashyStarRating";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { Price } from "@/components/product/Price";
@@ -39,6 +39,7 @@ function SliderQuantity({ quantity, onChange }: { quantity: number; onChange: (n
 
 function LinkedProductRow({ product }: { product: SliderProduct }) {
   const [quantity, setQuantity] = useState(1);
+  const { phoneOnly } = usePhoneOrder(product.databaseId);
   const href = `/product/${product.slug}`;
   const price = product.onSale && product.salePrice ? product.salePrice : product.price;
 
@@ -66,14 +67,14 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
             </p>
             {product.sku ? <p className="text-[12px] leading-[14px] text-black">מק&quot;ט: {product.sku}</p> : null}
           </div>
-          {product.purchasable ? (
+          {product.purchasable && !phoneOnly ? (
             <div className="flex shrink-0 items-center gap-[6px]">
               {product.inStock ? <SliderQuantity quantity={quantity} onChange={setQuantity} /> : null}
               <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="stripe" />
             </div>
           ) : (
             <Link href={href} className="rounded-full bg-[#f3c3cc] px-[10px] py-[6px] text-[14px] font-semibold text-[#333] transition-colors hover:bg-[#eeb0bb]">
-              בחירת אפשרויות
+              {phoneOnly ? "מידע נוסף" : "בחירת אפשרויות"}
             </Link>
           )}
         </div>

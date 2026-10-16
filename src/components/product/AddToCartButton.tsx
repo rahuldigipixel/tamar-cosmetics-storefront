@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { createContext, useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 
@@ -69,6 +70,86 @@ function IconTip({ label, children }: { label: string; children: React.ReactNode
         : null}
     </div>
   );
+}
+
+// ── Phone-order-only products ────────────────────────────────────────────────────────────────────────────────────────
+// Managed in wp-admin → WooCommerce → Settings → Extended Settings → Disable Add to Cart Settings (delivered in
+// /global-data as `phoneOrder`). Listed products get no quantity / add-to-cart / buy-now: lists swap them for
+// `MoreInfoButton`, the product page and quick view show `PhoneOrderBox` instead.
+
+export interface PhoneOrderConfig {
+  enabled: boolean;
+  /** Database ids of the products that can only be ordered by phone. */
+  productIds: number[];
+  /** Plain text — line breaks are kept. */
+  message: string;
+}
+
+// Same text as the wp-admin default (and the legacy box), used while the backend plugin is older.
+const DEFAULT_PHONE_ORDER_MESSAGE = "הזמנה טלפונית בלבד\nלהזמנות: 054-5405470";
+
+interface PhoneOrderState {
+  ids: ReadonlySet<number>;
+  message: string;
+}
+
+// Off until the backend says otherwise: with no list there is nothing to swap.
+const PhoneOrderContext = createContext<PhoneOrderState>({ ids: new Set(), message: DEFAULT_PHONE_ORDER_MESSAGE });
+
+/**
+ * Makes the wp-admin "phone order only" list available to every product card, the product page and quick view. Takes the
+ * raw `/global-data` value (the root layout is a server component and can't call helpers from this client file).
+ */
+export function PhoneOrderProvider({ config, children }: { config?: Partial<PhoneOrderConfig> | null; children: React.ReactNode }) {
+  const value = useMemo<PhoneOrderState>(() => {
+    const ids = config?.enabled === true && Array.isArray(config.productIds) ? config.productIds.map(Number).filter((id) => Number.isInteger(id) && id > 0) : [];
+    return { ids: new Set(ids), message: config?.message?.trim() || DEFAULT_PHONE_ORDER_MESSAGE };
+  }, [config]);
+  return <PhoneOrderContext.Provider value={value}>{children}</PhoneOrderContext.Provider>;
+}
+
+/** Whether this product can only be ordered by phone (no cart buttons), plus the admin message to show instead. */
+export function usePhoneOrder(productId: number): { phoneOnly: boolean; message: string } {
+  const { ids, message } = useContext(PhoneOrderContext);
+  return { phoneOnly: ids.has(productId), message };
+}
+
+/**
+ * The red "הזמנה טלפונית בלבד / להזמנות: …" box shown instead of the purchase buttons. Copied from the legacy
+ * `.wc_contact_us_btn p` (#d52027 background, 5px radius, 5px padding, white 16px/20.8px text, right-aligned, 50% of
+ * its column = 250px at 1920 — capped there) — the 16px is the legacy size, an approved exception to the 18px floor
+ * (see AGENTS.md). The product page hides it on phones like the legacy page (pass `hidden md:block`). The message is
+ * plain text from wp-admin; `whitespace-pre-line` turns its line breaks into the box's lines.
+ */
+export function PhoneOrderBox({ message, className = "" }: { message: string; className?: string }) {
+  return (
+    <p
+      className={`w-full rounded-[5px] bg-[#d52027] p-[5px] text-right text-[16px] leading-[20.8px] whitespace-pre-line text-white md:w-1/2 md:max-w-[250px] md:min-w-[170px] ${className}`}
+    >
+      {message}
+    </p>
+  );
+}
+
+/**
+ * Phone-order-only products (wp-admin → Disable Add to Cart Settings) can't go in the cart: in a list the quantity box and
+ * "add to cart" give way to this link to the product page, which shows the phone message — same as the legacy cards,
+ * which keep the cart-icon button but make it "מידע נוסף" (read more). Same sizes/tooltip as `AddToCartButton`.
+ */
+export function MoreInfoButton({ href, size = "md" }: { href: string; size?: keyof typeof SIZES }) {
+  const s = SIZES[size];
+  const link = (
+    <Link
+      prefetch={false}
+      href={href}
+      aria-label={s.iconOnly ? "מידע נוסף" : undefined}
+      className={`flex ${s.width} shrink-0 items-center justify-center ${s.gap} rounded-full ${PRIMARY_STYLE} ${s.padding} ${s.text} ${size === "lg" ? "" : "font-semibold"} transition-all duration-200 hover:-translate-y-0.5`}
+    >
+      {s.iconOnly ? <ShoppingBag className={s.icon} /> : "מידע נוסף"}
+    </Link>
+  );
+
+  return s.iconOnly ? <IconTip label="מידע נוסף">{link}</IconTip> : link;
 }
 
 export function AddToCartButton({

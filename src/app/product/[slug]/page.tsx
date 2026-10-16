@@ -290,7 +290,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
  <ProductWishlistButton productId={product.databaseId} />
  </div>
 
- <ProductPurchasePanel productId={product.databaseId} inStock={product.inStock} />
+ <ProductPurchasePanel productId={product.databaseId} inStock={product.inStock} regularPrice={product.regularPrice} />
 
  {show.coupon && product.coupon ? (
  <p className="mt-[15px] border-2 md:mt-[22px] border-brand-accent px-[8px] py-[5px] text-center text-[14px] leading-[22px] font-normal text-brand-accent">

@@ -169,7 +169,7 @@ export function CategoryProductCard({
                 ) : (
                   <>
                     <QuantityStepper quantity={quantity} onChange={setQuantity} size={wideMobile ? "rowWide" : "row"} />
-                    <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
+                    <AddToCartButton productId={product.databaseId} inStock={product.inStock} regularPrice={product.regularPrice} quantity={quantity} size={wideMobile ? "rowWide" : "row"} />
                   </>
                 )}
               </div>

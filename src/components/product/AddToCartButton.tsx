@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
+import { isZeroPrice } from "@/lib/utils/formatPrice";
 
 const SIZES = {
   xs: { width: "w-fit", padding: "px-2.5 py-1.5", text: "text-sm", icon: "h-3 w-3", gap: "gap-1", showIcon: false, iconOnly: false },
@@ -155,6 +156,7 @@ export function MoreInfoButton({ href, size = "md" }: { href: string; size?: key
 export function AddToCartButton({
   productId,
   inStock,
+  regularPrice,
   variationId,
   quantity = 1,
   size = "md",
@@ -162,6 +164,11 @@ export function AddToCartButton({
 }: {
   productId: number;
   inStock: boolean;
+  /**
+   * The product's original (regular) price — a 0 / empty one disables the button (the product has no price and can't be
+   * purchased). Deliberately NOT the final price: a YITH rule such as "buy 1 get 1 free" can bring that to 0 legitimately.
+   */
+  regularPrice?: string | number | null;
   variationId?: number;
   quantity?: number;
   size?: keyof typeof SIZES;
@@ -170,6 +177,33 @@ export function AddToCartButton({
   const addItem = useCartStore((s) => s.addItem);
   const [submitting, setSubmitting] = useState(false);
   const s = SIZES[size];
+
+  // In stock but priced 0: same greyed-out button as out of stock, keeping the normal label so the layout doesn't shift.
+  if (inStock && regularPrice !== undefined && isZeroPrice(regularPrice)) {
+    if (s.iconOnly) {
+      return (
+        <IconTip label="לא ניתן לרכוש מוצר זה">
+          <button
+            disabled
+            aria-label="לא ניתן לרכוש מוצר זה"
+            className={`flex ${s.width} shrink-0 cursor-not-allowed items-center justify-center rounded-full bg-black/10 ${s.padding} text-black/40`}
+          >
+            <ShoppingBag className={s.icon} />
+          </button>
+        </IconTip>
+      );
+    }
+    return (
+      <button
+        disabled
+        title="לא ניתן לרכוש מוצר זה"
+        className={`flex ${s.width} shrink-0 cursor-not-allowed items-center justify-center ${s.gap} rounded-full bg-black/10 ${s.padding} ${s.text} ${size === "lg" ? "" : "font-semibold"} text-black/40`}
+      >
+        {s.showIcon ? <ShoppingBag className={s.icon} /> : null}
+        הוספה לסל
+      </button>
+    );
+  }
 
   if (!inStock) {
     if (s.iconOnly) {

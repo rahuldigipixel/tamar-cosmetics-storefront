@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft, Search } from "lucide-react";
 import { formatPrice } from "@/lib/utils/formatPrice";
+import { startNavigation } from "@/components/layout/NavigationProgress";
 import type { HeaderSearchResult } from "@/app/api/search/route";
 
 const MIN_CHARS = 3;
@@ -152,7 +153,9 @@ export function HeaderSearch({
     e.preventDefault();
     setOpen(false);
     (document.activeElement as HTMLElement | null)?.blur();
-    router.push(single ? `/product/${single.slug}` : trimmed ? allResultsHref : "/shop");
+    const target = single ? `/product/${single.slug}` : trimmed ? allResultsHref : "/shop";
+    startNavigation(target);
+    router.push(target);
   }
 
   return (

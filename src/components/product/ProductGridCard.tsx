@@ -119,6 +119,7 @@ export function ProductGridCard({
                   <AddToCartButton
                     productId={product.databaseId}
                     inStock={product.inStock}
+                    regularPrice={product.regularPrice}
                     quantity={quantity}
                     size="xs"
                   />

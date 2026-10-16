@@ -143,6 +143,25 @@ input[type="radio"] {
   animation: header-slide-down 0.3s ease-out;
 }
 
+/* Top progress bar shown while a link click is waiting for the next page (NavigationProgress.tsx): races to ~30% at
+   once, then slowly creeps toward 92% and waits there — it never reaches 100%, the page landing removes it. In RTL the
+   bar grows from the right edge. */
+@keyframes nav-progress {
+  from {
+    width: 0;
+  }
+  15% {
+    width: 30%;
+  }
+  to {
+    width: 92%;
+  }
+}
+
+.animate-nav-progress {
+  animation: nav-progress 12s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+}
+
 /* Product labels (ProductLabels.tsx) sit over product images/links — never intercept clicks or hover (the cards' own links and hover actions stay usable). */
 .berocket_better_labels,
 .berocket_better_labels * {

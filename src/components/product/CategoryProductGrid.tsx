@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2, Minus, Plus, X } from "lucide-react";
 import type { Brand, CountryOption, Product } from "@/types/product";
 import { CategoryProductCard } from "@/components/product/CategoryProductCard";
+import { startNavigation } from "@/components/layout/NavigationProgress";
 import { fetchCategoryProducts, type CategorySortOption } from "@/lib/wpgraphql/actions";
 
 const ALL_CATEGORIES_VALUE = "__all__";
@@ -565,13 +566,17 @@ export function CategoryProductGrid({
       q.delete("product_cat");
       if (selectedBrand !== ALL_BRANDS_VALUE) q.set("filter_brand", selectedBrand);
       const qs = q.toString();
-      router.push(`${target?.href ?? `/product-category/${slug}/`}${qs ? `?${qs}` : ""}`);
+      const href = `${target?.href ?? `/product-category/${slug}/`}${qs ? `?${qs}` : ""}`;
+      startNavigation(href);
+      router.push(href);
       return;
     }
     if (slug === currentCategorySlug) return;
     const target = categories.find((c) => normalizeSlug(c.slug) === slug);
     // Carry every active filter over to the other category's page.
-    router.push(`${target?.href ?? `/product-category/${slug}/`}${window.location.search}`);
+    const href = `${target?.href ?? `/product-category/${slug}/`}${window.location.search}`;
+    startNavigation(href);
+    router.push(href);
   }
 
   return (

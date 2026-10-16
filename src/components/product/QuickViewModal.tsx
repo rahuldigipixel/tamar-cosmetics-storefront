@@ -184,6 +184,7 @@ export function QuickViewModal({ product: cardProduct }: { product: Product }) {
                 <AddToCartButton
                   productId={cardProduct.databaseId}
                   inStock={product.inStock}
+                  regularPrice={product.regularPrice}
                   quantity={quantity}
                   size="sm"
                 />

@@ -70,7 +70,7 @@ function LinkedProductRow({ product }: { product: SliderProduct }) {
           {product.purchasable && !phoneOnly ? (
             <div className="flex shrink-0 items-center gap-[6px]">
               {product.inStock ? <SliderQuantity quantity={quantity} onChange={setQuantity} /> : null}
-              <AddToCartButton productId={product.databaseId} inStock={product.inStock} quantity={quantity} size="stripe" />
+              <AddToCartButton productId={product.databaseId} inStock={product.inStock} regularPrice={product.regularPrice} quantity={quantity} size="stripe" />
             </div>
           ) : (
             <Link href={href} className="rounded-full bg-[#f3c3cc] px-[10px] py-[6px] text-[14px] font-semibold text-[#333] transition-colors hover:bg-[#eeb0bb]">

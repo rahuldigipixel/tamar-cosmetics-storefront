@@ -6,6 +6,7 @@ import { Loader2, Minus, Plus } from "lucide-react";
 import { AddToCartButton, PhoneOrderBox, usePhoneOrder } from "@/components/product/AddToCartButton";
 import { BackInStockForm } from "@/components/product/BackInStockForm";
 import { useCartStore } from "@/lib/store/useCartStore";
+import { isZeroPrice } from "@/lib/utils/formatPrice";
 
 function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (next: number) => void }) {
   return (
@@ -32,14 +33,14 @@ function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (
 }
 
 /** Adds the selected quantity to the cart, then goes straight to checkout (no drawer). */
-function BuyNowButton({ productId, quantity }: { productId: number; quantity: number }) {
+function BuyNowButton({ productId, quantity, disabled = false }: { productId: number; quantity: number; disabled?: boolean }) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const closeDrawer = useCartStore((s) => s.closeDrawer);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleClick() {
-    if (submitting) return;
+    if (submitting || disabled) return;
     setSubmitting(true);
     try {
       await addItem(productId, quantity);
@@ -55,8 +56,9 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
     <button
       type="button"
       onClick={handleClick}
-      disabled={submitting}
-      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-accent bg-white px-2 sm:px-4 text-[18px] md:text-[16px] min-[1280px]:text-[18px] leading-[22px] font-light text-black transition-all sm:font-semibold duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:opacity-70 disabled:hover:translate-y-0"
+      disabled={submitting || disabled}
+      title={disabled ? "לא ניתן לרכוש מוצר זה" : undefined}
+      className="flex h-[40px] w-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-brand-accent bg-white px-2 sm:px-4 text-[18px] md:text-[16px] min-[1280px]:text-[18px] leading-[22px] font-light text-black transition-all sm:font-semibold duration-200 hover:-translate-y-0.5 hover:bg-brand-accent hover:text-white hover:shadow-[0_10px_20px_-8px_rgba(213,32,39,0.5)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:bg-white disabled:hover:text-black disabled:hover:shadow-none"
     >
       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "קנה עכשיו"}
     </button>
@@ -64,8 +66,11 @@ function BuyNowButton({ productId, quantity }: { productId: number; quantity: nu
 }
 
 // RTL row, right → left: buy now, add to cart, quantity (matches the reference).
-export function ProductPurchasePanel({ productId, inStock }: { productId: number; inStock: boolean }) {
+export function ProductPurchasePanel({ productId, inStock, regularPrice }: { productId: number; inStock: boolean; regularPrice: string }) {
   const [quantity, setQuantity] = useState(1);
+  // Original price is 0 (or missing): shown, but neither "buy now" nor "add to cart" can be used. Only the regular price
+  // counts — a YITH rule (e.g. buy 1 get 1 free) may lower the final price to 0 and must keep working.
+  const unpriced = isZeroPrice(regularPrice);
   const { phoneOnly, message } = usePhoneOrder(productId);
 
   // Phone-order-only product (wp-admin → Disable Add to Cart Settings): no buy now / add to cart / quantity — the phone box replaces them.
@@ -79,11 +84,11 @@ export function ProductPurchasePanel({ productId, inStock }: { productId: number
     <div className="mt-[25px] flex flex-wrap items-center gap-[8px] sm:gap-[12px]">
       {inStock ? (
         <div className="min-w-[100px] flex-1 sm:max-w-[168px] md:max-w-none min-[1640px]:max-w-[168px]">
-          <BuyNowButton productId={productId} quantity={quantity} />
+          <BuyNowButton productId={productId} quantity={quantity} disabled={unpriced} />
         </div>
       ) : null}
       <div className="min-w-[100px] flex-1 sm:max-w-[168px] md:max-w-none min-[1640px]:max-w-[168px]">
-        <AddToCartButton productId={productId} inStock={inStock} quantity={quantity} size="lg" />
+        <AddToCartButton productId={productId} inStock={inStock} regularPrice={regularPrice} quantity={quantity} size="lg" />
       </div>
       <QuantityStepper quantity={quantity} onChange={setQuantity} />
     </div>
